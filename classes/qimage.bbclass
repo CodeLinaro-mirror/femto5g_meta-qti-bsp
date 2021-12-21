@@ -217,6 +217,7 @@ python do_make_veritybootimg () {
     subprocess.call(cmd, shell=True)
 }
 do_make_veritybootimg[depends]  += "${PN}:do_makesystem"
+do_make_veritybootimg[depends]  += "${PN}:do_make_bootimg"
 
 python () {
     if bb.utils.contains('DISTRO_FEATURES', 'dm-verity', True, False, d):
