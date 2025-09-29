@@ -48,10 +48,12 @@ if [ -f "$mountpoint" ]; then
         exit 0
     fi
 
-    if [ ! -f "$spec" ]; then
+    if [ ! -s "$spec" ]; then
         mkdir -p $(dirname $spec)
         cp -P --preserve=all "$mountpoint" "$spec".tmp
+        fsync "$spec".tmp
         mv "$spec".tmp "$spec"
+        fsync "$spec"
     fi
 
     mount -o "bind" "$spec" "$mountpoint"
@@ -71,8 +73,11 @@ if [ -d "$mountpoint" ]; then
         fi
 
         if [ -f "$mountpoint/$file" ]; then
-            if [ ! -f "$spec/$file" ]; then
-                cp --preserve=all "$file" "$spec/"
+            if [ ! -s "$spec/$file" ]; then
+                cp --preserve=all "$file" "$spec/$file".tmp
+                fsync "$spec/$file".tmp
+                mv "$spec/$file".tmp "$spec/$file"
+                fsync "$spec/$file"
             fi
             mount -o "bind" "$spec/$file" "$mountpoint/$file"
             test ! -x /sbin/restorecon || /sbin/restorecon "$mountpoint/$file"
