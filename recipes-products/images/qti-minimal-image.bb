@@ -6,12 +6,14 @@ inherit qimage
 
 IMAGE_FEATURES += "read-only-rootfs persist-volume"
 
+MLIBPREFIX ?= ""
+
 CORE_IMAGE_EXTRA_INSTALL += "\
-              glib-2.0 \
-              kernel-modules \
-              systemd-machine-units \
-              packagegroup-android-utils \
-              packagegroup-startup-scripts \
+              ${MLIBPREFIX}glib-2.0 \
+              ${MLIBPREFIX}kernel-modules \
+              ${MLIBPREFIX}systemd-machine-units \
+              ${MLIBPREFIX}packagegroup-android-utils \
+              ${MLIBPREFIX}packagegroup-startup-scripts \
 "
 
 IMAGE_FEATURES:remove:qcm2290-mtp = "persist-volume"

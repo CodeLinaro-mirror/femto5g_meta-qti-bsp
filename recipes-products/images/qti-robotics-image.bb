@@ -105,6 +105,11 @@ CORE_IMAGE_EXTRA_INSTALL:append:kalama = " qcrosvm"
 CORE_IMAGE_EXTRA_INSTALL:append:kalama = " vmsharememory-test"
 # disable 'matter' package as default configuration
 # CORE_IMAGE_EXTRA_INSTALL:append:kalama = " matter"
+CORE_IMAGE_EXTRA_INSTALL:append:kalama = " i2c-tools"
+CORE_IMAGE_EXTRA_INSTALL:append:kalama = " v4l-utils"
+CORE_IMAGE_EXTRA_INSTALL:append:kalama = " yavta"
+CORE_IMAGE_EXTRA_INSTALL:append:kalama = " lsof"
+
 CORE_IMAGE_EXTRA_INSTALL:remove:qrb5165 = "packagegroup-qti-data"
 CORE_IMAGE_EXTRA_INSTALL:remove:qrb5165 = "packagegroup-qti-eva"
 CORE_IMAGE_EXTRA_INSTALL:remove:qrb5165 = "packagegroup-qti-ss-mgr"

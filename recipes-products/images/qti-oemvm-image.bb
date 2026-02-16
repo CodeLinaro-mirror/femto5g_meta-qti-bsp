@@ -11,7 +11,6 @@ CORE_IMAGE_EXTRA_INSTALL += " \
     post-boot \
     sdcard-scripts-automount \
     e2fsprogs-mke2fs \
-    bash \
     ${@oe.utils.conditional('ENABLE_VSOCK_AGENT', 'True', 'vsock-guest-agent-oemvm', '', d)} \
 "
 CORE_IMAGE_EXTRA_INSTALL += " ${@oe.utils.conditional('ENABLE_SECUREMSM', 'True', 'packagegroup-qti-securemsm-oemvm', '', d)}"
@@ -34,4 +33,6 @@ do_compose_vmimage[recrdeptask] += "do_extracpio_create"
 
 do_makesystem:prepend() {
       rm -rf ${IMAGE_ROOTFS_EXT4}/usr/lib/python3.10
+      rm -rf ${IMAGE_ROOTFS_EXT4}/usr/lib/modules/smmu_proxy.ko
+      rm -rf ${IMAGE_ROOTFS_EXT4}/lib/systemd/system/smmu_proxy.service
 }

@@ -25,6 +25,9 @@
 # WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 # OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 # IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+# Perform a bind mount, copying existing files as we do so to ensure the
+#!/bin/sh
 #
 # Perform a bind mount, copying existing files as we do so to ensure the
 # overlaid path has the necessary content.
@@ -38,6 +41,10 @@ spec=$1
 mountpoint=$2
 
 if [ -f "$mountpoint" ]; then
+    #Skip if already mount-binded
+    if grep -qs $mountpoint /proc/mounts; then
+        exit 0
+    fi
 
     if [ ! -f "$spec" ]; then
         mkdir -p $(dirname $spec)
@@ -45,7 +52,7 @@ if [ -f "$mountpoint" ]; then
         mv "$spec".tmp "$spec"
     fi
 
-    mount --onlyonce -o "bind" "$spec" "$mountpoint"
+    mount -o "bind" "$spec" "$mountpoint"
     test ! -x /sbin/restorecon || /sbin/restorecon "$mountpoint"
 fi
 

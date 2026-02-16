@@ -353,6 +353,9 @@ do_makesystem() {
                         -a / -b 4096 -l ${SYSTEM_IMAGE_ROOTFS_SIZE} \
                         ${IMAGE_EXT4_SELINUX_OPTIONS} \
                         ${sparseImgPath} ${IMAGE_ROOTFS_EXT4} /dev/null || invalid_image=1
+            if [ $invalid_image -eq 1 ]; then
+                bbfatal "make_ext4fs failed to generate sparse system image"
+            fi
     fi
 
         echo "image is good to use..."

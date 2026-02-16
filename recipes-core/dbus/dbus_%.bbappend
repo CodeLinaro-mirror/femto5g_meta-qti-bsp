@@ -11,6 +11,8 @@ INITSCRIPT_PARAMS = "start 98 5 3 2 . stop 02 0 1 6 ."
 
 GROUPADD_PARAM:${PN} = "-r netdev"
 
+FILES:${PN} += "${base_libdir_native}/systemd/system/dbus.service.d"
+
 do_install:append() {
    install -d ${D}/${datadir}/dbus-1/system.d/
    install -m 0644 ${WORKDIR}/extra-users.conf -D ${D}${datadir}/dbus-1/system.d/extra-users.conf
@@ -19,10 +21,9 @@ do_install:append() {
       ln -fs ../dbus.service ${D}${systemd_system_unitdir}/sockets.target.wants/dbus.service
       rm -rf ${D}${systemd_system_unitdir}/multi-user.target.wants/dbus.service
 
-      install -d ${D}/${base_libdir}/systemd/system/dbus.service.d
-      install -m 0644 ${WORKDIR}/dbus.conf ${D}/${base_libdir}/systemd/system/dbus.service.d/dbus.conf
+      install -d ${D}/${base_libdir_native}/systemd/system/dbus.service.d
+      install -m 0644 ${WORKDIR}/dbus.conf ${D}/${base_libdir_native}/systemd/system/dbus.service.d/dbus.conf
       install -m 0644 ${WORKDIR}/extra-users-reboot.conf -D ${D}${datadir}/dbus-1/system.d/extra-users-reboot.conf
    fi
 }
-
 

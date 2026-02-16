@@ -12,7 +12,6 @@ CORE_IMAGE_EXTRA_INSTALL += " \
     post-boot \
     sdcard-scripts-automount \
     e2fsprogs-mke2fs \
-    bash \
     procrank \
 "
 

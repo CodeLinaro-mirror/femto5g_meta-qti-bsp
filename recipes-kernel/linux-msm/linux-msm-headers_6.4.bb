@@ -6,7 +6,7 @@ These headers are installed in ${includedir}/linux-msm path."
 LICENSE = "GPLv2.0-with-linux-syscall-note"
 LIC_FILES_CHKSUM = "file://COPYING;md5=6bc538ed5bd9a7fc9398086aedcd7e46"
 
-COMPATIBLE_MACHINE = "trustedvm-v4|trustedvm-v3-1|trustedvm-v3"
+COMPATIBLE_MACHINE = "trustedvm-v4|trustedvm-v3-1|trustedvm-v3|trustedvm-malabar|trustedvm-neo"
 
 FILESEXTRAPATHS:prepend := "${WORKSPACE}:"
 

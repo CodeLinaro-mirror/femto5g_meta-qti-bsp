@@ -46,6 +46,10 @@ if [ -d "/extra" ]; then
     done < /lib/modules/$(uname -r)/extra/soc-repo/modules.dep
 fi
 
+#disable watermark boost
+echo 0 > /proc/sys/vm/watermark_boost_factor
+echo -n "Watermark boost has been disabled" > /dev/kmsg
+
 # verity protection
 if [ -f /etc/verity.env ]; then
     source /etc/verity.env
@@ -64,6 +68,8 @@ if [ -f /etc/verity.env ]; then
 else
     /bin/mount -t ext4 -o ro /dev/vda /mnt/vfs
 fi
+
+echo 600 > /proc/sys/kernel/threads-max
 
 if [ $? -eq 0 ] && [ -f /mnt/vfs/sbin/init ]; then
     echo "Switching root" > /dev/kmsg

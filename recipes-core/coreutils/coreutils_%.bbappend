@@ -34,5 +34,8 @@ ALTERNATIVE_TARGET[base32] = "${bindir}/base32.${BPN}"
 ALTERNATIVE_LINK_NAME[base32.1] = "${mandir}/man1/base32.1"
 
 do_install:append() {
-    mv ${D}${bindir}/base32 ${D}${bindir}/base32.${BPN}
+    # Rename only if the file (or symlink) exists
+    if [ -e "${D}${bindir}/base32" ]; then
+        mv ${D}${bindir}/base32 ${D}${bindir}/base32.${BPN}
+    fi
 }
