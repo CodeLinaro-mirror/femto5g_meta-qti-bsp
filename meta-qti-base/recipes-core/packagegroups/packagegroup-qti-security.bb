@@ -19,5 +19,11 @@ RDEPENDS:${PN} += "\
     ${@bb.utils.contains('DISTRO_FEATURES', 'qti-fde', 'enable-fde', '', d)} \
 "
 
+# sa8650-adas: do not auto-enable FDE, only provide fde tools
+RDEPENDS:${PN}:remove:sa8650-adas = "enable-fde"
+RDEPENDS:${PN}:append:sa8650-adas = " \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'qti-fde', 'fde-utils', '', d)} \
+"
+
 RDEPENDS:${PN}:append:sa8775-flex = " optee-libckteec"
 RDEPENDS:${PN}:append:gh-gvm-lemans = " optee-libckteec"
