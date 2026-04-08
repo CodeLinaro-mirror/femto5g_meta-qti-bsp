@@ -1,0 +1,83 @@
+From 28c6ed9fde651ea9b83016b341dcfa32a86e2eb6 Mon Sep 17 00:00:00 2001
+From: Lei wang <leiwan@qti.qualcomm.com>
+Date: Tue, 18 Nov 2025 14:07:19 +0800
+Subject: [PATCH] Subject: [PATCH] journald: disable audit support completely
+ from the journal
+
+This patch not only prevents journald to enable audit system
+unconditionally very early at boot but also prevents it to receive
+audit messages for the audit netlink and to push them into the
+journal.
+
+The first reason is that when journald enables kernel audit, it does
+not disable syscall audit (it doesn't load the audit rules), which
+introduced a global performance hit. This can be minimized if audit
+service is started but that's not the case for all systems.
+
+The second reason is that for systems where audit was disabled by
+default they will suddenly have audit enabled (unless audit=0 was
+already passed to the kernel command line). This means tons of audit
+messages will be sent to dmesg, syslog, journal files, etc...
+
+Note also that audit messages are duplicated in the journal since they
+are received both from kmsg and from the audit netlink. A related bug
+report can be found here:
+https://bugzilla.redhat.com/show_bug.cgi?id=1160046.
+
+This basically reverts the following upstream commits:
+
+ - 875c2e2
+ - 4d9ced9
+
+Upstream issue:
+systemd/systemd#959
+
+So disable all of this for now until a better option is found or
+someone comes up with a real use case.
+
+Also drop systemd-journald-audit.socket, indeed audit-logs-in-journal 'feature'
+has been removed but the socket was still shipped and was statically
+enabled. Therefore if auditd service was enabled, incoming messages could be
+queued up to 128M and were never read (hence freed) by journald.
+
+[fbui: fixes bsc#984034]
+[fbui: fixes bsc#1109252]
+
+Upstream-Status: Backport [https://github.com/openSUSE/systemd/commit/14771d697a159f46ecc723d41b113437a046a6f6]
+
+Signed-off-by: Franck Bui <fbui@suse.com>
+---
+ src/journal/journald-server.c | 4 ++--
+ units/meson.build             | 2 --
+ 2 files changed, 2 insertions(+), 4 deletions(-)
+
+diff --git a/src/journal/journald-server.c b/src/journal/journald-server.c
+index 8fb363c4f7..a5488432bc 100644
+--- a/src/journal/journald-server.c
++++ b/src/journal/journald-server.c
+@@ -2448,8 +2448,8 @@ int server_init(Server *s, const char *namespace) {
+         if (r < 0)
+                 return r;
+ 
+-        /* Unless we got *some* sockets and not audit, open audit socket */
+-        if (s->audit_fd >= 0 || no_sockets) {
++        // /* Suse: disable audit messages in journal entirely. */
++        if (false || no_sockets) {
+                 r = server_open_audit(s);
+                 if (r < 0)
+                         return r;
+diff --git a/units/meson.build b/units/meson.build
+index a9bf28f6d9..8361632b10 100644
+--- a/units/meson.build
++++ b/units/meson.build
+@@ -124,8 +124,6 @@ units = [
+          'sysinit.target.wants/'],
+         ['systemd-journal-gatewayd.socket',     'ENABLE_REMOTE HAVE_MICROHTTPD'],
+         ['systemd-journal-remote.socket',       'ENABLE_REMOTE HAVE_MICROHTTPD'],
+-        ['systemd-journald-audit.socket',       '',
+-         'sockets.target.wants/'],
+         ['systemd-journald-dev-log.socket',     '',
+          'sockets.target.wants/'],
+         ['systemd-journald.socket',             '',
+-- 
+2.34.1
