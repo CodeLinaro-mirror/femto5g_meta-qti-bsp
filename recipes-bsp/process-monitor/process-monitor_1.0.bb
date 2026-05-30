@@ -22,9 +22,17 @@ do_install:append() {
     
     # Install the systemd unit
     install -m 0644 ${S}/process-monitor.service -D ${D}${systemd_unitdir}/system/process-monitor.service
+
     
     # Deploy JSON configuration
-    install -m 0644 ${S}/conf/process_monitor-${MACHINE}.json -D ${D}${sysconfdir}/process_monitor-${MACHINE}.json
+    if [ -f ${S}/conf/process_monitor-${MACHINE}.json ]; then
+        install -m 0644 ${S}/conf/process_monitor-${MACHINE}.json -D ${D}${sysconfdir}/process_monitor-${MACHINE}.json
+    fi
+
+    # Deploy NTN JSON configuration
+    if [ -f ${S}/conf/process_monitor_ntn-${MACHINE}.json ]; then
+        install -m 0644 ${S}/conf/process_monitor_ntn-${MACHINE}.json -D ${D}${sysconfdir}/process_monitor_ntn-${MACHINE}.json
+    fi
     
     # Deploy D-Bus policy
     install -d ${D}${sysconfdir}/dbus-1/system.d
@@ -36,5 +44,6 @@ FILES:${PN} += " \
   ${bindir}/process-monitor \
   ${systemd_unitdir}/system/process-monitor.service \
   ${sysconfdir}/process_monitor-${MACHINE}.json \
+  ${sysconfdir}/process_monitor_ntn-${MACHINE}.json \
   ${sysconfdir}/dbus-1/system.d/process_monitor-dbus.conf \
 "
