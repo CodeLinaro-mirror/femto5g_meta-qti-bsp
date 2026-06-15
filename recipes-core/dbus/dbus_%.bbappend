@@ -2,7 +2,9 @@ include dbus.inc
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 
-SRC_URI += "file://extra-users.conf"
+SRC_URI += "file://extra-users.conf \
+            file://0001-Skip-Selinux-Check-In-DBus.patch \
+            "
 SRC_URI += "file://dbus.conf"
 SRC_URI += "file://extra-users-reboot.conf"
 

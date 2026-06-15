@@ -7,6 +7,7 @@ ILESEXTRAPATHS:prepend := "${THISDIR}/systemd:"
 
 SRC_URI += " \
     file://tmpfiles-setup-dev-override.conf \
+    file://0001-Skip-Selinux-Check.patch \
 "
 
 

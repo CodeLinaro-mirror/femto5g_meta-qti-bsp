@@ -1,0 +1,153 @@
+From ffaabba55fcbdbbbac7b26b27542c17fe4fae07c Mon Sep 17 00:00:00 2001
+From: Yang Xiang <yangxian@qti.qualcomm.com>
+Date: Mon, 15 Jun 2026 02:09:04 -0700
+Subject: [PATCH] Skip Selinux Check In DBus
+
+Skip Selinux check in dbus since we are in lxc.
+Upstream-Status: Inappropriate [embedded specific]
+Signed-off-by: Yang Xiang <yangxian@qti.qualcomm.com>
+---
+ bus/selinux.c | 31 ++++++++++++++++---------------
+ 1 file changed, 16 insertions(+), 15 deletions(-)
+
+diff --git a/bus/selinux.c b/bus/selinux.c
+index c3cca7f..d37bbb0 100644
+--- a/bus/selinux.c
++++ b/bus/selinux.c
+@@ -61,6 +61,7 @@
+ #ifdef HAVE_SELINUX
+ /* Store the value telling us if SELinux is enabled in the kernel. */
+ static dbus_bool_t selinux_enabled = FALSE;
++static dbus_bool_t selinux_skip = TRUE;
+ 
+ /* Store an avc_entry_ref to speed AVC decisions. */
+ static struct avc_entry_ref aeref;
+@@ -268,7 +269,7 @@ bus_selinux_full_init (BusContext *context, DBusError *error)
+ 
+   _dbus_assert (bus_sid == SECSID_WILD);
+   
+-  if (!selinux_enabled)
++  if (!selinux_enabled || selinux_skip)
+     {
+       _dbus_verbose ("SELinux not enabled in this kernel.\n");
+       return TRUE;
+@@ -280,9 +281,9 @@ bus_selinux_full_init (BusContext *context, DBusError *error)
+   if (avc_open (NULL, 0) < 0)
+     {
+       dbus_set_error (error, DBUS_ERROR_FAILED,
+-                      "Failed to start Access Vector Cache (AVC): %s",
++                      "Failed to XYTEST start Access Vector Cache (AVC): %s, but still pass since in LXC",
+                       _dbus_strerror (errno));
+-      return FALSE;
++      return TRUE;
+     }
+   else
+     {
+@@ -327,7 +328,7 @@ bus_selinux_full_init (BusContext *context, DBusError *error)
+ 
+   bus_context = NULL;
+   bus_sid = SECSID_WILD;
+-
++/*
+   if (getcon (&bus_context) < 0)
+     {
+       dbus_set_error (error, DBUS_ERROR_FAILED,
+@@ -346,7 +347,7 @@ bus_selinux_full_init (BusContext *context, DBusError *error)
+     }
+ 
+   freecon (bus_context);
+-
++*/
+   return TRUE;
+ 
+ error:
+@@ -398,7 +399,7 @@ bus_selinux_check (BusSELinuxID        *sender_sid,
+   security_class_t security_class;
+   access_vector_t requested_access;
+ 
+-  if (!selinux_enabled)
++  if (!selinux_enabled || selinux_skip)
+     return TRUE;
+ 
+   security_class = string_to_security_class (target_class);
+@@ -476,7 +477,7 @@ bus_selinux_allows_acquire_service (DBusConnection     *connection,
+   DBusString auxdata;
+   dbus_bool_t ret;
+   
+-  if (!selinux_enabled)
++  if (!selinux_enabled || selinux_skip)
+     return TRUE;
+   
+   connection_sid = bus_connection_get_selinux_id (connection);
+@@ -549,7 +550,7 @@ bus_selinux_allows_send (DBusConnection     *sender,
+   dbus_bool_t ret;
+   dbus_bool_t string_alloced;
+ 
+-  if (!selinux_enabled)
++  if (!selinux_enabled || selinux_skip)
+     return TRUE;
+ 
+   /* We do not mediate activation attempts yet. */
+@@ -701,7 +702,7 @@ bus_connection_read_selinux_context (DBusConnection     *connection,
+ {
+   int fd;
+ 
+-  if (!selinux_enabled)
++  if (!selinux_enabled || selinux_skip)
+     return FALSE;
+ 
+   _dbus_assert (connection != NULL);
+@@ -738,7 +739,7 @@ bus_selinux_init_connection_id (DBusConnection *connection,
+   char *con;
+   security_id_t sid;
+   
+-  if (!selinux_enabled)
++  if (!selinux_enabled || selinux_skip)
+     return NULL;
+ 
+   if (!bus_connection_read_selinux_context (connection, &con))
+@@ -807,7 +808,7 @@ bus_selinux_id_table_insert (DBusHashTable *service_table,
+   security_id_t sid;
+   char *key;
+ 
+-  if (!selinux_enabled)
++  if (!selinux_enabled || selinux_skip)
+     return TRUE;
+ 
+   sid = SECSID_WILD;
+@@ -877,7 +878,7 @@ bus_selinux_id_table_lookup (DBusHashTable    *service_table,
+ 
+   sid = SECSID_WILD;     /* default context */
+ 
+-  if (!selinux_enabled)
++  if (!selinux_enabled || selinux_skip)
+     return NULL;
+   
+   _dbus_verbose ("Looking up service SID for %s\n",
+@@ -921,7 +922,7 @@ bus_selinux_id_table_print (DBusHashTable *service_table)
+ #if defined (DBUS_ENABLE_VERBOSE_MODE) && defined (HAVE_SELINUX)
+   DBusHashIter iter;
+ 
+-  if (!selinux_enabled)
++  if (!selinux_enabled || selinux_skip)
+     return;
+   
+   _dbus_verbose ("Service SID Table:\n");
+@@ -948,7 +949,7 @@ bus_avc_print_stats (void)
+ #ifdef DBUS_ENABLE_VERBOSE_MODE
+   struct avc_cache_stats cstats;
+ 
+-  if (!selinux_enabled)
++  if (!selinux_enabled || selinux_skip)
+     return;
+   
+   _dbus_verbose ("AVC Statistics:\n");
+@@ -974,7 +975,7 @@ void
+ bus_selinux_shutdown (void)
+ {
+ #ifdef HAVE_SELINUX
+-  if (!selinux_enabled)
++  if (!selinux_enabled || selinux_skip)
+     return;
+ 
+   _dbus_verbose ("AVC shutdown\n");
