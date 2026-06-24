@@ -1,0 +1,50 @@
+From 83d016f857021acf5fcd8df19412f01d7264b1ec Mon Sep 17 00:00:00 2001
+From: Yanqi Zhou <yanqzhou@qti.qualcomm.com>
+Date: Mon, 29 Jun 2026 07:58:06 +0200
+Subject: [PATCH] systemd: logind set qcom power mode for sleep keys
+
+Handle suspend related key events in logind button dispatcher.
+When KEY_POWER is received (ev.value > 0), write S2R to
+/sys/devices/platform/qcom_power_mode/power_mode.
+When KEY_SLEEP is released (ev.value == 0), write DEEPSLEEP to
+the same node.
+
+Upstream-Status: Inappropriate
+
+Signed-off-by: Yanqi Zhou <yanqzhou@qti.qualcomm.com>
+---
+ src/login/logind-button.c | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/src/login/logind-button.c b/src/login/logind-button.c
+index 14835aedc1..a9daf56c67 100644
+--- a/src/login/logind-button.c
++++ b/src/login/logind-button.c
+@@ -10,6 +10,7 @@
+ #include "alloc-util.h"
+ #include "async.h"
+ #include "fd-util.h"
++#include "fileio.h"
+ #include "logind-button.h"
+ #include "logind-dbus.h"
+ #include "missing_input.h"
+@@ -225,6 +226,7 @@ static int button_dispatch(sd_event_source *s, int fd, uint32_t revents, void *u
+                                 log_struct(LOG_INFO,
+                                            LOG_MESSAGE("Power key pressed short."),
+                                            "MESSAGE_ID=" SD_MESSAGE_POWER_KEY_STR);
++                                (void) write_string_file("/sys/devices/platform/qcom_power_mode/power_mode", "S2R", WRITE_STRING_FILE_DISABLE_BUFFER);
+                                 manager_handle_action(b->manager, INHIBIT_HANDLE_POWER_KEY, b->manager->handle_power_key, b->manager->power_key_ignore_inhibited, true);
+                         }
+                         break;
+@@ -318,6 +320,8 @@ static int button_dispatch(sd_event_source *s, int fd, uint32_t revents, void *u
+ 
+                                 b->manager->suspend_key_long_press_event_source = sd_event_source_unref(b->manager->suspend_key_long_press_event_source);
+ 
++                                (void) write_string_file("/sys/devices/platform/qcom_power_mode/power_mode", "DEEPSLEEP", WRITE_STRING_FILE_DISABLE_BUFFER);
++
+                                 manager_handle_action(b->manager, INHIBIT_HANDLE_SUSPEND_KEY, b->manager->handle_suspend_key, b->manager->suspend_key_ignore_inhibited, true);
+                         }
+                         break;
+-- 
+2.34.1
+
