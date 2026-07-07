@@ -19,7 +19,7 @@ DEPENDS += "\
     glib-2.0 \
     libcutils \
     libdrm \
-    ${@bb.utils.contains("PREFERRED_VERSION_linux-msm", "5.15", 'libdmabufheap graphicsdlkm', "", d)} \
+    ${@bb.utils.contains("PREFERRED_VERSION_linux-msm", "5.15", 'libdmabufheap', "", d)} \
     libion \
     libutils \
     virtual/kernel-headers \
