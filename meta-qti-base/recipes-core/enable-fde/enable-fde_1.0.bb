@@ -23,6 +23,9 @@ do_install:append () {
   install -d ${D}${bindir}
   install -m 0755 ${WORKDIR}/enable-fde.sh ${D}${bindir}/enable-fde.sh
   install -m 0644 ${WORKDIR}/enable-fde.service ${D}${systemd_unitdir}/system/
+  if ${@bb.utils.contains('MACHINE_FEATURES', 'qti-hypervisor', 'true', 'false', d)}; then
+      sed -i 's/Before=data.mount systemd-fsck@dev-vdb.service/Before=data.mount/' ${D}${systemd_system_unitdir}/enable-fde.service
+  fi
 }
 
 RDEPENDS:${PN} += "e2fsprogs-mke2fs"
