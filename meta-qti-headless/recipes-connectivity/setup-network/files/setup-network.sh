@@ -131,7 +131,7 @@ perf_net_config()
 setup_network_agl_vm_1()
 {
     echo "Assign IP address"
-    ifconfig eth0 192.168.1.2 up
+    ifconfig eth0 192.168.1.4 up
 
     echo "Setup route"
     ip route add default dev eth0 via 192.168.1.10 table default
@@ -174,7 +174,7 @@ echo "GVM version is ${gvm_version}"
 
 # try 10 times
 for i in `seq 1 10` ; do
-    if [ ${gvm_version} -eq 1 ]
+    if [ ${gvm_version} -eq 0 ] || [ ${gvm_version} -eq 1 ]
     then
         check_all_interfaces_up "${AGL1_IFACE_ARRAY}"
         iface_is_up=$?
