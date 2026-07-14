@@ -1,4 +1,5 @@
-FILESEXTRAPATHS:prepend := "${THISDIR}/${BP}:"
+FILESBBAPPENDPATH_EXTRA := "${THISDIR}"
+FILESEXTRAPATHS:prepend = "${FILESBBAPPENDPATH_EXTRA}/${BP}:"
 
 SRC_URI:append = " \
              ${@bb.utils.contains('MACHINE_FEATURES', 'qti-hypervisor', '', 'file://0001-systemd-assign-prime-core-to-manager_dispatch_load_q.patch', d)} \
