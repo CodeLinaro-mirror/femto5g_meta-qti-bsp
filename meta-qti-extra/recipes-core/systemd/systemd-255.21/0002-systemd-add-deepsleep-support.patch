@@ -1,0 +1,524 @@
+From b81098e7dd1ac4e439aa8a127317cee317496c79 Mon Sep 17 00:00:00 2001
+From: Kaisheng Yang <quic_kaisheng@quicinc.com>
+Date: Mon, 27 Feb 2023 17:00:13 +0800
+Subject: [PATCH] systemd: add deepsleep support
+
+Add new sleep state deepsleep. Run systemctl deepsleep
+to enter deepsleep state.
+
+Upstream-Status: Pending
+
+Change-Id: Ibaf87175aceb26507b52fb2da7e5620e29d29c84
+Signed-off-by: Kaisheng Yang <quic_kaisheng@quicinc.com>
+---
+ man/systemctl.xml                       | 10 ++++++++
+ man/systemd-suspend.service.xml         |  4 ++++
+ man/systemd.special.xml                 |  9 +++++++
+ src/basic/special.h                     |  1 +
+ src/login/logind-action.c               |  5 ++++
+ src/login/logind-action.h               |  1 +
+ src/login/logind-dbus.c                 | 25 +++++++++++++++++++
+ src/login/org.freedesktop.login1.policy | 32 +++++++++++++++++++++++++
+ src/shared/sleep-config.c               | 15 ++++++++++--
+ src/shared/sleep-config.h               |  1 +
+ src/sleep/sleep.c                       |  1 +
+ src/sleep/sleep.conf                    |  3 +++
+ src/systemctl/systemctl-logind.c        |  1 +
+ src/systemctl/systemctl-start-special.c |  1 +
+ src/systemctl/systemctl-start-unit.c    |  1 +
+ src/systemctl/systemctl.c               |  3 +++
+ src/systemctl/systemctl.h               |  1 +
+ units/deepsleep.target                  | 16 +++++++++++++
+ units/meson.build                       |  2 ++
+ units/systemd-deepsleep.service.in      | 19 +++++++++++++++
+ 20 files changed, 149 insertions(+), 2 deletions(-)
+ create mode 100644 units/deepsleep.target
+ create mode 100644 units/systemd-deepsleep.service.in
+
+diff --git a/man/systemctl.xml b/man/systemctl.xml
+index 1c14909523..85044f7394 100644
+--- a/man/systemctl.xml
++++ b/man/systemctl.xml
+@@ -1521,6 +1521,16 @@ Jan 12 10:46:45 example.com bluetoothd[8900]: gatt-time-server: Input/output err
+           </listitem>
+         </varlistentry>
+
++        <varlistentry>
++          <term><command>deepsleep</command></term>
++
++          <listitem>
++            <para>Deepsleep the system. This will trigger activation of the special target unit
++            <filename>deepsleep.target</filename>. This command is asynchronous, and will return after the deepsleep
++            operation is successfully enqueued. It will not wait for the deepsleep/resume cycle to complete.</para>
++          </listitem>
++        </varlistentry>
++
+         <varlistentry>
+           <term><command>hibernate</command></term>
+
+diff --git a/man/systemd-suspend.service.xml b/man/systemd-suspend.service.xml
+index 29249365a0..0f4dee3213 100644
+--- a/man/systemd-suspend.service.xml
++++ b/man/systemd-suspend.service.xml
+@@ -39,6 +39,9 @@
+     <para><filename>systemd-suspend.service</filename> is a system
+     service that is pulled in by <filename>suspend.target</filename>
+     and is responsible for the actual system suspend. Similarly,
++    <filename>systemd-deepsleep.service</filename> is pulled in by
++    <filename>deepsleep.target</filename> to execute the actual
++    hibernation. Finally,
+     <filename>systemd-hibernate.service</filename> is pulled in by
+     <filename>hibernate.target</filename> to execute the actual
+     hibernation. Finally,
+@@ -102,6 +105,7 @@
+
+       <varlistentry>
+         <term><option>suspend</option></term>
++        <term><option>deepsleep</option></term>
+         <term><option>hibernate</option></term>
+         <term><option>suspend-then-hibernate</option></term>
+         <term><option>hybrid-sleep</option></term>
+diff --git a/man/systemd.special.xml b/man/systemd.special.xml
+index 9eb0b4a2c2..5628512f29 100644
+--- a/man/systemd.special.xml
++++ b/man/systemd.special.xml
+@@ -83,6 +83,7 @@
+     <filename>sockets.target</filename>,
+     <filename>sound.target</filename>,
+     <filename>suspend.target</filename>,
++    <filename>deepsleep.target</filename>,
+     <filename>swap.target</filename>,
+     <filename>sysinit.target</filename>,
+     <filename>system-update.target</filename>,
+@@ -231,6 +232,13 @@
+             <citerefentry><refentrytitle>systemd</refentrytitle><manvolnum>1</manvolnum></citerefentry>.</para>
+           </listitem>
+         </varlistentry>
++        <varlistentry>
++          <term><filename>deepsleep.target</filename></term>
++          <listitem>
++            <para>A special target unit for deepsleep the system. This
++            pulls in <filename>deepsleep.target</filename>.</para>
++          </listitem>
++        </varlistentry>
+         <varlistentry>
+           <term><filename>display-manager.service</filename></term>
+           <listitem>
+@@ -669,6 +677,7 @@
+           <listitem>
+             <para>A special target unit that is pulled in by
+             <filename>suspend.target</filename>,
++            <filename>deepsleep.target</filename> and
+             <filename>hibernate.target</filename> and
+             <filename>hybrid-sleep.target</filename> and may be used to
+             hook units into the sleep state logic.</para>
+diff --git a/src/basic/special.h b/src/basic/special.h
+index 5d1111fd71..c2ae6f63bb 100644
+--- a/src/basic/special.h
++++ b/src/basic/special.h
+@@ -17,6 +17,7 @@
+ #define SPECIAL_KEXEC_TARGET "kexec.target"
+ #define SPECIAL_EXIT_TARGET "exit.target"
+ #define SPECIAL_SUSPEND_TARGET "suspend.target"
++#define SPECIAL_DEEPSLEEP_TARGET "deepsleep.target"
+ #define SPECIAL_HIBERNATE_TARGET "hibernate.target"
+ #define SPECIAL_HYBRID_SLEEP_TARGET "hybrid-sleep.target"
+ #define SPECIAL_SUSPEND_THEN_HIBERNATE_TARGET "suspend-then-hibernate.target"
+diff --git a/src/login/logind-action.c b/src/login/logind-action.c
+index e172910948..02da5b82e2 100644
+--- a/src/login/logind-action.c
++++ b/src/login/logind-action.c
+@@ -24,6 +24,7 @@ const char* manager_target_for_action(HandleAction handle) {
+                 [HANDLE_HALT] = SPECIAL_HALT_TARGET,
+                 [HANDLE_KEXEC] = SPECIAL_KEXEC_TARGET,
+                 [HANDLE_SUSPEND] = SPECIAL_SUSPEND_TARGET,
++                [HANDLE_DEEPSLEEP] = SPECIAL_DEEPSLEEP_TARGET,
+                 [HANDLE_HIBERNATE] = SPECIAL_HIBERNATE_TARGET,
+                 [HANDLE_HYBRID_SLEEP] = SPECIAL_HYBRID_SLEEP_TARGET,
+                 [HANDLE_SUSPEND_THEN_HIBERNATE] = SPECIAL_SUSPEND_THEN_HIBERNATE_TARGET,
+@@ -49,6 +50,7 @@ int manager_handle_action(
+                 [HANDLE_HALT] = "Halting...",
+                 [HANDLE_KEXEC] = "Rebooting via kexec...",
+                 [HANDLE_SUSPEND] = "Suspending...",
++                [HANDLE_DEEPSLEEP] = "Deepsleeping...",
+                 [HANDLE_HIBERNATE] = "Hibernating...",
+                 [HANDLE_HYBRID_SLEEP] = "Hibernating and suspending...",
+                 [HANDLE_SUSPEND_THEN_HIBERNATE] = "Suspending, then hibernating...",
+@@ -105,6 +107,8 @@ int manager_handle_action(
+
+         if (handle == HANDLE_SUSPEND)
+                 supported = can_sleep(SLEEP_SUSPEND) > 0;
++        if (handle == HANDLE_DEEPSLEEP)
++                supported = can_sleep(SLEEP_DEEPSLEEP) > 0;
+         else if (handle == HANDLE_HIBERNATE)
+                 supported = can_sleep(SLEEP_HIBERNATE) > 0;
+         else if (handle == HANDLE_HYBRID_SLEEP)
+@@ -178,6 +182,7 @@ static const char* const handle_action_table[_HANDLE_ACTION_MAX] = {
+         [HANDLE_HALT] = "halt",
+         [HANDLE_KEXEC] = "kexec",
+         [HANDLE_SUSPEND] = "suspend",
++        [HANDLE_DEEPSLEEP] = "deepsleep",
+         [HANDLE_HIBERNATE] = "hibernate",
+         [HANDLE_HYBRID_SLEEP] = "hybrid-sleep",
+         [HANDLE_SUSPEND_THEN_HIBERNATE] = "suspend-then-hibernate",
+diff --git a/src/login/logind-action.h b/src/login/logind-action.h
+index ec2fece2b7..eaa84d39e3 100644
+--- a/src/login/logind-action.h
++++ b/src/login/logind-action.h
+@@ -10,6 +10,7 @@ typedef enum HandleAction {
+         HANDLE_HALT,
+         HANDLE_KEXEC,
+         HANDLE_SUSPEND,
++        HANDLE_DEEPSLEEP,
+         HANDLE_HIBERNATE,
+         HANDLE_HYBRID_SLEEP,
+         HANDLE_SUSPEND_THEN_HIBERNATE,
+diff --git a/src/login/logind-dbus.c b/src/login/logind-dbus.c
+index c05c0d02cc..c9ea747c37 100644
+--- a/src/login/logind-dbus.c
++++ b/src/login/logind-dbus.c
+@@ -1989,6 +1989,21 @@ static int method_suspend(sd_bus_message *message, void *userdata, sd_bus_error
+                         error);
+ }
+
++static int method_deepsleep(sd_bus_message *message, void *userdata, sd_bus_error *error) {
++        Manager *m = userdata;
++
++        return method_do_shutdown_or_sleep(
++                        m, message,
++                        SPECIAL_DEEPSLEEP_TARGET,
++                        INHIBIT_SLEEP,
++                        "org.freedesktop.login1.deepsleep",
++                        "org.freedesktop.login1.deepsleep-multiple-sessions",
++                        "org.freedesktop.login1.deepslepp-ignore-inhibit",
++                        SLEEP_DEEPSLEEP,
++                        sd_bus_message_is_method_call(message, NULL, "DeepsleepWithFlags"),
++                        error);
++}
++
+ static int method_hibernate(sd_bus_message *message, void *userdata, sd_bus_error *error) {
+         Manager *m = userdata;
+
+@@ -3575,6 +3590,16 @@ static const sd_bus_vtable manager_vtable[] = {
+                                 SD_BUS_NO_RESULT,
+                                 method_suspend,
+                                 SD_BUS_VTABLE_UNPRIVILEGED),
++        SD_BUS_METHOD_WITH_ARGS("Deepsleep",
++                                SD_BUS_ARGS("b", interactive),
++                                SD_BUS_NO_RESULT,
++                                method_deepsleep,
++                                SD_BUS_VTABLE_UNPRIVILEGED),
++        SD_BUS_METHOD_WITH_ARGS("DeepsleepWithFlags",
++                                SD_BUS_ARGS("t", flags),
++                                SD_BUS_NO_RESULT,
++                                method_deepsleep,
++                                SD_BUS_VTABLE_UNPRIVILEGED),
+         SD_BUS_METHOD_WITH_ARGS("Hibernate",
+                                 SD_BUS_ARGS("b", interactive),
+                                 SD_BUS_NO_RESULT,
+diff --git a/src/login/org.freedesktop.login1.policy b/src/login/org.freedesktop.login1.policy
+index df906b0e73..d209ddfd11 100644
+--- a/src/login/org.freedesktop.login1.policy
++++ b/src/login/org.freedesktop.login1.policy
+@@ -296,6 +296,38 @@
+                 <annotate key="org.freedesktop.policykit.imply">org.freedesktop.login1.suspend</annotate>
+         </action>
+
++        <action id="org.freedesktop.login1.deepsleep">
++                <description gettext-domain="systemd">DeepSleep the system</description>
++                <message gettext-domain="systemd">Authentication is required to deepsleep the system.</message>
++                <defaults>
++                        <allow_any>auth_admin_keep</allow_any>
++                        <allow_inactive>auth_admin_keep</allow_inactive>
++                        <allow_active>yes</allow_active>
++                </defaults>
++        </action>
++
++        <action id="org.freedesktop.login1.deepsleep-multiple-sessions">
++                <description gettext-domain="systemd">Deepsleep the system while other users are logged in</description>
++                <message gettext-domain="systemd">Authentication is required to deepsleep the system while other users are logged in.</message>
++                <defaults>
++                        <allow_any>auth_admin_keep</allow_any>
++                        <allow_inactive>auth_admin_keep</allow_inactive>
++                        <allow_active>yes</allow_active>
++                </defaults>
++                <annotate key="org.freedesktop.policykit.imply">org.freedesktop.login1.suspend</annotate>
++        </action>
++
++        <action id="org.freedesktop.login1.deepslepp-ignore-inhibit">
++                <description gettext-domain="systemd">Deepsleep the system while an application is inhibiting this</description>
++                <message gettext-domain="systemd">Authentication is required to deepsleep the system while an application is inhibiting this.</message>
++                <defaults>
++                        <allow_any>auth_admin_keep</allow_any>
++                        <allow_inactive>auth_admin_keep</allow_inactive>
++                        <allow_active>auth_admin_keep</allow_active>
++                </defaults>
++                <annotate key="org.freedesktop.policykit.imply">org.freedesktop.login1.suspend</annotate>
++        </action>
++
+         <action id="org.freedesktop.login1.hibernate">
+                 <description gettext-domain="systemd">Hibernate the system</description>
+                 <message gettext-domain="systemd">Authentication is required to hibernate the system.</message>
+diff --git a/src/shared/sleep-config.c b/src/shared/sleep-config.c
+index 8ec3d09a58..56850ff391 100644
+--- a/src/shared/sleep-config.c
++++ b/src/shared/sleep-config.c
+@@ -39,7 +39,8 @@
+ int parse_sleep_config(SleepConfig **ret_sleep_config) {
+         _cleanup_(free_sleep_configp) SleepConfig *sc = NULL;
+         int allow_suspend = -1, allow_hibernate = -1,
+-            allow_s2h = -1, allow_hybrid_sleep = -1;
++            allow_s2h = -1, allow_hybrid_sleep = -1,
++            allow_deepsleep = -1;
+
+         sc = new0(SleepConfig, 1);
+         if (!sc)
+@@ -47,12 +48,15 @@ int parse_sleep_config(SleepConfig **ret_sleep_config) {
+
+         const ConfigTableItem items[] = {
+                 { "Sleep", "AllowSuspend",              config_parse_tristate, 0, &allow_suspend                  },
++                { "Sleep", "AllowDeepsleep",              config_parse_tristate, 0, &allow_deepsleep                  },
+                 { "Sleep", "AllowHibernation",          config_parse_tristate, 0, &allow_hibernate                },
+                 { "Sleep", "AllowSuspendThenHibernate", config_parse_tristate, 0, &allow_s2h                      },
+                 { "Sleep", "AllowHybridSleep",          config_parse_tristate, 0, &allow_hybrid_sleep             },
+
+                 { "Sleep", "SuspendMode",               config_parse_strv,     0, sc->modes + SLEEP_SUSPEND       },
+                 { "Sleep", "SuspendState",              config_parse_strv,     0, sc->states + SLEEP_SUSPEND      },
++                { "Sleep", "DeepsleepMode",               config_parse_strv,     0, sc->modes + SLEEP_DEEPSLEEP   },
++                { "Sleep", "DeepsleepState",              config_parse_strv,     0, sc->states + SLEEP_DEEPSLEEP  },
+                 { "Sleep", "HibernateMode",             config_parse_strv,     0, sc->modes + SLEEP_HIBERNATE     },
+                 { "Sleep", "HibernateState",            config_parse_strv,     0, sc->states + SLEEP_HIBERNATE    },
+                 { "Sleep", "HybridSleepMode",           config_parse_strv,     0, sc->modes + SLEEP_HYBRID_SLEEP  },
+@@ -73,6 +77,7 @@ int parse_sleep_config(SleepConfig **ret_sleep_config) {
+
+         /* use default values unless set */
+         sc->allow[SLEEP_SUSPEND] = allow_suspend != 0;
++        sc->allow[SLEEP_DEEPSLEEP] = allow_deepsleep != 0;
+         sc->allow[SLEEP_HIBERNATE] = allow_hibernate != 0;
+         sc->allow[SLEEP_HYBRID_SLEEP] = allow_hybrid_sleep >= 0 ? allow_hybrid_sleep
+                 : (allow_suspend != 0 && allow_hibernate != 0);
+@@ -81,6 +86,8 @@ int parse_sleep_config(SleepConfig **ret_sleep_config) {
+
+         if (!sc->states[SLEEP_SUSPEND])
+                 sc->states[SLEEP_SUSPEND] = strv_new("mem", "standby", "freeze");
++        if (!sc->states[SLEEP_DEEPSLEEP])
++                sc->states[SLEEP_DEEPSLEEP] = strv_new("mem");
+         if (!sc->modes[SLEEP_HIBERNATE])
+                 sc->modes[SLEEP_HIBERNATE] = strv_new("platform", "shutdown");
+         if (!sc->states[SLEEP_HIBERNATE])
+@@ -94,7 +101,7 @@ int parse_sleep_config(SleepConfig **ret_sleep_config) {
+
+         /* ensure values set for all required fields */
+         if (!sc->states[SLEEP_SUSPEND] || !sc->modes[SLEEP_HIBERNATE]
+-            || !sc->states[SLEEP_HIBERNATE] || !sc->modes[SLEEP_HYBRID_SLEEP] || !sc->states[SLEEP_HYBRID_SLEEP])
++            || !sc->states[SLEEP_HIBERNATE] || !sc->modes[SLEEP_HYBRID_SLEEP] || !sc->states[SLEEP_HYBRID_SLEEP] || !sc->states[SLEEP_DEEPSLEEP])
+                 return log_oom();
+
+         *ret_sleep_config = TAKE_PTR(sc);
+@@ -645,6 +652,9 @@ static int can_sleep_internal(
+         if (operation == SLEEP_SUSPEND)
+                 return true;
+
++        if (operation == SLEEP_DEEPSLEEP)
++                return true;
++
+         if (!enough_swap_for_hibernation())
+                 return -ENOSPC;
+
+@@ -676,6 +686,7 @@ SleepConfig* free_sleep_config(SleepConfig *sc) {
+
+ static const char* const sleep_operation_table[_SLEEP_OPERATION_MAX] = {
+         [SLEEP_SUSPEND]                = "suspend",
++        [SLEEP_DEEPSLEEP]              = "deepsleep",
+         [SLEEP_HIBERNATE]              = "hibernate",
+         [SLEEP_HYBRID_SLEEP]           = "hybrid-sleep",
+         [SLEEP_SUSPEND_THEN_HIBERNATE] = "suspend-then-hibernate",
+diff --git a/src/shared/sleep-config.h b/src/shared/sleep-config.h
+index c049a55ad6..08af6974ca 100644
+--- a/src/shared/sleep-config.h
++++ b/src/shared/sleep-config.h
+@@ -6,6 +6,7 @@
+
+ typedef enum SleepOperation {
+         SLEEP_SUSPEND,
++        SLEEP_DEEPSLEEP,
+         SLEEP_HIBERNATE,
+         SLEEP_HYBRID_SLEEP,
+         SLEEP_SUSPEND_THEN_HIBERNATE,
+diff --git a/src/sleep/sleep.c b/src/sleep/sleep.c
+index 7064f3a905..713b2f84eb 100644
+--- a/src/sleep/sleep.c
++++ b/src/sleep/sleep.c
+@@ -326,6 +326,7 @@ static int help(void) {
+                "  --version              Print version string and exit\n"
+                "\nCommands:\n"
+                "  suspend                Suspend the system\n"
++               "  deepsleep              Deepsleep the system\n"
+                "  hibernate              Hibernate the system\n"
+                "  hybrid-sleep           Both hibernate and suspend the system\n"
+                "  suspend-then-hibernate Initially suspend and then hibernate\n"
+diff --git a/src/sleep/sleep.conf b/src/sleep/sleep.conf
+index 174f5ea3e8..26e035c0a7 100644
+--- a/src/sleep/sleep.conf
++++ b/src/sleep/sleep.conf
+@@ -14,11 +14,14 @@
+
+ [Sleep]
+ #AllowSuspend=yes
++#AllowDeepsleep=yes
+ #AllowHibernation=yes
+ #AllowSuspendThenHibernate=yes
+ #AllowHybridSleep=yes
+ #SuspendMode=
+ #SuspendState=mem standby freeze
++#DeepsleepMode=
++#DeepsleepState=mem
+ #HibernateMode=platform shutdown
+ #HibernateState=disk
+ #HybridSleepMode=suspend platform shutdown
+diff --git a/src/systemctl/systemctl-logind.c b/src/systemctl/systemctl-logind.c
+index 114641cdc7..656a9b8a86 100644
+--- a/src/systemctl/systemctl-logind.c
++++ b/src/systemctl/systemctl-logind.c
+@@ -53,6 +53,7 @@ int logind_reboot(enum action a) {
+                 [ACTION_KEXEC]                  = { "Reboot",               "kexec reboot system"             },
+                 [ACTION_HALT]                   = { "Halt",                 "halt system"                     },
+                 [ACTION_SUSPEND]                = { "Suspend",              "suspend system"                  },
++                [ACTION_DEEPSLEEP]              = { "Deepsleep",            "deepsleep system"                  },
+                 [ACTION_HIBERNATE]              = { "Hibernate",            "hibernate system"                },
+                 [ACTION_HYBRID_SLEEP]           = { "HybridSleep",          "put system into hybrid sleep"    },
+                 [ACTION_SUSPEND_THEN_HIBERNATE] = { "SuspendThenHibernate", "suspend system, hibernate later" },
+diff --git a/src/systemctl/systemctl-start-special.c b/src/systemctl/systemctl-start-special.c
+index 6ece700a9b..92f6bf4f1a 100644
+--- a/src/systemctl/systemctl-start-special.c
++++ b/src/systemctl/systemctl-start-special.c
+@@ -206,6 +206,7 @@ int start_special(int argc, char *argv[], void *userdata) {
+                            ACTION_KEXEC,
+                            ACTION_HALT,
+                            ACTION_SUSPEND,
++                           ACTION_DEEPSLEEP,
+                            ACTION_HIBERNATE,
+                            ACTION_HYBRID_SLEEP,
+                            ACTION_SUSPEND_THEN_HIBERNATE)) {
+diff --git a/src/systemctl/systemctl-start-unit.c b/src/systemctl/systemctl-start-unit.c
+index 274b278d2d..acc7085121 100644
+--- a/src/systemctl/systemctl-start-unit.c
++++ b/src/systemctl/systemctl-start-unit.c
+@@ -227,6 +227,7 @@ const struct action_metadata action_table[_ACTION_MAX] = {
+         [ACTION_DEFAULT]                = { SPECIAL_DEFAULT_TARGET,                "default",                "isolate"              },
+         [ACTION_EXIT]                   = { SPECIAL_EXIT_TARGET,                   "exit",                   "replace-irreversibly" },
+         [ACTION_SUSPEND]                = { SPECIAL_SUSPEND_TARGET,                "suspend",                "replace-irreversibly" },
++        [ACTION_DEEPSLEEP]              = { SPECIAL_DEEPSLEEP_TARGET,              "deepsleep",                "replace-irreversibly" },
+         [ACTION_HIBERNATE]              = { SPECIAL_HIBERNATE_TARGET,              "hibernate",              "replace-irreversibly" },
+         [ACTION_HYBRID_SLEEP]           = { SPECIAL_HYBRID_SLEEP_TARGET,           "hybrid-sleep",           "replace-irreversibly" },
+         [ACTION_SUSPEND_THEN_HIBERNATE] = { SPECIAL_SUSPEND_THEN_HIBERNATE_TARGET, "suspend-then-hibernate", "replace-irreversibly" },
+diff --git a/src/systemctl/systemctl.c b/src/systemctl/systemctl.c
+index 9031e685ea..045b93a9c5 100644
+--- a/src/systemctl/systemctl.c
++++ b/src/systemctl/systemctl.c
+@@ -227,6 +227,7 @@ static int systemctl_help(void) {
+                "  exit [EXIT_CODE]                    Request user instance or container exit\n"
+                "  switch-root ROOT [INIT]             Change to a different root file system\n"
+                "  suspend                             Suspend the system\n"
++               "  deepsleep                           Deepsleep the system\n"
+                "  hibernate                           Hibernate the system\n"
+                "  hybrid-sleep                        Hibernate and suspend the system\n"
+                "  suspend-then-hibernate              Suspend the system, wake after a period of\n"
+@@ -1070,6 +1071,7 @@ static int systemctl_main(int argc, char *argv[]) {
+                 { "reboot",                VERB_ANY, 2,        VERB_ONLINE_ONLY, start_system_special    },
+                 { "kexec",                 VERB_ANY, 1,        VERB_ONLINE_ONLY, start_system_special    },
+                 { "suspend",               VERB_ANY, 1,        VERB_ONLINE_ONLY, start_system_special    },
++                { "deepsleep",             VERB_ANY, 1,        VERB_ONLINE_ONLY, start_system_special    },
+                 { "hibernate",             VERB_ANY, 1,        VERB_ONLINE_ONLY, start_system_special    },
+                 { "hybrid-sleep",          VERB_ANY, 1,        VERB_ONLINE_ONLY, start_system_special    },
+                 { "suspend-then-hibernate",VERB_ANY, 1,        VERB_ONLINE_ONLY, start_system_special    },
+@@ -1183,6 +1185,7 @@ static int run(int argc, char *argv[]) {
+
+         case ACTION_EXIT:
+         case ACTION_SUSPEND:
++        case ACTION_DEEPSLEEP:
+         case ACTION_HIBERNATE:
+         case ACTION_HYBRID_SLEEP:
+         case ACTION_SUSPEND_THEN_HIBERNATE:
+diff --git a/src/systemctl/systemctl.h b/src/systemctl/systemctl.h
+index d6b9d7495c..a5b14ac222 100644
+--- a/src/systemctl/systemctl.h
++++ b/src/systemctl/systemctl.h
+@@ -17,6 +17,7 @@ enum action {
+         ACTION_KEXEC,
+         ACTION_EXIT,
+         ACTION_SUSPEND,
++        ACTION_DEEPSLEEP,
+         ACTION_HIBERNATE,
+         ACTION_HYBRID_SLEEP,
+         ACTION_SUSPEND_THEN_HIBERNATE,
+diff --git a/units/deepsleep.target b/units/deepsleep.target
+new file mode 100644
+index 0000000000..e300fe393d
+--- /dev/null
++++ b/units/deepsleep.target
+@@ -0,0 +1,16 @@
++#  SPDX-License-Identifier: LGPL-2.1-or-later
++#
++#  This file is part of systemd.
++#
++#  systemd is free software; you can redistribute it and/or modify it
++#  under the terms of the GNU Lesser General Public License as published by
++#  the Free Software Foundation; either version 2.1 of the License, or
++#  (at your option) any later version.
++
++[Unit]
++Description=Deepsleep
++Documentation=man:systemd.special(7)
++DefaultDependencies=no
++Requires=systemd-deepsleep.service
++After=systemd-deepsleep.service
++StopWhenUnneeded=yes
+diff --git a/units/meson.build b/units/meson.build
+index a9bf28f6d9..76f1c0c3b9 100644
+--- a/units/meson.build
++++ b/units/meson.build
+@@ -20,6 +20,7 @@ units = [
+          'sysinit.target.wants/'],
+         ['dev-mqueue.mount',                    '',
+          'sysinit.target.wants/'],
++        ['deepsleep.target',                    ''],
+         ['emergency.target',                    ''],
+         ['exit.target',                         ''],
+         ['factory-reset.target',                ''],
+@@ -234,6 +235,7 @@ in_units = [
+         ['systemd-resolved.service',             'ENABLE_RESOLVE'],
+         ['systemd-rfkill.service',               'ENABLE_RFKILL'],
+         ['systemd-suspend.service',              ''],
++        ['systemd-deepsleep.service',            ''],
+         ['systemd-sysctl.service',               '',
+          'sysinit.target.wants/'],
+         ['systemd-timedated.service',            'ENABLE_TIMEDATED',
+diff --git a/units/systemd-deepsleep.service.in b/units/systemd-deepsleep.service.in
+new file mode 100644
+index 0000000000..640b3dcc35
+--- /dev/null
++++ b/units/systemd-deepsleep.service.in
+@@ -0,0 +1,19 @@
++#  SPDX-License-Identifier: LGPL-2.1-or-later
++#
++#  This file is part of systemd.
++#
++#  systemd is free software; you can redistribute it and/or modify it
++#  under the terms of the GNU Lesser General Public License as published by
++#  the Free Software Foundation; either version 2.1 of the License, or
++#  (at your option) any later version.
++
++[Unit]
++Description=System Deepsleep
++Documentation=man:systemd-suspend.service(8)
++DefaultDependencies=no
++Requires=sleep.target
++After=sleep.target
++
++[Service]
++Type=oneshot
++ExecStart={{ROOTLIBEXECDIR}}/systemd-sleep deepsleep
+--
+2.17.1
+

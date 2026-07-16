@@ -1,0 +1,46 @@
+From 1f2d95f6081dab5c3794276590aad287c996252c Mon Sep 17 00:00:00 2001
+From: ziqic <quic_ziqic_01@quicinc.com>
+Date: Wed, 26 Apr 2023 10:55:59 +0800
+Subject: [PATCH] systemd: assign prime core to manager_dispatch_load_queue
+
+Assign prime core to manager_dispatch_load_queue to optimize bootkpi.
+It can save about 60ms.
+
+Upstream-Status:Inappropriate [configuration]
+
+Signed-off-by: ziqic <quic_ziqic_01@quicinc.com>
+---
+ src/core/manager.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/src/core/manager.c b/src/core/manager.c
+index 12c49e7fca..3c8db636ac 100644
+--- a/src/core/manager.c
++++ b/src/core/manager.c
+@@ -2046,6 +2046,11 @@ unsigned manager_dispatch_load_queue(Manager *m) {
+         /* Dispatches the load queue. Takes a unit from the queue and
+          * tries to load its data until the queue is empty */
+
++        cpu_set_t cpu_set;
++        CPU_ZERO(&cpu_set);
++        CPU_SET(0, &cpu_set);
++        sched_setaffinity(0, sizeof(cpu_set_t), &cpu_set);
++
+         while ((u = m->load_queue)) {
+                 assert(u->in_load_queue);
+
+@@ -2053,6 +2058,11 @@ unsigned manager_dispatch_load_queue(Manager *m) {
+                 n++;
+         }
+
++        for (int i = 0; i < 8; i++) {
++                CPU_SET(i, &cpu_set);
++        }
++        sched_setaffinity(0, sizeof(cpu_set_t), &cpu_set);
++
+         m->dispatching_load_queue = false;
+
+         /* Dispatch the units waiting for their target dependencies to be added now, as all targets that we know about
+--
+2.25.1
+
