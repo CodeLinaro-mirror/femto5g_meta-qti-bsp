@@ -10,6 +10,7 @@ SRC_URI:append = " \
     file://60-misc.rules \
     file://0001-systemd-config-linger-for-root-user.patch \
     file://0035-systemd-Change-job-print-method-to-Normal-way.patch \
+    file://0036-systemd-logind-handle-qcom-power-mode-on-sleep-events.patch \
 "
 
 SRC_URI:append:quin-gvm-gen4-5 = " file://70-vblk.rules"
