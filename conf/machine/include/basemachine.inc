@@ -10,3 +10,4 @@ BASEMACHINE_ARCH = "${@['${MACHINE_ARCH}', '${BASEMACHINE}']['${BASEMACHINE}' !=
 # This variable is originally set in bitbake.conf
 PACKAGE_ARCHS .= "${@['', ' ${BASEMACHINE_ARCH}']['${BASEMACHINE_ARCH}' != '${MACHINE_ARCH}']}"
 PACKAGE_ARCHS[vardepsexclude] += "BASEMACHINE_ARCH"
+MACHINE_FEATURES_BACKFILL += "qti-hdcp"
