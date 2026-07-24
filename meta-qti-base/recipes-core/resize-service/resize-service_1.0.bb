@@ -31,6 +31,8 @@ do_install() {
         sed -i    's/dev-disk-by\\x2dpartlabel-userdata/dev-vdb/g' ${S}/resize-userdata.service
         sed -i    's/dev-disk-by-partlabel-userdata/dev-vdb/g' ${S}/resize-userdata.service
         sed -i    's/\/dev\/disk\/by-partlabel\/userdata/\/dev\/vdb/g' ${S}/resize-userdata.service
+        sed -i    's/Before=systemd-fsck@dev-vdb.service/After=systemd-fsck@dev-vdb.service/' ${S}/resize-userdata.service
+        sed -i    's|ExecStart=/lib/systemd/systemd-fsck /dev/vdb ; |ExecStart=|' ${S}/resize-userdata.service
     fi
     install -d ${D}${systemd_unitdir}/system
     install -m 0644 ${S}/resize-userdata.service ${D}${systemd_unitdir}/system/resize-userdata.service
