@@ -122,7 +122,7 @@ do_deploy() {
 
     install -d ${DEPLOYDIR}/kernel_dtbs
     for dtbof in ${TARGET_DTBS}; do
-        path=$(find -L ${WORKDIR} -name "$dtbof" -print -quit)
+        path=$(find -L ${B} -name "$dtbof" -print -quit)
         if [ -n "$path" ]; then
             install -m 0644 "$path" "${DEPLOYDIR}/kernel_dtbs"
         else
