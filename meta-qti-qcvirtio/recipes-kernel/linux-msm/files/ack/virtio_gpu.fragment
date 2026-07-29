@@ -1,0 +1,13 @@
+# virtio_gpu.fragment
+#
+# Kernel config fragment for virtio-gpu OOT module support.
+# Applied via auto.conf.soc to the soc-repo OOT make build.
+#
+# ACK-sourced modules (source copied from common/ by copy_common_sources()):
+#   CONFIG_VIRTIO_DMA_SHARED_BUFFER -> common/drivers/virtio/virtio_dma_buf.c
+#                                      (selected by DRM_VIRTIO_GPU)
+#   CONFIG_DRM_VIRTIO_GPU           -> common/drivers/gpu/drm/virtio/
+
+CONFIG_VIRTIO_DMA_SHARED_BUFFER=m
+CONFIG_DRM_VIRTIO_GPU=m
+CONFIG_DRM_VIRTIO_GPU_KMS=y
