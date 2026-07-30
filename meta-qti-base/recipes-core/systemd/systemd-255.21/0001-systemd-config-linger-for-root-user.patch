@@ -1,0 +1,28 @@
+From fb4b7c9f4cbc84f3a25fb6f72aa9ba42f9e51c92 Mon Sep 17 00:00:00 2001
+From: Naiwen Yu <quic_naiwyu@quicinc.com>
+Date: Tue, 4 Jul 2023 14:06:59 +0800
+Subject: [PATCH] systemd: config linger for root user
+
+Modification: config linger for user root to avoid weston socket disappear
+after resume from LPM.
+
+Upstream-Status: Inappropriate
+Change-Id:fb4b7c9f4cbc84f3a25fb6f72aa9ba42f9e51c92
+Signed-off-by: Naiwen Yu <quic_naiwyu@quicinc.com>
+---
+ units/systemd-user-sessions.service.in | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/units/systemd-user-sessions.service.in b/units/systemd-user-sessions.service.in
+index adca848c2a..a3ab12945f 100644
+--- a/units/systemd-user-sessions.service.in
++++ b/units/systemd-user-sessions.service.in
+@@ -16,4 +16,5 @@ After=remote-fs.target nss-user-lookup.target network.target home.mount
+ Type=oneshot
+ RemainAfterExit=yes
+ ExecStart={{LIBEXECDIR}}/systemd-user-sessions start
++ExecStartPost=/bin/loginctl enable-linger root
+ ExecStop={{LIBEXECDIR}}/systemd-user-sessions stop
+--
+2.25.1
+

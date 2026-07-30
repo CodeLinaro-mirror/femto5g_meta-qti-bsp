@@ -1,0 +1,39 @@
+From 44dca1f1b84dd1352ffd1cd7abb6fabf1ddb4222 Mon Sep 17 00:00:00 2001
+From: pengy <quic_pengy@quicinc.com>
+Date: Thu, 23 May 2024 14:23:58 +0800
+Subject: [PATCH] systemd: avoid active seat change to NULL
+
+Modification: avoid active seat change to NULL in case VT change to one without seat.
+
+Upstream-Status: Inappropriate
+Change-Id: ecb5ac80d4043a28b66ccf5478f631e3a5c646e0
+Signed-off-by: Naiwen Yu <quic_naiwyu@quicinc.com>
+---
+ src/login/logind-seat.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/src/login/logind-seat.c b/src/login/logind-seat.c
+index 8d875d2ea7..9e0397d75d 100644
+--- a/src/login/logind-seat.c
++++ b/src/login/logind-seat.c
+@@ -379,6 +379,16 @@ int seat_active_vt_changed(Seat *s, unsigned vtnr) {
+                                 break;
+                         }
+ 
++        /* In case VT switch from one with seat to one without seat,
++         * seat will be deactivated, weston started with that seat
++         * will also be deactivated. Since VT switch to one without
++         * seat is abnormal, we could avoid active seat change in
++         * that case.
++         */
++        if((new_active == NULL) && (s->active != NULL)) {
++            new_active = s->active;
++        }
++
+         r = seat_set_active(s, new_active);
+         manager_spawn_autovt(s->manager, vtnr);
+ 
+-- 
+2.25.1
+
+
