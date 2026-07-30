@@ -42,6 +42,8 @@ EXTRA_OEMESON:append = " \
 
 EXTRA_OEMESON:remove:quin-gvm-gen4 = "-Dmmmcolorfmt=true"
 EXTRA_OEMESON:remove:qtiquingvm8295 = "-Dmmmcolorfmt=true"
+EXTRA_OEMESON:append:quin-gvm-gen4 = " -Dmmmcolorfmt=false"
+EXTRA_OEMESON:append:qtiquingvm8295 = " -Dmmmcolorfmt=false"
 
 SOLIBS = ".so"
 FILES_SOLIBSDEV = ""

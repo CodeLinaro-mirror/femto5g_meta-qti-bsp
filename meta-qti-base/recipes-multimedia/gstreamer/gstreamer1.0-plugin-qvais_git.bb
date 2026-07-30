@@ -28,6 +28,9 @@ inherit meson pkgconfig
 CFLAGS += "-I${STAGING_INCDIR}/${PREFERRED_PROVIDER_virtual/kernel}"
 CXXFLAGS += "-I${STAGING_INCDIR}/${PREFERRED_PROVIDER_virtual/kernel}"
 
+EXTRA_OEMESON:append:quin-gvm-gen4 = " -Dmmmcolorfmt=false"
+EXTRA_OEMESON:append:qtiquingvm8295 = " -Dmmmcolorfmt=false"
+
 SOLIBS = ".so"
 FILES_SOLIBSDEV = ""
 
