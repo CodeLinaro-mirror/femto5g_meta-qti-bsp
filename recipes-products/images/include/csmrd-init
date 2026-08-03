@@ -428,7 +428,7 @@ retrive_host_ip() {
         echo "Remaining time: $count seconds"
 
         # check if /dev/mhi_pipe_16 is accesssible.
-        wait_for_mhi_ch $ctrl_dev 5
+        wait_for_mhi_ch $ctrl_dev 10
         ret="$?"
         if [ "$ret" -eq 0 ]; then
               success_mhi=1
