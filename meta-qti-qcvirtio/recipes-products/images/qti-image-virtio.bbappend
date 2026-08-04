@@ -8,3 +8,5 @@ IMAGE_INSTALL:append = " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'opengl', \
         'mesa-megadriver libgallium libegl-mesa libgles2-mesa libgbm', '', d)} \
 "
+
+IMAGE_INSTALL += "gstreamer1.0 gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad"
