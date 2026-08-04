@@ -89,9 +89,6 @@ VOLATILE_BINDS_sa525m = "\
 
 VOLATILE_BINDS_sa515m = "\
 /systemrw/adb_devid  /etc/adb_devid\n\
-/systemrw/data /etc/data/\n\
-/systemrw/data/adpl /etc/data/adpl/\n\
-/systemrw/data/usb /etc/data/usb/\n\
 /systemrw/data/ipa /etc/data/ipa/\n\
 /systemrw/rt_tables /etc/data/iproute2/rt_tables\n\
 /systemrw/boot_hsusb_comp /etc/usb/boot_hsusb_comp\n\
