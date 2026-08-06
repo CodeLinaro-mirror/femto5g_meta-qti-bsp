@@ -11,6 +11,7 @@ DISTRO_FEATURES:append:qtiquingvm8295 = " qti-codec2 qti-gstdeinterlace qti-gstq
 DISTRO_FEATURES:append:quin-gvm-gen4 = " qti-codec2 qti-gstdeinterlace qti-gstqvrate qti-gstqvais"
 DISTRO_FEATURES:append:quin-gvm-gen4-5 = " qti-codec2 qti-gstdeinterlace qti-gstqcarcamsrc"
 DISTRO_FEATURES:append:gvm-gen4-5 = " qti-codec2 qti-gstdeinterlace"
+DISTRO_FEATURES:append:gvm-gen5 = " qti-codec2 qti-gstdeinterlace"
 
 # Vnw
 DISTRO_FEATURES:append:qtiquingvm = " qti-gstopenavb"
@@ -24,6 +25,7 @@ DISTRO_FEATURES:append:quin-gvm-lemans = " qti-qcx"
 DISTRO_FEATURES:append:quin-gvm-monaco = " qti-qcx"
 DISTRO_FEATURES:append:quin-gvm-gen4-5 = " qti-qcx"
 DISTRO_FEATURES:append:gvm-gen4-5 = " qti-qcx"
+DISTRO_FEATURES:append:gvm-gen5 = " qti-qcx"
 
 # Display
 DISTRO_FEATURES:append = " wayland"
