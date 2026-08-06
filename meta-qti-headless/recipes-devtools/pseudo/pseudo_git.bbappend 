@@ -1,0 +1,3 @@
+FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
+
+SRC_URI:append:quin-tgvm-gen4 = " file://0001-pseudo-avoid-openat2-via-syscall.patch"
