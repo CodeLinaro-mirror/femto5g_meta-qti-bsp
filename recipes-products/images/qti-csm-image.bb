@@ -52,6 +52,7 @@ CORE_IMAGE_EXTRA_INSTALL += "\
               resize-data \
               collect-shutdown-logs \
               process-monitor \
+              bist \
 "
 
 do_merge_dtbs() {
