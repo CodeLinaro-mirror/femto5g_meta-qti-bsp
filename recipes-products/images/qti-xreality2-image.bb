@@ -17,6 +17,5 @@ CORE_IMAGE_EXTRA_INSTALL:remove:seraph = " \
 
 CORE_IMAGE_EXTRA_INSTALL:append:seraph = " \
     userspace-resource-manager \
-    userspace-resource-manager-extensions \
 "
 CORE_IMAGE_EXTRA_INSTALL:append:seraph = " packagegroup-qcom-sensors"
