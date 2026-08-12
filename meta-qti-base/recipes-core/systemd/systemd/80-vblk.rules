@@ -1,0 +1,20 @@
+# Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+# Set virtio device and partition mapping in this file
+# This mapping should be match with linux-lv-mt.dtsi in hypervisor
+
+ACTION=="remove", GOTO="rename_blkdev_end"
+KERNEL=="vda", SYMLINK+="block/platform/lv_system_a"
+KERNEL=="vdb", SYMLINK+="block/platform/lv_userdata"
+KERNEL=="vdc", SYMLINK+="block/platform/lv_persist"
+KERNEL=="vdd", SYMLINK+="block/platform/bluetooth"
+KERNEL=="vde", SYMLINK+="block/platform/modem"
+KERNEL=="vdf", SYMLINK+="block/platform/lv_vbmeta_a"
+KERNEL=="vdg", SYMLINK+="block/platform/dsplib"
+KERNEL=="vdh", SYMLINK+="block/platform/lv_system_b"
+KERNEL=="vdi", SYMLINK+="block/platform/lv_vbmeta_b"
+KERNEL=="vdj", SYMLINK+="block/platform/lv_boot_a"
+KERNEL=="vdk", SYMLINK+="block/platform/lv_boot_b"
+KERNEL=="vdl", SYMLINK+="block/platform/lv_misc"
+LABEL="rename_blkdev_end"

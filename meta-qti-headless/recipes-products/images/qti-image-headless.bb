@@ -37,6 +37,8 @@ IMAGE_INSTALL += "\
     libcap \
     libcap-bin \
     attr \
+    abctl \
+    ab-status-updater \
     ${@bb.utils.contains('PREFERRED_VERSION_linux-msm', '6.12', 'kernel-modules', '', d)} \
     ${@bb.utils.contains('PREFERRED_PROVIDER_virtual/kernel', 'linux-ack', 'soc-modules', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'qti-security', 'securemsmdlkm', '', d)}  \
