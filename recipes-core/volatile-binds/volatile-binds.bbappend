@@ -110,3 +110,58 @@ VOLATILE_BINDS_sa415m = "\
 /systemrw/boot_hsusb_comp /etc/usb/boot_hsusb_comp\n\
 /systemrw/boot_hsic_comp /etc/usb/boot_hsic_comp\n\
 "
+
+
+do_compile () {
+    while read spec mountpoint rest; do
+        if [ -z "$spec" ]; then
+            continue
+        fi
+        servicefile="$(echo "${spec#/}" | tr / -).service"
+        [ "$mountpoint" != ${localstatedir}/lib ] || var_lib_servicefile=$servicefile
+       # defaults
+       target="basic.target"
+       before_services=""
+       after_services=""
+       for token in $rest; do
+          case $token in
+              target=*)
+                  target="${token#target=}"
+                  ;;
+              before=*)
+                  before_services="${token#before=}"
+                  ;;
+              after=*)
+                  after_services="${token#after=}"
+                  ;;
+           esac
+        done
+        sed -e "s#@what@#$spec#g; s#@where@#$mountpoint#g" \
+            -e "s#@whatparent@#${spec%/*}#g; s#@whereparent@#${mountpoint%/*}#g" \
+            -e "s#@avoid_overlayfs@#${@d.getVar('AVOID_OVERLAYFS')}#g" \
+            -e "s/basic.target/${target}/g" \
+            volatile-binds.service.in >$servicefile
+       if [ -n "$before_services" ]; then
+            sed -i -e "/^Before=/s/$/ $before_services/" \
+                   $servicefile
+       fi
+       if [ -n "$after_services" ]; then
+            sed -i -e "/^After=/s/$/ $after_services/" \
+                   $servicefile
+       fi
+       if [ "$target" = "multi-user.target" ]; then
+            echo $servicefile
+            sed -i "/^DefaultDependencies=no$/d"  $servicefile
+       fi
+    done <<END
+${@d.getVar('VOLATILE_BINDS').replace("\\n", "\n")}
+END
+    if [ -e "$var_lib_servicefile" ]; then
+        # As the seed is stored under /var/lib, ensure that this service runs
+        # after the volatile /var/lib is mounted.
+        sed -i -e "/^Before=/s/\$/ systemd-random-seed.service/" \
+               -e "/^WantedBy=/s/\$/ systemd-random-seed.service/" \
+               "$var_lib_servicefile"
+    fi
+}
+do_compile[dirs] = "${WORKDIR}"
