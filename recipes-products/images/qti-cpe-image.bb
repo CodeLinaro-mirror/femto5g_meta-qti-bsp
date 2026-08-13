@@ -13,7 +13,7 @@ IMAGE_FEATURES:append:qti-distro-base-user = " gluebi"
 IMAGE_INSTALL:append = "${@bb.utils.contains('DISTRO_FEATURES', 'apparmor', ' apparmor rdk-apparmor-profiles ', '', d)}"
 
 IMAGE_INSTALL:append = "\
-${@bb.utils.contains('BBFILE_COLLECTIONS', 'qti-rdkb', 'packagegroup-rdkb', '', d)} \
+${@bb.utils.contains('MACHINE', 'echo-min', '', bb.utils.contains('BBFILE_COLLECTIONS', 'qti-rdkb', 'packagegroup-rdkb', '', d), d)} \
 "
 
 CORE_IMAGE_EXTRA_INSTALL += "\
@@ -64,3 +64,14 @@ CORE_IMAGE_EXTRA_INSTALL += "bash"
 CORE_IMAGE_EXTRA_INSTALL += "packagegroup-qcom-audio"
 
 CORE_IMAGE_EXTRA_INSTALL += "packagegroup-qcom-sensors"
+
+# audio/location/ssdk/mac80211/data/fastrpc support is not yet enabled for echo-min.
+CORE_IMAGE_EXTRA_INSTALL:remove = "${@bb.utils.contains('MACHINE', 'echo-min', '\
+    packagegroup-qcom-audio \
+    packagegroup-qti-location \
+    packagegroup-qti-ssdk \
+    packagegroup-open-mac80211 \
+    packagegroup-qti-data \
+    packagegroup-rdkb \
+    packagegroup-qti-fastrpc \
+', '', d)}"
