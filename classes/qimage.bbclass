@@ -153,6 +153,11 @@ do_deploy_fixup () {
        install -m 0644 ${DEPLOY_DIR_IMAGE}/recoveryfs.ubi .
     fi
 
+    # Copy DCP bins
+    if [ -f ${DEPLOY_DIR_IMAGE}/dcp.bin ]; then
+       install -m 0644 ${DEPLOY_DIR_IMAGE}/dcp.bin .
+    fi
+
 }
 addtask do_deploy_fixup after do_rootfs before do_image
 

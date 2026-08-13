@@ -14,7 +14,7 @@ hypvm.mbn               /dev/block/bootdevice/by-name/hyp
 hypvmperformance.mbn    /dev/block/bootdevice/by-name/hyp
 NON-HLOS.bin            /dev/block/bootdevice/by-name/modem
 BTFM.bin                /dev/block/bootdevice/by-name/bluetooth
-abl.bin                 /dev/block/bootdevice/by-name/android_esp
+abl.elf                 /dev/block/bootdevice/by-name/android_esp
 dspso.bin               /dev/block/bootdevice/by-name/dsp
 km41.mbn                /dev/block/bootdevice/by-name/keymaster
 keymint.mbn             /dev/block/bootdevice/by-name/keymaster

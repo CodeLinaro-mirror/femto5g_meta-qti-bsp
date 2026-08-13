@@ -12,14 +12,13 @@ CORE_IMAGE_EXTRA_INSTALL:remove:seraph = " \
     packagegroup-qti-gst \
     packagegroup-qti-eva \
     packagegroup-qti-ppat \
+    packagegroup-qti-securemsm \
     packagegroup-qti-mmframeworks \
     packagegroup-qti-sensors-see \
     packagegroup-qti-test-sensors-see \
     packagegroup-qti-qesdk-core \
     packagegroup-qti-dcf-lib \
     packagegroup-qti-dcf-hal \
-    powerapp \
-    powerapp-powerconfig \
     libmeminfo \
     kernel-modules \
 "
