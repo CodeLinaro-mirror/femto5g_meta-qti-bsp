@@ -35,12 +35,9 @@ CFLAGS:remove:quin-gvm-gen4 = "-I${STAGING_INCDIR}/${PREFERRED_PROVIDER_virtual/
 CFLAGS:remove:qtiquingvm8295 = "-I${STAGING_INCDIR}/${PREFERRED_PROVIDER_virtual/kernel}/display"
 
 EXTRA_OEMESON:append = " \
-    -Dmmmcolorfmt=true \
     ${@bb.utils.contains('MACHINE_FEATURES', 'qti-umd', '-Duseumd=true', '', d)} \
 "
 
-EXTRA_OEMESON:remove:quin-gvm-gen4 = "-Dmmmcolorfmt=true"
-EXTRA_OEMESON:remove:qtiquingvm8295 = "-Dmmmcolorfmt=true"
 EXTRA_OEMESON:append:quin-gvm-gen4 = " -Dmmmcolorfmt=false"
 EXTRA_OEMESON:append:qtiquingvm8295 = " -Dmmmcolorfmt=false"
 
