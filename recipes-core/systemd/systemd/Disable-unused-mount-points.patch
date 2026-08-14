@@ -41,9 +41,7 @@ index 7917968497..3e9a25eaf0 100644
  #if ENABLE_SMACK
          { "smackfs",     "/sys/fs/smackfs",           "smackfs",    "smackfsdef=*",                            MS_NOSUID|MS_NOEXEC|MS_NODEV,
            mac_smack_use, MNT_FATAL                  },
-@@ -102,8 +102,8 @@ static const MountPoint mount_table[] = {
-           cg_is_legacy_wanted, MNT_IN_CONTAINER     },
-         { "cgroup",      "/sys/fs/cgroup/systemd",    "cgroup",     "none,name=systemd",                       MS_NOSUID|MS_NOEXEC|MS_NODEV,
+@@ -104,4 +104,4 @@ static const MountPoint mount_table[] = {
            cg_is_legacy_wanted, MNT_FATAL|MNT_IN_CONTAINER },
 -        { "pstore",      "/sys/fs/pstore",            "pstore",     NULL,                                      MS_NOSUID|MS_NOEXEC|MS_NODEV,
 -          NULL,          MNT_NONE                   },
