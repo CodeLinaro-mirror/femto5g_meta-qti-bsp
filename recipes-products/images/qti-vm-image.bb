@@ -21,8 +21,8 @@ CORE_IMAGE_EXTRA_INSTALL += " ${@oe.utils.conditional('ENABLE_DISPLAY', 'True', 
 CORE_IMAGE_EXTRA_INSTALL += " ${@oe.utils.conditional('ENABLE_TOUCH', 'True', 'packagegroup-qti-touch', '', d)}"
 CORE_IMAGE_EXTRA_INSTALL += " ${@oe.utils.conditional('ENABLE_SECUREMSM', 'True', 'packagegroup-qti-securemsm', '', d)}"
 CORE_IMAGE_EXTRA_INSTALL += " ${@oe.utils.conditional('ENABLE_MINK', 'True', 'packagegroup-qti-mink', '', d)}"
-CORE_IMAGE_EXTRA_INSTALL += " ${@bb.utils.contains_any('MACHINE', 'trustedvm-v3 trustedvm-v4', 'dsp-devicetree', '', d)}"
-CORE_IMAGE_EXTRA_INSTALL += " ${@bb.utils.contains_any('MACHINE', 'trustedvm-v2 trustedvm-v2-1 trustedvm-v3 trustedvm-v4 trustedvm-neo', 'fastrpc-kernel', '', d)}"
+CORE_IMAGE_EXTRA_INSTALL += " ${@bb.utils.contains_any('MACHINE', 'trustedvm-v3 trustedvm-v4 trustedvm-v2-2', 'dsp-devicetree', '', d)}"
+CORE_IMAGE_EXTRA_INSTALL += " ${@bb.utils.contains_any('MACHINE', 'trustedvm-v2 trustedvm-v2-1 trustedvm-v3 trustedvm-v4 trustedvm-v2-2 trustedvm-neo', 'fastrpc-kernel', '', d)}"
 CORE_IMAGE_EXTRA_INSTALL += " ${@bb.utils.contains('MACHINE_FEATURES', 'vm-dynamic-memresize', 'psi-daemon', '', d)}"
 
 #Exclude packages

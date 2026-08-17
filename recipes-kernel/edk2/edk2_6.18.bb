@@ -1,15 +1,15 @@
-inherit deploy python3native
+inherit deploy python3native qsigning
 DESCRIPTION = "UEFI bootloader"
-LICENSE = "BSD-3-Clause"
+LICENSE = "BSD-2-Clause-Patent"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta/files/common-licenses/\
-${LICENSE};md5=550794465ba0ec5312d6919e203a55f9"
+${LICENSE};md5=0518d409dae93098cca8dfa932f3ab1b"
 
 BUILD_OS = "linux"
 
 DEPENDS += "util-linux-native"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
-FILESEXTRAPATHS:prepend := "${WORKSPACE}/kernel-6.1/kernel_platform/bootable/bootloader/:"
+FILESEXTRAPATHS:prepend := "${WORKSPACE}/bootable/bootloader/:"
 
 SRC_URI = "file://edk2"
 S         =  "${WORKDIR}/edk2"
@@ -38,18 +38,18 @@ HIBERNATION_PARTITION = "${@d.getVar('HIBERNATION_PARTITION_NAME') or 'none'}"
 
 TARGET_HIBERNATION_TZ_ENC = "${@bb.utils.contains('HIBERNATION_TZ_ENC', 'True', '1', '0', d)}"
 
-TARGET_HIBERNATION_SUPPORT_AES= "${@bb.utils.contains('HIBERNATION_AES', 'True', '1', '0', d)}"
-
 EXTRA_OEMAKE = " \
     'TARGET_ARCHITECTURE=${TARGET_ARCH}' \
     'BUILDDIR=${B}' \
     'BOOTLOADER_OUT=${B}/out' \
+    'BOOTLOADER_PLATFORM=${BASEMACHINE}' \
     'ENABLE_LE_VARIANT=true' \
     'ENABLE_SYSTEMD_BOOTSLOT=${SYSTEMD_BOOTSLOT_ENABLED}'\
     'ENABLE_DM_MOD_FOR_KERNEL5_4=${DM_MOD_FOR_KERNEL5_4}'\
     'VERIFIED_BOOT_ENABLED=${AVB}' \
     'VERIFIED_BOOT_LE=${VBLE}' \
     'VERITY_LE=${VERITY_ENABLED}' \
+    'USER_BUILD_VARIANT=0' \
     'EDK_TOOLS_PATH=${S}/BaseTools' \
     'EARLY_ETH_ENABLED=${EARLY_ETH}' \
     'OVERRIDE_ABL_LOAD_ADDRESS=${ABL_LOAD_ADDRESS}' \
@@ -57,7 +57,6 @@ EXTRA_OEMAKE = " \
     'TARGET_SUPPORTS_EARLY_USB_INIT=${EARLY_USB_INIT}' \
     'HIBERNATION_SUPPORT_NO_AES=${TARGET_HIBERNATION_NO_AES}' \
     'HIBERNATION_PARTITION_NAME=${HIBERNATION_PARTITION}' \
-    'HIBERNATION_SUPPORT_AES=${TARGET_HIBERNATION_SUPPORT_AES}' \
     'HIBERNATION_TZ_ENCRYPTION=${TARGET_HIBERNATION_TZ_ENC}' \
 "
 # Nested quotes and escape characters as per CLANG needs.
@@ -68,15 +67,28 @@ NAND_SQUASHFS_SUPPORT = "${@bb.utils.contains('DISTRO_FEATURES', 'nand-squashfs'
 EXTRA_OEMAKE:append = " 'NAND_SQUASHFS_SUPPORT=${NAND_SQUASHFS_SUPPORT}'"
 EXTRA_OEMAKE:append:qti-distro-base-user = " 'VERITY_LE_USE_EXT4_GLUEBI=1'"
 
+# Echo only: toolchain prefix (Yocto cross)
+EXTRA_OEMAKE:append:echo = " 'GCC13_AARCH64_PREFIX=${STAGING_BINDIR_TOOLCHAIN}/${TARGET_PREFIX}'"
+
+TOOLCHAIN_GCC_MAJOR = "${@((d.getVar('GCCVERSION') or d.getVar('GCC_VERSION') or '0').split('.')[0].strip('%').strip())}"
+EXTRA_OEMAKE:append = " 'TOOLCHAIN_GCC_MAJOR=${TOOLCHAIN_GCC_MAJOR}' "
+EXTRA_OEMAKE:append:echo = " 'GCC${TOOLCHAIN_GCC_MAJOR}_AARCH64_PREFIX=${STAGING_BINDIR_TOOLCHAIN}/${TARGET_PREFIX}'"
+
+
+# Drop stale EDK2 config so it doesn't reuse Conf/BuildEnv.sh etc.
+do_compile:prepend() {
+    rm -f ${S}/Conf/*
+}
+
 do_compile () {
-    export BUILD_CC="clang"
-    export CC=${STAGING_BINDIR_NATIVE}/clang/bin/clang
-    export CXX=${STAGING_BINDIR_NATIVE}/clang/bin/clang++
-    export LD=${STAGING_BINDIR_NATIVE}/clang/bin/clang/bin/ld.lld
-    export AR=${BUILD_AR}
-    export PATH="${STAGING_BINDIR_NATIVE}/clang/bin/:${PATH}"
+    export CC="${CC}"
+    export CXX="${CXX}"
+    export LD="${LD}"
+    export AR="${AR}"    
     oe_runmake -f makefile all
 }
+
+do_compile[postfuncs] = 'sign_abl'
 
 do_install[noexec]="1"
 do_configure[noexec]="1"

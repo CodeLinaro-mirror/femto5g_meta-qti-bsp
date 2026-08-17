@@ -51,8 +51,11 @@ RECOVERY_SYSTEMRW_VOLUME_SIZE ?= "4MiB"
 RECOVERYFS_SIZE_EXT4 ?= "100000000"
 RECOVOERY_EXT4_IMAGE = "recoveryfs.img"
 
-RECOVERY_UBI_SELINUX_OPTIONS = "${@bb.utils.contains('DISTRO_FEATURES', 'selinux', '--selinux=${SELINUX_FILE_CONTEXTS}', '', d)}"
-RECOVERY_EXT4_SELINUX_OPTIONS = "${@bb.utils.contains('DISTRO_FEATURES', 'selinux', '-S ${SELINUX_FILE_CONTEXTS}', '', d)}"
+RECOVERY_UBI_SELINUX_OPTIONS = "${@bb.utils.contains('DISTRO_FEATURES', 'selinux', '--selinux=' + (d.getVar('SELINUX_FILE_CONTEXTS') or ''), '', d)}"
+RECOVERY_EXT4_SELINUX_OPTIONS = "${@ '-S ' + d.getVar('SELINUX_FILE_CONTEXTS') if bb.utils.contains('DISTRO_FEATURES', 'selinux', True, False, d) and d.getVar('SELINUX_FILE_CONTEXTS') else '' }"
+
+
+RECOVERY_EXT4_NON_AB_BOOT = "${@bb.utils.contains('COMBINED_FEATURES', 'qti-ab-boot', 'false', 'true', d)}"
 
 # Update usb composition in recovery mode
 RECOVERY_USBCOMPOSITION ?= "901D"
@@ -110,7 +113,7 @@ create_system_dir() {
 
 # Below is to generate sparse ext4 recovery image (OE by default supports raw ext4 images)
 do_create_recoveryfs_ext4() {
-    if ${@bb.utils.contains('COMBINED_FEATURES', 'qti-ab-boot', 'false', 'true', d)}; then
+    if ${RECOVERY_EXT4_NON_AB_BOOT}; then
         make_ext4fs -l ${RECOVERYFS_SIZE_EXT4} ${RECOVOERY_EXT4_IMAGE} -a / ${RECOVERY_EXT4_SELINUX_OPTIONS} ${IMAGE_ROOTFS}
         # Create an unsparse image as well to be included as part of ota target-files
         #simg2img ${RECOVOERY_EXT4_IMAGE} recovery-unsparsed.ext4
