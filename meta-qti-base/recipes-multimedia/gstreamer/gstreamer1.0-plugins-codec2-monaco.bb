@@ -41,8 +41,6 @@ CXXFLAGS += "\
 "
 
 EXTRA_OEMESON += "\
-    -Dusedmaheap=true \
-    -Dagl-c2service=true \
     -Dav1-dec=enabled \
     -Dmpeg2-dec=disabled \
     -Dqprange_option=op1 \
