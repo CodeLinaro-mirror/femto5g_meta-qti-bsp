@@ -78,8 +78,13 @@ EXTRA_OEMAKE += 'DTC_INCLUDE="${SOC_REPO}/scripts/dtc/include-prefixes/ ${STAGIN
 EXTRA_OEMAKE += 'DTC_FLAGS+="-@"'
 
 do_compile_dtb() {
-    oe_runmake -C ${STAGING_KERNEL_DIR} O=${B} V=1 dtbs \
-        dtstree=soc-repo-ext/arch/arm64/boot/dts/vendor
+    dtb_targets=""
+    for dtbof in ${TARGET_DTBS}; do
+        dtb_targets="$dtb_targets ${dtbof}"
+    done
+    oe_runmake -C ${STAGING_KERNEL_DIR} O=${B} V=1 \
+        dtstree=soc-repo-ext/arch/arm64/boot/dts/vendor/qcom \
+        $dtb_targets
 }
 addtask compile_dtb after do_compile_kernelmodules before do_deploy
 
