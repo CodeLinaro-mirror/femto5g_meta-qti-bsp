@@ -46,6 +46,11 @@ FILES:${PN}-extensions += " \
     ${libdir}/urm/libUrmPlugin.so* \
 "
 
+FILES:${PN}-extensions:seraph = " \
+    ${sysconfdir}/urm/target/* \
+    ${libdir}/urm/libUrmPlugin.so* \
+"
+
 PACKAGE_BEFORE_PN += "${PN}-tests"
 FILES:${PN}-tests += " \
     ${datadir}/urm/tests/configs/* \
