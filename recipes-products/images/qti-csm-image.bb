@@ -54,6 +54,7 @@ CORE_IMAGE_EXTRA_INSTALL += "\
               collect-shutdown-logs \
               process-monitor \
               bist \
+              qsfp-client \
 "
 
 do_merge_dtbs() {
