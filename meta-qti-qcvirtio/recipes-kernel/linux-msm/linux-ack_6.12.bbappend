@@ -4,3 +4,7 @@ QCVIRTIO_LINUX_ACK_FILES := "${THISDIR}/files/ack"
 SRC_URI:append = " file://ack/virtio_camera.fragment"
 
 do_shared_workdir[file-checksums] += "${QCVIRTIO_LINUX_ACK_FILES}/virtio_camera.fragment:True"
+
+SRC_URI:append = " file://ack/virtio_gpu.fragment"
+
+do_shared_workdir[file-checksums] += "${QCVIRTIO_LINUX_ACK_FILES}/virtio_gpu.fragment:True"

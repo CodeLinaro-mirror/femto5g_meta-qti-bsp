@@ -1,0 +1,40 @@
+From 0000000000000000000000000000000000000001 Mon Sep 17 00:00:00 2001
+From: Pavlo Kandrin <pkandrin@qti.qualcomm.com>
+Date: Thu, 6 Aug 2026 15:47:18 +0200
+Subject: [PATCH] soc-repo: virtio-gpu: wire OOT Kbuild Makefile entries
+
+Add drivers/gpu/drm/virtio/ to drivers/Makefile traversal so the
+OOT Kbuild path descends into the virtio-gpu source tree (sources
+are copied from ACK common/ by copy_common_sources at build time).
+
+Wire virtio_dma_buf.o into drivers/virtio/Makefile, required
+because DRM_VIRTIO_GPU selects VIRTIO_DMA_SHARED_BUFFER.
+
+Upstream-Status: Inappropriate [gvm-gen4-5-virtio OOT build only]
+Signed-off-by: Pavlo Kandrin <pkandrin@qti.qualcomm.com>
+---
+ drivers/Makefile        | 1 +
+ drivers/virtio/Makefile | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/drivers/Makefile b/drivers/Makefile
+index be46285123ad..d2954fd5a41d 100644
+--- a/drivers/Makefile
++++ b/drivers/Makefile
+@@ -21,6 +21,7 @@ obj-y += firmware/
+ obj-y += gpio/
+ obj-y += gpu/drm/bridge/
+ obj-y += gpu/drm/display/
++obj-y += gpu/drm/virtio/
+ obj-y += hwmon/
+ obj-y += hwspinlock/
+ obj-y += hwtracing/
+diff --git a/drivers/virtio/Makefile b/drivers/virtio/Makefile
+index ab562b844f13..78129452d92f 100644
+--- a/drivers/virtio/Makefile
++++ b/drivers/virtio/Makefile
+@@ -9,3 +9,4 @@ obj-$(CONFIG_VIRTIO_MMIO) += virtio_mmio.o
+ 
+ obj-$(CONFIG_VIRTIO_INPUT) += virtio_input.o
+ 
++obj-$(CONFIG_VIRTIO_DMA_SHARED_BUFFER) += virtio_dma_buf.o
