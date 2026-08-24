@@ -22,6 +22,7 @@ CORE_IMAGE_EXTRA_INSTALL += "\
                 coreutils \
                 powerapp \
                 powerapp-powerconfig \
+                crash-collect-hlos \
                 powerapp-reboot \
                 powerapp-shutdown \
                 systemd-machine-units \
