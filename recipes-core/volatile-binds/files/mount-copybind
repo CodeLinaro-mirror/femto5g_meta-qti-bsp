@@ -39,41 +39,55 @@ fi
 
 spec=$1
 mountpoint=$2
+mode=$3
 
 if [ -f "$mountpoint" ]; then
     #Skip if already mount-binded
-    if grep -qs $mountpoint /proc/mounts; then
+    if grep -qs "$mountpoint" /proc/mounts; then
         exit 0
     fi
 
     if [ ! -f "$spec" ]; then
-        mkdir -p $(dirname $spec)
+        mkdir -p "$(dirname "$spec")"
         cp -P --preserve=all "$mountpoint" "$spec".tmp
         mv "$spec".tmp "$spec"
     fi
 
-    mount -o "bind" "$spec" "$mountpoint"
+    mount -o "bind" "$spec" "$mountpoint" || { echo >&2 "Failed to bind mount $spec to $mountpoint"; exit 1; }
     test ! -x /sbin/restorecon || /sbin/restorecon "$mountpoint"
 fi
 
 if [ -d "$mountpoint" ]; then
-    mkdir -p $spec
-    cd $mountpoint
-    for file in *
-    do
+    if [ "$mode" = "dir" ] ; then
         #Skip if already mount-binded
-        # remove trailing '/' if present
-        mountpath=$(echo $mountpoint | sed 's:/*$::')
-        if grep -qs "$mountpath/$file" /proc/mounts; then
-            continue
+        if grep -qs "$mountpoint" /proc/mounts; then
+            exit 0
         fi
-
-        if [ -f "$mountpoint/$file" ]; then
-            if [ ! -f "$spec/$file" ]; then
-                cp --preserve=all "$file" "$spec/"
+        if [ ! -d "$spec" ] || [ -z "$(ls -A "$spec")" ]; then
+            mkdir -p "$spec"
+            cp -aPR "$mountpoint"/. "$spec/"
+        fi
+        mount -o bind "$spec" "$mountpoint" || { echo >&2 "Failed to bind mount $spec to $mountpoint"; exit 1; }
+        test ! -x /sbin/restorecon || /sbin/restorecon -R "$mountpoint"
+    else
+        mkdir -p "$spec"
+        cd "$mountpoint" || { echo >&2 "Failed to cd to $mountpoint"; exit 1; }
+        for file in *
+        do
+            #Skip if already mount-binded
+            # remove trailing '/' if present
+            mountpath=$(echo "$mountpoint" | sed 's:/*$::')
+            if grep -qs "$mountpath/$file" /proc/mounts; then
+                continue
             fi
-            mount -o "bind" "$spec/$file" "$mountpoint/$file"
-            test ! -x /sbin/restorecon || /sbin/restorecon "$mountpoint/$file"
-        fi
-   done
+
+            if [ -f "$mountpoint/$file" ]; then
+                if [ ! -f "$spec/$file" ]; then
+                    cp --preserve=all "$file" "$spec/"
+                fi
+                mount -o "bind" "$spec/$file" "$mountpoint/$file" || { echo >&2 "Failed to bind mount $spec/$file to $mountpoint/$file"; exit 1; }
+                test ! -x /sbin/restorecon || /sbin/restorecon "$mountpoint/$file"
+            fi
+        done
+    fi
 fi

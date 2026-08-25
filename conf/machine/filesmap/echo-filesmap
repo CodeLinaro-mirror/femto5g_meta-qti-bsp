@@ -1,56 +1,30 @@
-# Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries. 
+# Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
 # SPDX-License-Identifier: BSD-3-Clause-Clear
 
 # filename              partition
 
-NON-HLOS.ubi            modem
-
-abl.elf                 abl
-aop.mbn                 aop
-aop_devcfg.mbn          aop_devcfg
-apdp.mbn                apdp
-cmnlib64.mbn            cmnlib64
-cpucp.elf               cpucpfw
-fw_ipa_gsi_6.0_p.elf    ipa_fw
-km41.mbn                keymaster
-logfs_ufs_8mb.bin       logfs
-multi_image.mbn         multi_oem
-multi_image_qti.mbn     multi_qti
-hypvm.mbn               qhee
-Quantum.fv              quantumfv
-quantumsdk.fv           quantumsdk
-qupv3fw.elf             qupfw
-xbl_s_nand.melf         sbl
-sec.elf                 sec
-shrm.elf                shrm
-tools.fv                toolsfv
-tz.mbn                  tz
-devcfg.mbn              tz_devcfg
-uefi.elf                uefi
-xbl_config.elf          xbl_config
-xbl_ramdump.elf         xbl_ramdump
-
-# filename + .bak       backup partition
-
-#sbl1.mbn.bak            sbl1bak
-#tz.mbn.bak              tzbak
-#rpm.mbn.bak             rpmbak
-#appsboot.mbn.bak        abootbak
-
-# For multiple file firmware images that differ from *.mbn and *.bin
-# you can specify filename.* to direct all files to the same location.
-# For example for modem.mdt, modem.b00, modem.b01,... modem.bxx files
-# writting 'modem.*   location' will direct all files to 'location'.
-# If still some files need to go to different location give the full
-# file name also, for example 'modem.b01   other_location'
-
-# filename              location
-
-mba.*                   /firmware/image
-modem.*                 /firmware/image
-bdwlan30.bin            /firmware/image
-nvm_tlv_3.0.bin         /firmware/image
-otp30.bin               /firmware/image
-qwlan30.bin             /firmware/image
-rampatch_tlv_3.0.tlv    /firmware/image
-utf30.bin               /firmware/image
+NON-HLOS.bin           /dev/block/bootdevice/by-name/modem
+abl.elf                 /dev/block/bootdevice/by-name/abl
+aop.mbn                 /dev/block/bootdevice/by-name/aop
+aop_devcfg.mbn          /dev/block/bootdevice/by-name/aop_devcfg
+apdp.mbn                /dev/block/bootdevice/by-name/apdp
+cmnlib64.mbn            /dev/block/bootdevice/by-name/cmnlib64
+cpucp.elf               /dev/block/bootdevice/by-name/cpucpfw
+fw_ipa_gsi_6.0_p.elf    /dev/block/bootdevice/by-name/ipa_fw
+km41.mbn                /dev/block/bootdevice/by-name/keymaster
+logfs_ufs_8mb.bin       /dev/block/bootdevice/by-name/logfs
+multi_image.mbn         /dev/block/bootdevice/by-name/multi_oem
+multi_image_qti.mbn     /dev/block/bootdevice/by-name/multi_qti
+hypvm.mbn               /dev/block/bootdevice/by-name/qhee
+Quantum.fv              /dev/block/bootdevice/by-name/quantumfv
+quantumsdk.fv           /dev/block/bootdevice/by-name/quantumsdk
+qupv3fw.elf             /dev/block/bootdevice/by-name/qupfw
+xbl_s_nand.melf         /dev/block/bootdevice/by-name/sbl
+sec.elf                 /dev/block/bootdevice/by-name/sec
+shrm.elf                /dev/block/bootdevice/by-name/shrm
+tools.fv                /dev/block/bootdevice/by-name/toolsfv
+tz.mbn                  /dev/block/bootdevice/by-name/tz
+devcfg.mbn              /dev/block/bootdevice/by-name/tz_devcfg
+uefi.elf                /dev/block/bootdevice/by-name/uefi
+xbl_config.elf          /dev/block/bootdevice/by-name/xbl_config
+xbl_ramdump.elf         /dev/block/bootdevice/by-name/xbl_ramdump
