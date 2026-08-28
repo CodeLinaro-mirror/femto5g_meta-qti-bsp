@@ -1,0 +1,20 @@
+# ---------------------------------------------------------------------------
+# Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+# ---------------------------------------------------------------------------
+
+[Unit]
+Description=Sync and unmount NBD data filesystems before umount at shutdown
+DefaultDependencies=no
+Before=umount.target
+# NBD-backed boots only (network_boot + flashless); skip emmc. /proc/cmdline only.
+ConditionKernelCommandLine=!androidboot.fstab_suffix=emmc
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/true
+ExecStop=/usr/bin/nbd-data-flush
+
+[Install]
+WantedBy=multi-user.target
