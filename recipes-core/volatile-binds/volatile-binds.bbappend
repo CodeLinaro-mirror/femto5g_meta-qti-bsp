@@ -12,6 +12,20 @@ SRC_URI += "\
     ${@bb.utils.contains('MACHINE_MNT_POINTS', '/systemrw', 'file://umount-copybind', '', d)} \
     ${@bb.utils.contains('MACHINE_MNT_POINTS', '/systemrw', 'file://volatile-binds.service.in', '', d)} \
 "
+do_compile:append:echo() {
+    if [ -e systemrw-data-eth.service ]; then
+        sed -i -e "s|ExecStart=/sbin/mount-copybind /systemrw/data/eth /etc/data/eth$|ExecStart=/sbin/mount-copybind /systemrw/data/eth /etc/data/eth dir|" \
+               -e "s|ExecStop=/sbin/umount-copybind /etc/data/eth$|ExecStop=/sbin/umount-copybind /etc/data/eth dir|" \
+               -e "s|RequiresMountsFor=\(/systemrw/data/eth\) \(/etc/data/eth\)|RequiresMountsFor=/systemrw|" \
+               systemrw-data-eth.service
+    fi
+    if [ -e systemrw-dropbear.service ]; then
+        sed -i -e "s|RequiresMountsFor=/etc$|RequiresMountsFor=/systemrw|" \
+               -e "/ConditionPathIsReadWrite=!\/etc\/dropbear/d" \
+               systemrw-dropbear.service
+    fi
+}
+
 do_compile:append:mdm9607() {
     if  [ -e var-volatile-lib.service ]; then
         # As systemd-logind need /var/lib, ensure that this service runs
@@ -44,6 +58,7 @@ VOLATILE_BINDS:echo = "\
 /systemrw/data/usb /etc/data/usb/\n\
 /systemrw/data/miniupnpd /etc/data/miniupnpd/\n\
 /systemrw/data/ipa /etc/data/ipa/\n\
+/systemrw/data/eth /etc/data/eth\n\
 /systemrw/rt_tables /etc/data/iproute2/rt_tables\n\
 /systemrw/boot_hsusb_comp /etc/usb/boot_hsusb_comp\n\
 /systemrw/boot_hsic_comp /etc/usb/boot_hsic_comp\n\

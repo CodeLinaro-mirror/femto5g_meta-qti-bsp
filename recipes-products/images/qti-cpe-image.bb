@@ -22,10 +22,11 @@ CORE_IMAGE_EXTRA_INSTALL += "\
                 coreutils \
                 powerapp \
                 powerapp-powerconfig \
+                crash-collect-hlos \
                 powerapp-reboot \
                 powerapp-shutdown \
                 systemd-machine-units \
-		packagegroup-qti-core \
+                packagegroup-qti-core \
                 packagegroup-startup-scripts \
                 packagegroup-android-utils-base \
                 packagegroup-filesystem-utils-base \
@@ -33,8 +34,11 @@ CORE_IMAGE_EXTRA_INSTALL += "\
                 packagegroup-qti-ss-mgr \
                 packagegroup-support-utils \
                 packagegroup-qti-fastrpc \
-		packagegroup-qti-data \
+                packagegroup-qti-data \
+                packagegroup-qcom-securemsm \
+		packagegroup-open-mac80211 \
                 ${@bb.utils.contains('MACHINE_FEATURES', 'qti-ssdk', "packagegroup-qti-ssdk", "", d)} \
+                ${@bb.utils.contains('MACHINE_FEATURES', 'qti-location', 'packagegroup-qti-location', '', d)} \
                 ${@bb.utils.contains('BBFILE_COLLECTIONS', 'qti-internal', 'packagegroup-qti-internal', '', d)} \
                 ${@bb.utils.contains('BBFILE_COLLECTIONS', 'cta', 'packagegroup-qti-cta', '', d)} \
 "
@@ -59,3 +63,5 @@ CORE_IMAGE_EXTRA_INSTALL += "bash"
 
 #Install Audio packagegroup
 CORE_IMAGE_EXTRA_INSTALL += "packagegroup-qcom-audio"
+
+CORE_IMAGE_EXTRA_INSTALL += "packagegroup-qcom-sensors"
