@@ -10,3 +10,5 @@ IMAGE_INSTALL:append = " \
 "
 
 IMAGE_INSTALL += "gstreamer1.0 gstreamer1.0-plugins-base gstreamer1.0-plugins-good gstreamer1.0-plugins-bad"
+
+IMAGE_INSTALL:append:gvm-gen4-5-virtio = " weston weston-init weston-examples libgallium"
