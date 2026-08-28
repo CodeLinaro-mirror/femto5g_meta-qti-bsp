@@ -101,3 +101,5 @@ python do_makeboot_setscene () {
 }
 addtask do_makeboot_setscene
 addtask do_makeboot after do_makesystem before do_image_complete
+
+IMAGE_INSTALL:append = " blkid-cache-init"
