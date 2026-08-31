@@ -274,9 +274,22 @@ do_deploy() {
     for dtbf in ${KERNEL_DTB_NAMES}; do
         install -m 0644 $dtbf ${DEPLOYDIR}/kernel_dtbs
     done
-    for dtbof in $(find . -name "*.dtbo") ; do
-        install -m 0644 $dtbof ${DEPLOYDIR}/kernel_dtbs
-    done
+
+    # Check if KERNEL_DTBO_NAMES is empty or unset
+    if [ -z "${KERNEL_DTBO_NAMES}" ]; then
+        # If empty, fallback to installing ALL found .dtbo files
+        for dtbof in $(find . -name "*.dtbo"); do
+            install -m 0644 $dtbof ${DEPLOYDIR}/kernel_dtbs
+        done
+    else
+        # If set, strictly match the names in the list
+        for dtbof_name in ${KERNEL_DTBO_NAMES}; do
+            # Find specific files by name (handling potential duplicates in subdirs)
+            for dtbof_path in $(find . -name "$dtbof_name"); do
+                install -m 0644 $dtbof_path ${DEPLOYDIR}/kernel_dtbs
+            done
+        done
+    fi
 
     install -d ${DEPLOYDIR}/kernel_modules
     cd ${KERNEL_PREBUILT_DISTDIR}

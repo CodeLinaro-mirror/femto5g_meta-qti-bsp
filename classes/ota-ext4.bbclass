@@ -2,9 +2,10 @@
 # add the MACHINE name to this list.
 # This is the "only" list that will control whether
 # OTA upgrade will be supported on a target.
-DEPENDS += "releasetools-native zip-native fsconfig-native applypatch-native bc-native bsdiff-native"
+DEPENDS += "releasetools-native zip-native fsconfig-native applypatch-native bc-native bsdiff-native qti-recovery-image"
 
 RM_WORK_EXCLUDE_ITEMS += "rootfs rootfs-dbg"
+RECOVERY_IMAGE_ROOTFS = "${@d.getVar('IMAGE_ROOTFS').replace('/' + d.getVar('PN') + '/', '/qti-recovery-image/')}"
 
 IMAGE_SYSTEM_MOUNT_POINT = "/"
 
@@ -19,6 +20,15 @@ OTA_INCREMENTAL_UPDATE_EXT4_PATH = "${DEPLOY_DIR_IMAGE}/${IMAGE_BASENAME}/${OTA_
 
 MACHINE_FILESMAP_SEARCH_PATH_EXT4 ?= "${@':'.join('%s/conf/machine/filesmap' % p for p in '${BBPATH}'.split(':'))}}"
 MACHINE_FILESMAP_FULL_PATH_EXT4 = "${@machine_search(d.getVar('MACHINE_FILESMAP_CONF_EMMC'), d.getVar('MACHINE_FILESMAP_SEARCH_PATH_EXT4')) or ''}"
+
+# Machine specific partition sizes
+# Default value for all machines
+BOOT_PARTITION_SIZE     ?= "0x011DC000"
+RECOVERY_PARTITION_SIZE ?= "0x011DC000"
+
+# echo machine specific (kernel 6.18 - larger boot image)
+BOOT_PARTITION_SIZE:echo     = "0x05000000"
+RECOVERY_PARTITION_SIZE:echo = "0x05000000"
 
 #Create directory structure for targetfiles.zip
 do_recovery_ext4[cleandirs] += "${OTA_TARGET_IMAGE_ROOTFS_EXT4}"
@@ -35,6 +45,10 @@ do_recovery_ext4[cleandirs] += "${OTA_TARGET_IMAGE_ROOTFS_EXT4}/DTBO"
 # Create this folder just for saving file_contexts(SElinux security context file),
 # It will be used to generate OTA packages when selinux_fc is set.
 do_recovery_ext4[cleandirs] += "${OTA_TARGET_IMAGE_ROOTFS_EXT4}/BOOT/RAMDISK"
+
+
+# Use do_build inter-recipe ordering
+do_recovery_ext4[depends] += "qti-recovery-image:do_build"
 
 # recovery rootfs is required for generating OTA files.
 # Wait till all tasks of machine-recovery-image complete.
@@ -100,10 +114,10 @@ do_recovery_ext4() {
     echo blocksize=131072 >> ${OTA_TARGET_IMAGE_ROOTFS_EXT4}/META/misc_info.txt
 
     # boot_size: Size of boot partition from partition.xml
-    echo boot_size=0x011DC000 >> ${OTA_TARGET_IMAGE_ROOTFS_EXT4}/META/misc_info.txt
+    echo boot_size=${BOOT_PARTITION_SIZE} >> ${OTA_TARGET_IMAGE_ROOTFS_EXT4}/META/misc_info.txt
 
     # recovery_size : Size of recovery partition from partition.xml
-    echo recovery_size=0x011DC000 >> ${OTA_TARGET_IMAGE_ROOTFS_EXT4}/META/misc_info.txt
+    echo recovery_size=${RECOVERY_PARTITION_SIZE} >> ${OTA_TARGET_IMAGE_ROOTFS_EXT4}/META/misc_info.txt
 
     #system_size : Size of system partition from partition.xml
     echo system_size=0x10000000 >> ${OTA_TARGET_IMAGE_ROOTFS_EXT4}/META/misc_info.txt
