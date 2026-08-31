@@ -25,6 +25,8 @@ S:pebble = "${WORKDIR}/vendor/qcom/opensource/sensing-hub"
 SRC_URI:seraph  = "file://vendor/qcom/opensource/sensing-hub/"
 S:seraph = "${WORKDIR}/vendor/qcom/opensource/sensing-hub"
 
+CXXFLAGS:append:seraph = " ${DEBUG_PREFIX_MAP}"
+
 EXTRA_OECONF += " --with-systemd"
 
 #Disable the split of debug information into -dbg files

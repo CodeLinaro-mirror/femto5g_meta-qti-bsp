@@ -81,8 +81,7 @@ do_compile_dtb() {
     oe_runmake -C ${STAGING_KERNEL_DIR} O=${B} V=1 dtbs \
         dtstree=soc-repo-ext/arch/arm64/boot/dts/vendor
 }
-addtask compile_dtb after do_compile before do_deploy
-
+addtask compile_dtb after do_compile_kernelmodules before do_deploy
 
 do_configure:append() {
     oe_runmake -C ${S} O=${B} savedefconfig

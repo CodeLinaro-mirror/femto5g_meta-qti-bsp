@@ -43,6 +43,7 @@ Type=oneshot
 RemainAfterExit=yes
 PassEnvironment="SLOT_SUFFIX"
 ExecStart=/bin/mount -o noexec,nodev,ro,context=system_u:object_r:firmware_t:s0 -t vfat /dev/disk/by-partlabel/modem${SLOT_SUFFIX} /firmware
+ExecStartPost=-/bin/sh -c 'for d in /sys/class/remoteproc/remoteproc*/; do name=$(cat "$d/name" 2>/dev/null); state=$(cat "$d/state" 2>/dev/null); case $name in *adsp*|*cdsp*) [ "$state" != "running" ] && echo start > "$d/state";; esac; done'
 Nice=-20
 
 [Install]
