@@ -53,6 +53,7 @@ CORE_IMAGE_EXTRA_INSTALL += "\
               nbd-shutdown \
               collect-shutdown-logs \
               process-monitor \
+              bist \
 "
 
 do_merge_dtbs() {
