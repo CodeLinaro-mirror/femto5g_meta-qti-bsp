@@ -46,20 +46,14 @@ else
 fi
 mount -t ext4 /dev/mapper/persist /persist -o rootcontext=system_u:object_r:persist_t:s0
 
-if [ ! -d "/persist/display" ]; then
-    mkdir -p /persist/display/
-    chown -R system:system /persist/display
-    chmod 770 /persist/display
-    test ! -x /sbin/restorecon || /sbin/restorecon /persist/display
-else
-    echo "/persist/display already created"
-fi
+mkdir -p /persist/display/
+chown -R system:system /persist/display
+chmod 770 /persist/display
+restorecon /persist/display
 
-if [ ! -d "/persist/c2pa" ]; then
-    mkdir -p /persist/c2pa/
-    chown -R system:system /persist/c2pa
-    chmod 770 /persist/c2pa
-    test ! -x /sbin/restorecon || /sbin/restorecon /persist/c2pa
-else
-    echo "/persist/c2pa already created"
-fi
+
+mkdir -p /persist/c2pa/
+chown -R system:system /persist/c2pa
+chmod 770 /persist/c2pa
+restorecon /persist/c2pa
+
