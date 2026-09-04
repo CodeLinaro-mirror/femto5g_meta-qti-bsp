@@ -37,6 +37,7 @@ IMAGE_INSTALL += "\
     libcap \
     libcap-bin \
     attr \
+    resize-service \
     ${@bb.utils.contains('PREFERRED_VERSION_linux-msm', '6.12', 'kernel-modules', '', d)} \
     ${@bb.utils.contains('DISTRO_FEATURES', 'qti-security', 'securemsmdlkm', '', d)}  \
     ${@bb.utils.contains('DISTRO_FEATURES', 'qti-security', bb.utils.contains_any('PREFERRED_VERSION_linux-msm', '5.15 6.1', '', 'securemsm-devicetree', d), '', d)} \
