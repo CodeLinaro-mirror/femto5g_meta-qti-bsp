@@ -1,0 +1,13 @@
+# Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+[Unit]
+Description=Set CPU governor to performance before poweroff
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/shutdown_perf.sh
+
+[Install]
+WantedBy=poweroff.target

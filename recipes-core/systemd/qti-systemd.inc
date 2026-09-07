@@ -73,6 +73,9 @@ SELECTED_OPTIMIZATION = "-O2 -fexpensive-optimizations -frename-registers -fomit
 SYSTEMD_ENABLE_JOURNAL ?= "1"
 SYSTEMD_ENABLE_JOURNAL:qti-distro-perf ?= "0"
 
+# Mask debugfs mount when DEBUG_BUILD is not set
+MASK_KERNEL_DEBUG_MOUNT ?= "${@oe.utils.vartrue('DEBUG_BUILD', '0', '1', d)}"
+
 do_install:append () {
    install -d ${D}/etc/systemd/system/
    install -d ${D}${base_libdir}/systemd/system/ffbm.target.wants
@@ -105,6 +108,9 @@ do_install:append () {
        ln -sf /dev/null ${D}${systemd_unitdir}/system/sockets.target.wants/systemd-journald-audit.socket
        ln -sf /dev/null ${D}${systemd_unitdir}/system/sockets.target.wants/systemd-journald-dev-log.socket
        ln -sf /dev/null ${D}${systemd_unitdir}/system/sockets.target.wants/systemd-journald.socket
+   fi
+   if [ "${MASK_KERNEL_DEBUG_MOUNT}" != "0" ]; then
+         ln -sf /dev/null ${D}${sysconfdir}/systemd/system/sys-kernel-debug.mount
    fi
    install -d ${D}${sysconfdir}/udev/rules.d/
    install -m 0644 ${WORKDIR}/ion.rules -D ${D}${sysconfdir}/udev/rules.d/ion.rules

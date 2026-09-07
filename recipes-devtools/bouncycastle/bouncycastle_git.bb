@@ -179,9 +179,13 @@ BBCLASSEXTEND = "native"
 do_install:class-native () {
     install -d ${D}/${libdir}
     install -m 755 ${BC_BUILD}/libs/VeritSigner.jar ${D}/${libdir}/VeritSigner.jar
+    # signapk-native consumes this jar on its javac classpath; stage it here so
+    # signapk-native can DEPENDS on bouncycastle-native instead of rebuilding BC.
+    install -m 644 ${BC_BUILD}/libs/bcprov_bcpkix_jar.jar ${D}/${libdir}/bcprov_bcpkix_jar.jar
 }
 
 do_install:append:class-native () {
     install -d ${SYSROOT_DESTDIR}/${libdir}
     install -m 755 ${D}/${libdir}/VeritSigner.jar ${SYSROOT_DESTDIR}/${libdir}/VeritSigner.jar
+    install -m 644 ${D}/${libdir}/bcprov_bcpkix_jar.jar ${SYSROOT_DESTDIR}/${libdir}/bcprov_bcpkix_jar.jar
 }

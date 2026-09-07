@@ -3,7 +3,7 @@
 
 [Unit]
 Description=Init-graphics Service
-SourcePath=/etc/initscripts/init_qti_graphics
+SourcePath=/usr/sbin/initscripts/init_qti_graphics
 Requires=leprop.service
 After=leprop.service
 [Service]
@@ -12,8 +12,8 @@ Group=graphics
 Restart=no
 Type=oneshot
 RemainAfterExit=no
-ExecStart=+/etc/initscripts/init_qti_graphics
-ExecStop=+/etc/initscripts/init_qti_graphics
+ExecStart=+/usr/sbin/initscripts/init_qti_graphics
+ExecStop=+/usr/sbin/initscripts/init_qti_graphics
 
 [Install]
 WantedBy=multi-user.target

@@ -22,7 +22,8 @@ EXISTING_MODULES = "${@bb.utils.contains('MACHINE_USES_KERNEL_PREBUILTS', 'True'
     '*.ko', \
     '${STAGING_KERNEL_BUILDDIR}/lib/modules/${KERNEL_VERSION}/*.ko', d)}"
 
-do_compile[depends] += "${@bb.utils.contains('MACHINE_USES_KERNEL_PREBUILTS', 'True', '', 'soc-modules:do_install', d)}"
+do_compile[depends] += "${@bb.utils.contains('MACHINE_USES_KERNEL_PREBUILTS', 'True', '', \
+    'linux-common-soc:do_install' if d.getVar('MACHINE') == 'pebble' else 'soc-modules:do_install', d)}"
 do_compile () {
     existing_modules=$(ls ${EXISTING_MODULES} 2> /dev/null || true)
 

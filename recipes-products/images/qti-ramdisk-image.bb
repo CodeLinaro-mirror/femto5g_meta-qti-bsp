@@ -41,7 +41,7 @@ SYSTEMD_DEFAULT_TARGET = "initrd.target"
 
 inherit core-image
 
-do_rootfs[nostamp] = "1"
+#do_rootfs[nostamp] = "1"  # workaround for linux-soc-repo nostamp (fixed)
 
 # Add dependency on vendor ramdisk
 python () {
@@ -63,3 +63,4 @@ PACKAGE_INSTALL:remove:pineapple = "${COMMON_REMOVE_PACKAGES}"
 PACKAGE_INSTALL:remove:sun = "${COMMON_REMOVE_PACKAGES}"
 PACKAGE_INSTALL:remove:kera = "${COMMON_REMOVE_PACKAGES}"
 PACKAGE_INSTALL:remove:alor = "${COMMON_REMOVE_PACKAGES}"
+PACKAGE_INSTALL:remove:vienna = "${COMMON_REMOVE_PACKAGES}"

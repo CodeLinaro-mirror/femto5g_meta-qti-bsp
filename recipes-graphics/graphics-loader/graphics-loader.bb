@@ -9,10 +9,9 @@ SRC_URI = " file://init_qti_graphics.service \
             file://init_qti_graphics"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
-
 do_install() {
    if ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', 'true', 'false', d)}; then
-       install -m 0755 ${S}/init_qti_graphics -D ${D}${sysconfdir}/initscripts/init_qti_graphics
+       install -m 0755 ${S}/init_qti_graphics -D ${D}${sbindir}/initscripts/init_qti_graphics
        install -d ${D}/etc/systemd/system/
        install -m 0755 ${S}/init_qti_graphics.service -D ${D}${sysconfdir}/systemd/system/init_qti_graphics.service
        install -d ${D}/etc/systemd/system/multi-user.target.wants

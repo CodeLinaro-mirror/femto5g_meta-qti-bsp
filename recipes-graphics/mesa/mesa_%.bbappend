@@ -25,7 +25,7 @@ PACKAGECONFIG += " \
                   gallium-llvm \
                   vulkan \
                  "
-
+PACKAGECONFIG:remove = "zink"
 PACKAGECONFIG:append:class-native = "gallium-llvm"
 
 GALLIUMDRIVERS_LLVM = ",swrast"

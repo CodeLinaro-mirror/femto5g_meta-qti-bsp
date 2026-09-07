@@ -10,3 +10,5 @@ python() {
         d.setVar('KERNEL_CC', '${STAGING_BINDIR_NATIVE}/clang/bin/clang -target ${TARGET_ARCH}${TARGET_VENDOR}-${TARGET_OS}')
         d.setVar('KERNEL_LD', '${STAGING_BINDIR_NATIVE}/clang/bin/ld.lld')
 }
+
+EXTRA_OEMAKE:append:pebble = " KCONFIG_EXT_PREFIX=${STAGING_KERNEL_DIR}/soc-repo-ext/"

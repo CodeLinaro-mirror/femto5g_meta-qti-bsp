@@ -14,6 +14,7 @@ CORE_IMAGE_EXTRA_INSTALL += " \
     e2fsprogs-mke2fs \
     bash \
     procrank \
+    vm-time-init \
 "
 
 DEPENDS += " ${@bb.utils.contains_any('MACHINE', 'trustedvm-v4 trustedvm-v5', 'dsp-devicetree', '', d)}"

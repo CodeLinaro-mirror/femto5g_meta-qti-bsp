@@ -21,6 +21,8 @@ INSANE_SKIP:${PN} = "arch"
 
 VBLE = "${@bb.utils.contains('DISTRO_FEATURES', 'qti-vble','1', '0', d)}"
 
+AVB = "${@bb.utils.contains('MACHINE_FEATURES', 'qti-avb','1', '0', d)}"
+
 VERITY_ENABLED = "${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', bb.utils.contains('MACHINE_FEATURES', 'dm-verity-bootloader', '1', '0', d), '0', d)}"
 
 EARLY_ETH = "${@bb.utils.contains('DISTRO_FEATURES', 'early-eth', '1', '0', d)}"
@@ -40,6 +42,7 @@ EXTRA_OEMAKE = " \
     'ENABLE_LE_VARIANT=true' \
     'ENABLE_SYSTEMD_BOOTSLOT=${SYSTEMD_BOOTSLOT_ENABLED}'\
     'ENABLE_DM_MOD_FOR_KERNEL5_4=${DM_MOD_FOR_KERNEL5_4}'\
+    'VERIFIED_BOOT_ENABLED=${AVB}' \
     'VERIFIED_BOOT_LE=${VBLE}' \
     'VERITY_LE=${VERITY_ENABLED}' \
     'EDK_TOOLS_PATH=${S}/BaseTools' \
@@ -48,12 +51,15 @@ EXTRA_OEMAKE = " \
     'HIBERNATION_SUPPORT_INSECURE=${TARGET_HIBERNATION_INSECURE_ENABLE}' \
     'TARGET_SUPPORTS_EARLY_USB_INIT=${EARLY_USB_INIT}' \
 "
+
 EXTRA_OEMAKE:append:qcs40x = " 'DISABLE_PARALLEL_DOWNLOAD_FLASH=1'"
 EXTRA_OEMAKE:append:pebble = " 'SDAM_ENABLED=1'"
 EXTRA_OEMAKE += "INIT_BIN_LE="\"/sbin/init\"""
 NAND_SQUASHFS_SUPPORT = "${@bb.utils.contains('DISTRO_FEATURES', 'nand-squashfs', '1', '0', d)}"
 EXTRA_OEMAKE:append = " 'NAND_SQUASHFS_SUPPORT=${NAND_SQUASHFS_SUPPORT}'"
 EXTRA_OEMAKE:append:qti-distro-base-user = " 'VERITY_LE_USE_EXT4_GLUEBI=1'"
+
+EXTRA_OEMAKE:append:seraph = " 'APPEND_RAM_PARTITIONS_TO_MEM_NODE=1' 'PVMFW_ENABLED=1'"
 
 do_compile () {
     export BUILD_CC="clang"

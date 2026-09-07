@@ -37,5 +37,14 @@ do_deploy() {
     install -m 755 ${S}/ota_from_target_files ${DEPLOYDIR}/ota-scripts
     install -m 755 ${S}/rangelib.py ${DEPLOYDIR}/ota-scripts
     install -m 755 ${S}/sparse_img.py ${DEPLOYDIR}/ota-scripts
+
+    if ${@bb.utils.contains('OTA_WHOLE_FILE_SIGN', 'true', 'true', 'false', d)}; then
+        install -d ${DEPLOYDIR}/ota-scripts/security
+
+        install -m 644 ${WORKSPACE}/OTA/build/target/product/security/testkey.x509.pem \
+            ${DEPLOYDIR}/ota-scripts/security/testkey.x509.pem
+        install -m 644 ${WORKSPACE}/OTA/build/target/product/security/testkey.pk8 \
+            ${DEPLOYDIR}/ota-scripts/security/testkey.pk8
+    fi
 }
 addtask deploy after do_install

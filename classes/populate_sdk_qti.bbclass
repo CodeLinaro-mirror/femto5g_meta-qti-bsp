@@ -75,13 +75,21 @@ python copy_buildsystem:append() {
 }
 
 # To include llvm-arm-toolchain as part of sysroots in eSDK tmp directory
-DEPENDS:append = " llvm-arm-toolchain-native "
+DEPENDS:append = " ${@ \
+    'kernel-toolchain-native' if d.getVar('QTI_LLVM_VARIANT') == 'aospllvm' else \
+    'llvm-arm-toolchain-native' if d.getVar('QTI_LLVM_VARIANT') == 'sdllvm' else \
+    '' \
+}"
 
 # To include protoc compiler in SDK
 TOOLCHAIN_HOST_TASK:append = " nativesdk-protobuf-compiler "
 
 # Add nativesdk-llvm-arm-toolchain in SDK to run on SDKMACHINE
-TOOLCHAIN_HOST_TASK:append = " nativesdk-llvm-arm-toolchain"
+TOOLCHAIN_HOST_TASK:append = " ${@ \
+    'nativesdk-kernel-toolchain' if d.getVar('QTI_LLVM_VARIANT') == 'aospllvm' else \
+    'nativesdk-llvm-arm-toolchain' if d.getVar('QTI_LLVM_VARIANT') == 'sdllvm' else \
+    '' \
+}"
 
 # To include kernel headers in SDK
 TOOLCHAIN_TARGET_TASK:append = " linux-msm-headers-dev"

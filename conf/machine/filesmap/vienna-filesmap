@@ -13,8 +13,8 @@ NON-HLOS.bin            /dev/block/bootdevice/by-name/modem
 BTFM.bin                /dev/block/bootdevice/by-name/bluetooth
 abl.elf                 /dev/block/bootdevice/by-name/abl
 dspso.bin               /dev/block/bootdevice/by-name/dsp
-keymint.mbn             /dev/block/bootdevice/by-name/keymaster
 devcfg_rfcomm.mbn       /dev/block/bootdevice/by-name/devcfg
+devcfg.mbn              /dev/block/bootdevice/by-name/devcfg
 qupv3fw.elf             /dev/block/bootdevice/by-name/qupfw
 dtbo.img                /dev/block/bootdevice/by-name/dtbo
 uefi_sec.mbn            /dev/block/bootdevice/by-name/uefisecapp
@@ -27,3 +27,6 @@ cpucp_dtbs.elf          /dev/block/bootdevice/by-name/cpucp_dtb
 storsec.mbn             /dev/block/bootdevice/by-name/storsec
 tools.fv                /dev/block/bootdevice/by-name/toolsfv
 logfs_ufs_8mb.bin       /dev/block/bootdevice/by-name/logfs
+dcp.bin                 /dev/block/bootdevice/by-name/dcp
+km41.mbn                /dev/block/bootdevice/by-name/keymaster
+hyp_ac_config.mbn       /dev/block/bootdevice/by-name/hyp_ac_config

@@ -8,6 +8,10 @@ DEPENDS = "syslog-plumber"
 DEPENDS += "protobuf"
 DEPENDS += "protobuf-native"
 DEPENDS:remove:alor = " syslog-plumber"
+DEPENDS:remove:seraph = " syslog-plumber"
+DEPENDS:append:seraph = " nanopb-runtime nanopb-generator-native glib-2.0"
+DEPENDS:remove:pebble = " syslog-plumber"
+DEPENDS:append:pebble = " nanopb-runtime nanopb-generator-native glib-2.0"
 
 FILESPATH =+ "${WORKSPACE}:"
 SRC_URI  = "file://sensors/sensing-hub/"
@@ -15,6 +19,13 @@ S = "${WORKDIR}/sensors/sensing-hub"
 
 SRC_URI:alor  = "file://vendor/qcom/opensource/sensing-hub/"
 S:alor = "${WORKDIR}/vendor/qcom/opensource/sensing-hub"
+SRC_URI:pebble  = "file://vendor/qcom/opensource/sensing-hub/"
+S:pebble = "${WORKDIR}/vendor/qcom/opensource/sensing-hub"
+
+SRC_URI:seraph  = "file://vendor/qcom/opensource/sensing-hub/"
+S:seraph = "${WORKDIR}/vendor/qcom/opensource/sensing-hub"
+
+CXXFLAGS:append:seraph = " ${DEBUG_PREFIX_MAP}"
 
 EXTRA_OECONF += " --with-systemd"
 

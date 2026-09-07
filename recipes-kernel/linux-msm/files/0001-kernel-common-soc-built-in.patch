@@ -1,0 +1,1352 @@
+From e11d2dade63ed9e4529cde98386cd7200c39a373 Mon Sep 17 00:00:00 2001
+From: luchen <luchen@qti.qualcomm.com>
+Date: Tue, 16 Jun 2026 20:35:58 +0800
+Subject: [PATCH] kernel: common: Add ifndef KBUILD_EXT_PREFIX guards for
+ soc-repo in-tree build
+
+When KBUILD_EXT_PREFIX is set, soc-repo is compiled as in-tree built-ins
+(obj-y) alongside common/ in a single make invocation.  Without guards,
+modules whose .c files are owned by soc-repo would be compiled twice
+(once from common/, once from soc-repo-ext/), causing duplicate symbol
+errors at modules_check.
+
+Add `ifndef KBUILD_EXT_PREFIX ... endif` guards around every module in
+common/ that is also built by soc-repo-ext/ when KBUILD_EXT_PREFIX is
+set.  Guards are no-ops when KBUILD_EXT_PREFIX is unset (OOT soc-modules
+build), preserving the existing out-of-tree flow.
+
+Also extend common/Kbuild with an `ifdef KBUILD_EXT_PREFIX` block that
+includes $(KBUILD_EXT_PREFIX)Kbuild.ext, which in turn descends into
+soc-repo-ext/ as a single obj-y entry.
+
+
+Change-Id: I03c9c1d47d9040ee5602e734521db7dfb84f3ac3
+Signed-off-by: luchen <luchen@qti.qualcomm.com>
+---
+ Kbuild                               |  5 ++++
+ drivers/base/regmap/Makefile         |  2 ++
+ drivers/block/zram/Makefile          |  2 ++
+ drivers/bus/mhi/host/Makefile        |  6 +++++
+ drivers/char/Makefile                |  2 ++
+ drivers/clk/Makefile                 |  2 ++
+ drivers/clk/qcom/Makefile            | 34 ++++++++++++++++++++++++++++
+ drivers/crypto/Makefile              |  2 ++
+ drivers/dma/qcom/Makefile            |  4 ++++
+ drivers/edac/Makefile                |  2 ++
+ drivers/firmware/arm_ffa/Makefile    |  2 ++
+ drivers/firmware/qcom/Makefile       |  2 ++
+ drivers/gpu/drm/display/Makefile     | 22 ++++++++++++++++++
+ drivers/hwmon/Makefile               |  2 ++
+ drivers/hwspinlock/Makefile          |  2 ++
+ drivers/hwtracing/coresight/Makefile | 20 ++++++++--------
+ drivers/hwtracing/stm/Makefile       | 16 +++++++++++++
+ drivers/i2c/busses/Makefile          |  2 ++
+ drivers/iio/adc/Makefile             |  2 ++
+ drivers/input/misc/Makefile          |  2 ++
+ drivers/interconnect/Makefile        |  2 ++
+ drivers/interconnect/qcom/Makefile   |  6 +++++
+ drivers/iommu/arm/arm-smmu/Makefile  |  8 +++++++
+ drivers/irqchip/Makefile             |  2 ++
+ drivers/leds/flash/Makefile          |  2 ++
+ drivers/leds/rgb/Makefile            |  2 ++
+ drivers/leds/trigger/Makefile        |  2 ++
+ drivers/mailbox/Makefile             |  2 ++
+ drivers/mfd/Makefile                 |  2 ++
+ drivers/misc/lkdtm/Makefile          | 22 ++++++++++++++++++
+ drivers/mmc/host/Makefile            |  8 +++++++
+ drivers/nvmem/Makefile               |  8 +++++++
+ drivers/phy/qualcomm/Makefile        |  4 ++++
+ drivers/pinctrl/qcom/Makefile        |  6 +++++
+ drivers/power/reset/Makefile         |  4 ++++
+ drivers/remoteproc/Makefile          | 10 ++++++++
+ drivers/rpmsg/Makefile               |  8 +++++++
+ drivers/rtc/Makefile                 |  2 ++
+ drivers/scsi/Makefile                |  2 ++
+ drivers/slimbus/Makefile             |  8 +++++++
+ drivers/soc/qcom/Makefile            | 34 ++++++++++++++++++++++++++++
+ drivers/spi/Makefile                 |  2 ++
+ drivers/spmi/Makefile                |  2 ++
+ drivers/thermal/qcom/Makefile        |  6 +++++
+ drivers/ufs/host/Makefile            |  2 ++
+ drivers/usb/misc/Makefile            |  2 ++
+ drivers/usb/phy/Makefile             |  2 ++
+ kernel/Makefile                      |  2 ++
+ kernel/locking/Makefile              |  2 ++
+ kernel/rcu/Makefile                  |  2 ++
+ lib/Makefile                         |  2 ++
+ mm/Makefile                          |  2 ++
+ net/mac80211/Makefile                |  8 +++++++
+ net/qrtr/Makefile                    | 12 ++++++++++
+ net/wireless/Makefile                | 12 ++++++++++
+ sound/soc/codecs/Makefile            |  4 ++++
+ sound/usb/qcom/Makefile              |  2 ++
+ 57 files changed, 332 insertions(+), 9 deletions(-)
+
+diff --git a/Kbuild b/Kbuild
+index 13324b4bbe23..2050dbb3f06f 100644
+--- a/Kbuild
++++ b/Kbuild
+@@ -109,3 +109,8 @@ obj-$(CONFIG_NET)	+= net/
+ obj-y			+= virt/
+ obj-y			+= $(ARCH_DRIVERS)
+ obj-$(CONFIG_DRM_HEADER_TEST)	+= include/
++
++# ANDROID: descend into soc-repo as in-tree, mirrors KCONFIG_EXT_PREFIX pattern
++ifdef KBUILD_EXT_PREFIX
++include $(srctree)/$(KBUILD_EXT_PREFIX)Kbuild.ext
++endif
+diff --git a/drivers/base/regmap/Makefile b/drivers/base/regmap/Makefile
+index 5fdd0845b45e..f2bb78f59260 100644
+--- a/drivers/base/regmap/Makefile
++++ b/drivers/base/regmap/Makefile
+@@ -12,7 +12,9 @@ obj-$(CONFIG_REGMAP_RAM) += regmap-ram.o regmap-raw-ram.o
+ obj-$(CONFIG_REGMAP_SLIMBUS) += regmap-slimbus.o
+ obj-$(CONFIG_REGMAP_SPI) += regmap-spi.o
+ obj-$(CONFIG_REGMAP_SPMI) += regmap-spmi.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_REGMAP_MMIO) += regmap-mmio.o
++endif
+ obj-$(CONFIG_REGMAP_IRQ) += regmap-irq.o
+ obj-$(CONFIG_REGMAP_W1) += regmap-w1.o
+ obj-$(CONFIG_REGMAP_SOUNDWIRE) += regmap-sdw.o
+diff --git a/drivers/block/zram/Makefile b/drivers/block/zram/Makefile
+index 8465855c316c..b7e0dcde6eea 100644
+--- a/drivers/block/zram/Makefile
++++ b/drivers/block/zram/Makefile
+@@ -1,5 +1,6 @@
+ # SPDX-License-Identifier: GPL-2.0-only
+ 
++ifndef KBUILD_EXT_PREFIX
+ zram-y	:=	zcomp.o zram_drv.o
+ 
+ zram-$(CONFIG_ZRAM_BACKEND_LZO)		+= backend_lzorle.o backend_lzo.o
+@@ -11,3 +12,4 @@ zram-$(CONFIG_ZRAM_BACKEND_842)		+= backend_842.o
+ zram-$(CONFIG_ZRAM_ANDROID_IOCTL)	+= zram_ioctl.o
+ 
+ obj-$(CONFIG_ZRAM)	+=	zram.o
++endif
+diff --git a/drivers/bus/mhi/host/Makefile b/drivers/bus/mhi/host/Makefile
+index 859c2f38451c..af0ad56c4766 100644
+--- a/drivers/bus/mhi/host/Makefile
++++ b/drivers/bus/mhi/host/Makefile
+@@ -1,6 +1,12 @@
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_MHI_BUS) += mhi.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ mhi-y := init.o main.o pm.o boot.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ mhi-$(CONFIG_MHI_BUS_DEBUG) += debugfs.o
++endif
+ 
+ obj-$(CONFIG_MHI_BUS_PCI_GENERIC) += mhi_pci_generic.o
+ mhi_pci_generic-y += pci_generic.o
+diff --git a/drivers/char/Makefile b/drivers/char/Makefile
+index 1291369b9126..fc0460a0a001 100644
+--- a/drivers/char/Makefile
++++ b/drivers/char/Makefile
+@@ -8,7 +8,9 @@ obj-$(CONFIG_TTY_PRINTK)	+= ttyprintk.o
+ obj-y				+= misc.o
+ obj-$(CONFIG_TEST_MISC_MINOR)	+= misc_minor_kunit.o
+ obj-$(CONFIG_ATARI_DSP56K)	+= dsp56k.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_VIRTIO_CONSOLE)	+= virtio_console.o
++endif
+ obj-$(CONFIG_UV_MMTIMER)	+= uv_mmtimer.o
+ obj-$(CONFIG_IBM_BSR)		+= bsr.o
+ 
+diff --git a/drivers/clk/Makefile b/drivers/clk/Makefile
+index 61ec08404442..70f4bc43796b 100644
+--- a/drivers/clk/Makefile
++++ b/drivers/clk/Makefile
+@@ -89,7 +89,9 @@ obj-$(CONFIG_COMMON_CLK_RP1)            += clk-rp1.o
+ obj-$(CONFIG_COMMON_CLK_RPMI)		+= clk-rpmi.o
+ obj-$(CONFIG_COMMON_CLK_HI655X)		+= clk-hi655x.o
+ obj-$(CONFIG_COMMON_CLK_S2MPS11)	+= clk-s2mps11.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_COMMON_CLK_SCMI)           += clk-scmi.o
++endif
+ obj-$(CONFIG_COMMON_CLK_SCPI)           += clk-scpi.o
+ obj-$(CONFIG_COMMON_CLK_SI5341)		+= clk-si5341.o
+ obj-$(CONFIG_COMMON_CLK_SI5351)		+= clk-si5351.o
+diff --git a/drivers/clk/qcom/Makefile b/drivers/clk/qcom/Makefile
+index 8051d481c439..3160ccbad47b 100644
+--- a/drivers/clk/qcom/Makefile
++++ b/drivers/clk/qcom/Makefile
+@@ -1,21 +1,53 @@
+ # SPDX-License-Identifier: GPL-2.0
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_COMMON_CLK_QCOM) += clk-qcom.o
++endif
+ 
++ifndef KBUILD_EXT_PREFIX
+ clk-qcom-y += common.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ clk-qcom-y += clk-regmap.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ clk-qcom-y += clk-alpha-pll.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ clk-qcom-y += clk-pll.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ clk-qcom-y += clk-rcg.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ clk-qcom-y += clk-rcg2.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ clk-qcom-y += clk-branch.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ clk-qcom-y += clk-regmap-divider.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ clk-qcom-y += clk-regmap-mux.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ clk-qcom-y += clk-regmap-mux-div.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ clk-qcom-y += clk-regmap-phy-mux.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ clk-qcom-$(CONFIG_KRAIT_CLOCKS) += clk-krait.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ clk-qcom-y += clk-hfpll.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ clk-qcom-y += reset.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ clk-qcom-$(CONFIG_QCOM_GDSC) += gdsc.o
++endif
+ 
+ # Keep alphabetically sorted by config
+ obj-$(CONFIG_APQ_GCC_8084) += gcc-apq8084.o
+@@ -73,7 +105,9 @@ obj-$(CONFIG_QCOM_CLK_APCS_MSM8916) += apcs-msm8916.o
+ obj-$(CONFIG_QCOM_CLK_APCC_MSM8996) += apcs-msm8996.o clk-cpu-8996.o clk-cbf-8996.o
+ obj-$(CONFIG_QCOM_CLK_APCS_SDX55) += apcs-sdx55.o
+ obj-$(CONFIG_QCOM_CLK_RPM) += clk-rpm.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_QCOM_CLK_RPMH) += clk-rpmh.o
++endif
+ obj-$(CONFIG_QCOM_CLK_SMD_RPM) += clk-smd-rpm.o
+ obj-$(CONFIG_QCM_GCC_2290) += gcc-qcm2290.o
+ obj-$(CONFIG_QCM_DISPCC_2290) += dispcc-qcm2290.o
+diff --git a/drivers/crypto/Makefile b/drivers/crypto/Makefile
+index 322ae8854e3e..d0e1266e6de7 100644
+--- a/drivers/crypto/Makefile
++++ b/drivers/crypto/Makefile
+@@ -28,7 +28,9 @@ obj-$(CONFIG_CRYPTO_DEV_PADLOCK_AES) += padlock-aes.o
+ obj-$(CONFIG_CRYPTO_DEV_PADLOCK_SHA) += padlock-sha.o
+ obj-$(CONFIG_CRYPTO_DEV_PPC4XX) += amcc/
+ obj-$(CONFIG_CRYPTO_DEV_QCE) += qce/
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_CRYPTO_DEV_QCOM_RNG) += qcom-rng.o
++endif
+ obj-$(CONFIG_CRYPTO_DEV_ROCKCHIP) += rockchip/
+ obj-$(CONFIG_CRYPTO_DEV_S5P) += s5p-sss.o
+ obj-$(CONFIG_CRYPTO_DEV_SA2UL) += sa2ul.o
+diff --git a/drivers/dma/qcom/Makefile b/drivers/dma/qcom/Makefile
+index 50f1e7014693..caabd7295398 100644
+--- a/drivers/dma/qcom/Makefile
++++ b/drivers/dma/qcom/Makefile
+@@ -1,7 +1,11 @@
+ # SPDX-License-Identifier: GPL-2.0
+ obj-$(CONFIG_QCOM_ADM) += qcom_adm.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_QCOM_BAM_DMA) += bam_dma.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_QCOM_GPI_DMA) += gpi.o
++endif
+ obj-$(CONFIG_QCOM_HIDMA_MGMT) += hdma_mgmt.o
+ hdma_mgmt-objs	 := hidma_mgmt.o hidma_mgmt_sys.o
+ obj-$(CONFIG_QCOM_HIDMA) +=  hdma.o
+diff --git a/drivers/edac/Makefile b/drivers/edac/Makefile
+index 1c14796410a3..469395239a23 100644
+--- a/drivers/edac/Makefile
++++ b/drivers/edac/Makefile
+@@ -80,7 +80,9 @@ obj-$(CONFIG_EDAC_ARMADA_XP)		+= armada_xp_edac.o
+ obj-$(CONFIG_EDAC_SYNOPSYS)		+= synopsys_edac.o
+ obj-$(CONFIG_EDAC_XGENE)		+= xgene_edac.o
+ obj-$(CONFIG_EDAC_TI)			+= ti_edac.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_EDAC_QCOM)			+= qcom_edac.o
++endif
+ obj-$(CONFIG_EDAC_ASPEED)		+= aspeed_edac.o
+ obj-$(CONFIG_EDAC_BLUEFIELD)		+= bluefield_edac.o
+ obj-$(CONFIG_EDAC_DMC520)		+= dmc520_edac.o
+diff --git a/drivers/firmware/arm_ffa/Makefile b/drivers/firmware/arm_ffa/Makefile
+index 168990a7e792..32c829b0059c 100644
+--- a/drivers/firmware/arm_ffa/Makefile
++++ b/drivers/firmware/arm_ffa/Makefile
+@@ -1,4 +1,5 @@
+ # SPDX-License-Identifier: GPL-2.0-only
++ifndef KBUILD_EXT_PREFIX
+ ffa-bus-y = bus.o
+ ffa-driver-y = driver.o
+ ffa-transport-$(CONFIG_ARM_FFA_SMCCC) += smccc.o
+@@ -6,3 +7,4 @@ ffa-core-objs := $(ffa-bus-y)
+ ffa-module-objs := $(ffa-driver-y) $(ffa-transport-y)
+ obj-$(CONFIG_ARM_FFA_TRANSPORT)  = ffa-core.o
+ obj-$(CONFIG_ARM_FFA_TRANSPORT) += ffa-module.o
++endif
+diff --git a/drivers/firmware/qcom/Makefile b/drivers/firmware/qcom/Makefile
+index 0be40a1abc13..a5a0687c491c 100644
+--- a/drivers/firmware/qcom/Makefile
++++ b/drivers/firmware/qcom/Makefile
+@@ -3,8 +3,10 @@
+ # Makefile for the linux kernel.
+ #
+ 
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_QCOM_SCM)		+= qcom-scm.o
+ qcom-scm-objs += qcom_scm.o qcom_scm-smc.o qcom_scm-legacy.o
+ obj-$(CONFIG_QCOM_TZMEM)	+= qcom_tzmem.o
++endif
+ obj-$(CONFIG_QCOM_QSEECOM)	+= qcom_qseecom.o
+ obj-$(CONFIG_QCOM_QSEECOM_UEFISECAPP) += qcom_qseecom_uefisecapp.o
+diff --git a/drivers/gpu/drm/display/Makefile b/drivers/gpu/drm/display/Makefile
+index 0ff4a1ad0222..4510f9cbc89b 100644
+--- a/drivers/gpu/drm/display/Makefile
++++ b/drivers/gpu/drm/display/Makefile
+@@ -2,30 +2,52 @@
+ 
+ obj-$(CONFIG_DRM_DISPLAY_DP_AUX_BUS) += drm_dp_aux_bus.o
+ 
++ifndef KBUILD_EXT_PREFIX
+ drm_display_helper-y := drm_display_helper_mod.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ drm_display_helper-$(CONFIG_DRM_BRIDGE_CONNECTOR) += \
+ 	drm_bridge_connector.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ drm_display_helper-$(CONFIG_DRM_DISPLAY_DP_HELPER) += \
+ 	drm_dp_dual_mode_helper.o \
+ 	drm_dp_helper.o \
+ 	drm_dp_mst_topology.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ drm_display_helper-$(CONFIG_DRM_DISPLAY_DP_TUNNEL) += \
+ 	drm_dp_tunnel.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ drm_display_helper-$(CONFIG_DRM_DISPLAY_DSC_HELPER) += \
+ 	drm_dsc_helper.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ drm_display_helper-$(CONFIG_DRM_DISPLAY_HDCP_HELPER) += drm_hdcp_helper.o
++endif
+ drm_display_helper-$(CONFIG_DRM_DISPLAY_HDMI_AUDIO_HELPER) += \
+ 	drm_hdmi_audio_helper.o
+ drm_display_helper-$(CONFIG_DRM_DISPLAY_HDMI_CEC_HELPER) += \
+ 	drm_hdmi_cec_helper.o
+ drm_display_helper-$(CONFIG_DRM_DISPLAY_HDMI_CEC_NOTIFIER_HELPER) += \
+ 	drm_hdmi_cec_notifier_helper.o
++ifndef KBUILD_EXT_PREFIX
+ drm_display_helper-$(CONFIG_DRM_DISPLAY_HDMI_HELPER) += \
+ 	drm_hdmi_helper.o \
+ 	drm_scdc_helper.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ drm_display_helper-$(CONFIG_DRM_DISPLAY_HDMI_STATE_HELPER) += \
+ 	drm_hdmi_state_helper.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ drm_display_helper-$(CONFIG_DRM_DISPLAY_DP_AUX_CHARDEV) += drm_dp_aux_dev.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ drm_display_helper-$(CONFIG_DRM_DISPLAY_DP_AUX_CEC) += drm_dp_cec.o
++endif
+ 
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_DRM_DISPLAY_HELPER) += drm_display_helper.o
++endif
+diff --git a/drivers/hwmon/Makefile b/drivers/hwmon/Makefile
+index 73b2abdcc6dd..9dd403108ec3 100644
+--- a/drivers/hwmon/Makefile
++++ b/drivers/hwmon/Makefile
+@@ -3,7 +3,9 @@
+ # Makefile for sensor chip drivers.
+ #
+ 
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_HWMON)		+= hwmon.o
++endif
+ obj-$(CONFIG_HWMON_VID)		+= hwmon-vid.o
+ 
+ # ACPI drivers
+diff --git a/drivers/hwspinlock/Makefile b/drivers/hwspinlock/Makefile
+index a0f16c9aaa82..35ee6fe2863f 100644
+--- a/drivers/hwspinlock/Makefile
++++ b/drivers/hwspinlock/Makefile
+@@ -5,7 +5,9 @@
+ 
+ obj-$(CONFIG_HWSPINLOCK)		+= hwspinlock_core.o
+ obj-$(CONFIG_HWSPINLOCK_OMAP)		+= omap_hwspinlock.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_HWSPINLOCK_QCOM)		+= qcom_hwspinlock.o
++endif
+ obj-$(CONFIG_HWSPINLOCK_SPRD)		+= sprd_hwspinlock.o
+ obj-$(CONFIG_HWSPINLOCK_STM32)		+= stm32_hwspinlock.o
+ obj-$(CONFIG_HWSPINLOCK_SUN6I)		+= sun6i_hwspinlock.o
+diff --git a/drivers/hwtracing/coresight/Makefile b/drivers/hwtracing/coresight/Makefile
+index ab16d06783a5..54738fde5ff1 100644
+--- a/drivers/hwtracing/coresight/Makefile
++++ b/drivers/hwtracing/coresight/Makefile
+@@ -24,6 +24,7 @@ subdir-ccflags-y += $(condflags)
+ 
+ CFLAGS_coresight-stm.o := -D__DISABLE_TRACE_MMIO__
+ 
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_CORESIGHT) += coresight.o
+ coresight-y := coresight-core.o  coresight-etm-perf.o coresight-platform.o \
+ 		coresight-sysfs.o coresight-syscfg.o coresight-config.o \
+@@ -32,28 +33,29 @@ coresight-y := coresight-core.o  coresight-etm-perf.o coresight-platform.o \
+ obj-$(CONFIG_CORESIGHT_LINK_AND_SINK_TMC) += coresight-tmc.o
+ coresight-tmc-y := coresight-tmc-core.o coresight-tmc-etf.o \
+ 		      coresight-tmc-etr.o
+-obj-$(CONFIG_CORESIGHT_SINK_TPIU) += coresight-tpiu.o
+-obj-$(CONFIG_CORESIGHT_SINK_ETBV10) += coresight-etb10.o
+ obj-$(CONFIG_CORESIGHT_LINKS_AND_SINKS) += coresight-funnel.o \
+ 					   coresight-replicator.o
+ obj-$(CONFIG_CORESIGHT_TNOC) += coresight-tnoc.o
+-obj-$(CONFIG_CORESIGHT_SOURCE_ETM3X) += coresight-etm3x.o
+-coresight-etm3x-y := coresight-etm3x-core.o coresight-etm-cp14.o \
+-		     coresight-etm3x-sysfs.o
+ obj-$(CONFIG_CORESIGHT_SOURCE_ETM4X) += coresight-etm4x.o
+ coresight-etm4x-y := coresight-etm4x-core.o coresight-etm4x-sysfs.o \
+ 			coresight-etm4x-cfg.o
+ obj-$(CONFIG_CORESIGHT_STM) += coresight-stm.o
+-obj-$(CONFIG_CORESIGHT_CPU_DEBUG) += coresight-cpu-debug.o
+-obj-$(CONFIG_CORESIGHT_CATU) += coresight-catu.o
+ obj-$(CONFIG_CORESIGHT_CTI) += coresight-cti.o
+-obj-$(CONFIG_CORESIGHT_TRBE) += coresight-trbe.o
+ obj-$(CONFIG_CORESIGHT_TPDM) += coresight-tpdm.o
+ obj-$(CONFIG_CORESIGHT_TPDA) += coresight-tpda.o
+ coresight-cti-y := coresight-cti-core.o	coresight-cti-platform.o \
+ 		   coresight-cti-sysfs.o
+-obj-$(CONFIG_ULTRASOC_SMB) += ultrasoc-smb.o
+ obj-$(CONFIG_CORESIGHT_DUMMY) += coresight-dummy.o
+ obj-$(CONFIG_CORESIGHT_CTCU) += coresight-ctcu.o
+ coresight-ctcu-y := coresight-ctcu-core.o
+ obj-$(CONFIG_CORESIGHT_KUNIT_TESTS) += coresight-kunit-tests.o
++endif
++obj-$(CONFIG_CORESIGHT_SINK_TPIU) += coresight-tpiu.o
++obj-$(CONFIG_CORESIGHT_SINK_ETBV10) += coresight-etb10.o
++obj-$(CONFIG_CORESIGHT_SOURCE_ETM3X) += coresight-etm3x.o
++coresight-etm3x-y := coresight-etm3x-core.o coresight-etm-cp14.o \
++		     coresight-etm3x-sysfs.o
++obj-$(CONFIG_CORESIGHT_CPU_DEBUG) += coresight-cpu-debug.o
++obj-$(CONFIG_CORESIGHT_CATU) += coresight-catu.o
++obj-$(CONFIG_CORESIGHT_TRBE) += coresight-trbe.o
++obj-$(CONFIG_ULTRASOC_SMB) += ultrasoc-smb.o
+diff --git a/drivers/hwtracing/stm/Makefile b/drivers/hwtracing/stm/Makefile
+index 1692fcd29277..cb1f0ca98652 100644
+--- a/drivers/hwtracing/stm/Makefile
++++ b/drivers/hwtracing/stm/Makefile
+@@ -1,7 +1,11 @@
+ # SPDX-License-Identifier: GPL-2.0
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_STM)	+= stm_core.o
++endif
+ 
++ifndef KBUILD_EXT_PREFIX
+ stm_core-y		:= core.o policy.o
++endif
+ 
+ obj-$(CONFIG_STM_PROTO_BASIC) += stm_p_basic.o
+ obj-$(CONFIG_STM_PROTO_SYS_T) += stm_p_sys-t.o
+@@ -11,10 +15,22 @@ stm_p_sys-t-y		:= p_sys-t.o
+ 
+ obj-$(CONFIG_STM_DUMMY)	+= dummy_stm.o
+ 
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_STM_SOURCE_CONSOLE)	+= stm_console.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_STM_SOURCE_HEARTBEAT)	+= stm_heartbeat.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_STM_SOURCE_FTRACE)		+= stm_ftrace.o
++endif
+ 
++ifndef KBUILD_EXT_PREFIX
+ stm_console-y		:= console.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ stm_heartbeat-y		:= heartbeat.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ stm_ftrace-y		:= ftrace.o
++endif
+diff --git a/drivers/i2c/busses/Makefile b/drivers/i2c/busses/Makefile
+index fb985769f5ff..7b1190ca58b9 100644
+--- a/drivers/i2c/busses/Makefile
++++ b/drivers/i2c/busses/Makefile
+@@ -99,7 +99,9 @@ obj-$(CONFIG_I2C_PNX)		+= i2c-pnx.o
+ obj-$(CONFIG_I2C_PXA)		+= i2c-pxa.o
+ obj-$(CONFIG_I2C_PXA_PCI)	+= i2c-pxa-pci.o
+ obj-$(CONFIG_I2C_QCOM_CCI)	+= i2c-qcom-cci.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_I2C_QCOM_GENI)	+= i2c-qcom-geni.o
++endif
+ obj-$(CONFIG_I2C_QUP)		+= i2c-qup.o
+ obj-$(CONFIG_I2C_RIIC)		+= i2c-riic.o
+ obj-$(CONFIG_I2C_RK3X)		+= i2c-rk3x.o
+diff --git a/drivers/iio/adc/Makefile b/drivers/iio/adc/Makefile
+index d008f78dc010..1b7b0abd7273 100644
+--- a/drivers/iio/adc/Makefile
++++ b/drivers/iio/adc/Makefile
+@@ -115,7 +115,9 @@ obj-$(CONFIG_QCOM_SPMI_ADC5) += qcom-spmi-adc5.o
+ obj-$(CONFIG_QCOM_SPMI_IADC) += qcom-spmi-iadc.o
+ obj-$(CONFIG_QCOM_SPMI_RRADC) += qcom-spmi-rradc.o
+ obj-$(CONFIG_QCOM_SPMI_VADC) += qcom-spmi-vadc.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_QCOM_VADC_COMMON) += qcom-vadc-common.o
++endif
+ obj-$(CONFIG_RCAR_GYRO_ADC) += rcar-gyroadc.o
+ obj-$(CONFIG_RICHTEK_RTQ6056) += rtq6056.o
+ obj-$(CONFIG_RN5T618_ADC) += rn5t618-adc.o
+diff --git a/drivers/input/misc/Makefile b/drivers/input/misc/Makefile
+index f5ebfa9d9983..6fa9c296a172 100644
+--- a/drivers/input/misc/Makefile
++++ b/drivers/input/misc/Makefile
+@@ -63,7 +63,9 @@ obj-$(CONFIG_INPUT_PALMAS_PWRBUTTON)	+= palmas-pwrbutton.o
+ obj-$(CONFIG_INPUT_PCAP)		+= pcap_keys.o
+ obj-$(CONFIG_INPUT_PCF8574)		+= pcf8574_keypad.o
+ obj-$(CONFIG_INPUT_PCSPKR)		+= pcspkr.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_INPUT_PM8941_PWRKEY)	+= pm8941-pwrkey.o
++endif
+ obj-$(CONFIG_INPUT_PM8XXX_VIBRATOR)	+= pm8xxx-vibrator.o
+ obj-$(CONFIG_INPUT_PMIC8XXX_PWRKEY)	+= pmic8xxx-pwrkey.o
+ obj-$(CONFIG_INPUT_POWERMATE)		+= powermate.o
+diff --git a/drivers/interconnect/Makefile b/drivers/interconnect/Makefile
+index b0a9a6753b9d..b9cf4ec996ea 100644
+--- a/drivers/interconnect/Makefile
++++ b/drivers/interconnect/Makefile
+@@ -9,4 +9,6 @@ obj-$(CONFIG_INTERCONNECT_MTK)		+= mediatek/
+ obj-$(CONFIG_INTERCONNECT_QCOM)		+= qcom/
+ obj-$(CONFIG_INTERCONNECT_SAMSUNG)	+= samsung/
+ 
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_INTERCONNECT_CLK)		+= icc-clk.o
++endif
+diff --git a/drivers/interconnect/qcom/Makefile b/drivers/interconnect/qcom/Makefile
+index cf8cba73ee3e..ef878e6d0ca1 100644
+--- a/drivers/interconnect/qcom/Makefile
++++ b/drivers/interconnect/qcom/Makefile
+@@ -3,7 +3,9 @@
+ obj-$(CONFIG_INTERCONNECT_QCOM) += interconnect_qcom.o
+ 
+ interconnect_qcom-y			:= icc-common.o
++ifndef KBUILD_EXT_PREFIX
+ icc-bcm-voter-objs			:= bcm-voter.o
++endif
+ qnoc-glymur-objs			:= glymur.o
+ qnoc-milos-objs				:= milos.o
+ qnoc-msm8909-objs			:= msm8909.o
+@@ -46,7 +48,9 @@ qnoc-sm8750-objs			:= sm8750.o
+ qnoc-x1e80100-objs			:= x1e80100.o
+ icc-smd-rpm-objs			:= smd-rpm.o icc-rpm.o icc-rpm-clocks.o
+ 
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_INTERCONNECT_QCOM_BCM_VOTER) += icc-bcm-voter.o
++endif
+ obj-$(CONFIG_INTERCONNECT_QCOM_GLYMUR) += qnoc-glymur.o
+ obj-$(CONFIG_INTERCONNECT_QCOM_MILOS) += qnoc-milos.o
+ obj-$(CONFIG_INTERCONNECT_QCOM_MSM8909) += qnoc-msm8909.o
+@@ -63,7 +67,9 @@ obj-$(CONFIG_INTERCONNECT_QCOM_QCS404) += qnoc-qcs404.o
+ obj-$(CONFIG_INTERCONNECT_QCOM_QCS615) += qnoc-qcs615.o
+ obj-$(CONFIG_INTERCONNECT_QCOM_QCS8300) += qnoc-qcs8300.o
+ obj-$(CONFIG_INTERCONNECT_QCOM_QDU1000) += qnoc-qdu1000.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_INTERCONNECT_QCOM_RPMH) += icc-rpmh.o
++endif
+ obj-$(CONFIG_INTERCONNECT_QCOM_SA8775P) += qnoc-sa8775p.o
+ obj-$(CONFIG_INTERCONNECT_QCOM_SAR2130P) += qnoc-sar2130p.o
+ obj-$(CONFIG_INTERCONNECT_QCOM_SC7180) += qnoc-sc7180.o
+diff --git a/drivers/iommu/arm/arm-smmu/Makefile b/drivers/iommu/arm/arm-smmu/Makefile
+index 2a5a95e8e3f9..5fd7c6bf6f89 100644
+--- a/drivers/iommu/arm/arm-smmu/Makefile
++++ b/drivers/iommu/arm/arm-smmu/Makefile
+@@ -1,6 +1,14 @@
+ # SPDX-License-Identifier: GPL-2.0
+ obj-$(CONFIG_QCOM_IOMMU) += qcom_iommu.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_ARM_SMMU) += arm_smmu.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ arm_smmu-objs += arm-smmu.o arm-smmu-impl.o arm-smmu-nvidia.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ arm_smmu-$(CONFIG_ARM_SMMU_QCOM) += arm-smmu-qcom.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ arm_smmu-$(CONFIG_ARM_SMMU_QCOM_DEBUG) += arm-smmu-qcom-debug.o
++endif
+diff --git a/drivers/irqchip/Makefile b/drivers/irqchip/Makefile
+index 6a229443efe0..9ba1b228fac1 100644
+--- a/drivers/irqchip/Makefile
++++ b/drivers/irqchip/Makefile
+@@ -97,7 +97,9 @@ obj-$(CONFIG_IRQ_UNIPHIER_AIDET)	+= irq-uniphier-aidet.o
+ obj-$(CONFIG_ARCH_SYNQUACER)		+= irq-sni-exiu.o
+ obj-$(CONFIG_MESON_IRQ_GPIO)		+= irq-meson-gpio.o
+ obj-$(CONFIG_GOLDFISH_PIC) 		+= irq-goldfish-pic.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_QCOM_PDC)			+= qcom-pdc.o
++endif
+ obj-$(CONFIG_QCOM_MPM)			+= irq-qcom-mpm.o
+ obj-$(CONFIG_CSKY_MPINTC)		+= irq-csky-mpintc.o
+ obj-$(CONFIG_CSKY_APB_INTC)		+= irq-csky-apb-intc.o
+diff --git a/drivers/leds/flash/Makefile b/drivers/leds/flash/Makefile
+index 712fb737a428..7d9fad819ff0 100644
+--- a/drivers/leds/flash/Makefile
++++ b/drivers/leds/flash/Makefile
+@@ -7,7 +7,9 @@ obj-$(CONFIG_LEDS_AS3645A)	+= leds-as3645a.o
+ obj-$(CONFIG_LEDS_KTD2692)	+= leds-ktd2692.o
+ obj-$(CONFIG_LEDS_LM3601X)	+= leds-lm3601x.o
+ obj-$(CONFIG_LEDS_MAX77693)	+= leds-max77693.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_LEDS_QCOM_FLASH)	+= leds-qcom-flash.o
++endif
+ obj-$(CONFIG_LEDS_RT4505)	+= leds-rt4505.o
+ obj-$(CONFIG_LEDS_RT8515)	+= leds-rt8515.o
+ obj-$(CONFIG_LEDS_SGM3140)	+= leds-sgm3140.o
+diff --git a/drivers/leds/rgb/Makefile b/drivers/leds/rgb/Makefile
+index a501fd27f179..251d513d54fd 100644
+--- a/drivers/leds/rgb/Makefile
++++ b/drivers/leds/rgb/Makefile
+@@ -4,5 +4,7 @@ obj-$(CONFIG_LEDS_GROUP_MULTICOLOR)	+= leds-group-multicolor.o
+ obj-$(CONFIG_LEDS_KTD202X)		+= leds-ktd202x.o
+ obj-$(CONFIG_LEDS_NCP5623)		+= leds-ncp5623.o
+ obj-$(CONFIG_LEDS_PWM_MULTICOLOR)	+= leds-pwm-multicolor.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_LEDS_QCOM_LPG)		+= leds-qcom-lpg.o
++endif
+ obj-$(CONFIG_LEDS_MT6370_RGB)		+= leds-mt6370-rgb.o
+diff --git a/drivers/leds/trigger/Makefile b/drivers/leds/trigger/Makefile
+index 3b3628889f68..78eb3e5f754e 100644
+--- a/drivers/leds/trigger/Makefile
++++ b/drivers/leds/trigger/Makefile
+@@ -13,6 +13,8 @@ obj-$(CONFIG_LEDS_TRIGGER_TRANSIENT)	+= ledtrig-transient.o
+ obj-$(CONFIG_LEDS_TRIGGER_CAMERA)	+= ledtrig-camera.o
+ obj-$(CONFIG_LEDS_TRIGGER_PANIC)	+= ledtrig-panic.o
+ obj-$(CONFIG_LEDS_TRIGGER_NETDEV)	+= ledtrig-netdev.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_LEDS_TRIGGER_PATTERN)	+= ledtrig-pattern.o
++endif
+ obj-$(CONFIG_LEDS_TRIGGER_TTY)		+= ledtrig-tty.o
+ obj-$(CONFIG_LEDS_TRIGGER_INPUT_EVENTS)	+= ledtrig-input-events.o
+diff --git a/drivers/mailbox/Makefile b/drivers/mailbox/Makefile
+index 81820a4f5528..f371fa1e3b5a 100644
+--- a/drivers/mailbox/Makefile
++++ b/drivers/mailbox/Makefile
+@@ -73,7 +73,9 @@ obj-$(CONFIG_SPRD_MBOX)		+= sprd-mailbox.o
+ 
+ obj-$(CONFIG_QCOM_CPUCP_MBOX)	+= qcom-cpucp-mbox.o
+ 
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_QCOM_IPCC)		+= qcom-ipcc.o
++endif
+ 
+ obj-$(CONFIG_THEAD_TH1520_MBOX)	+= mailbox-th1520.o
+ 
+diff --git a/drivers/mfd/Makefile b/drivers/mfd/Makefile
+index 865e9f12faff..24a00a8af0ac 100644
+--- a/drivers/mfd/Makefile
++++ b/drivers/mfd/Makefile
+@@ -214,7 +214,9 @@ obj-$(CONFIG_MFD_CS5535)	+= cs5535-mfd.o
+ obj-$(CONFIG_MFD_OMAP_USB_HOST)	+= omap-usb-host.o omap-usb-tll.o
+ obj-$(CONFIG_MFD_PM8XXX) 	+= qcom-pm8xxx.o ssbi.o
+ obj-$(CONFIG_MFD_QCOM_RPM)	+= qcom_rpm.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_MFD_SPMI_PMIC)	+= qcom-spmi-pmic.o
++endif
+ obj-$(CONFIG_TPS65911_COMPARATOR)	+= tps65911-comparator.o
+ obj-$(CONFIG_MFD_TPS65090)	+= tps65090.o
+ obj-$(CONFIG_MFD_AAT2870_CORE)	+= aat2870-core.o
+diff --git a/drivers/misc/lkdtm/Makefile b/drivers/misc/lkdtm/Makefile
+index 03ebe33185f9..51c61c6f34bc 100644
+--- a/drivers/misc/lkdtm/Makefile
++++ b/drivers/misc/lkdtm/Makefile
+@@ -1,16 +1,38 @@
+ # SPDX-License-Identifier: GPL-2.0
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_LKDTM)		+= lkdtm.o
++endif
+ 
++ifndef KBUILD_EXT_PREFIX
+ lkdtm-$(CONFIG_LKDTM)		+= core.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ lkdtm-$(CONFIG_LKDTM)		+= bugs.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ lkdtm-$(CONFIG_LKDTM)		+= heap.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ lkdtm-$(CONFIG_LKDTM)		+= perms.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ lkdtm-$(CONFIG_LKDTM)		+= refcount.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ lkdtm-$(CONFIG_LKDTM)		+= rodata_objcopy.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ lkdtm-$(CONFIG_LKDTM)		+= usercopy.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ lkdtm-$(CONFIG_LKDTM)		+= kstack_erase.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ lkdtm-$(CONFIG_LKDTM)		+= cfi.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ lkdtm-$(CONFIG_LKDTM)		+= fortify.o
++endif
+ lkdtm-$(CONFIG_PPC_64S_HASH_MMU)	+= powerpc.o
+ 
+ KASAN_SANITIZE_stackleak.o	:= n
+diff --git a/drivers/mmc/host/Makefile b/drivers/mmc/host/Makefile
+index 5057fea8afb6..dd3897391a3b 100644
+--- a/drivers/mmc/host/Makefile
++++ b/drivers/mmc/host/Makefile
+@@ -95,16 +95,24 @@ obj-$(CONFIG_MMC_SDHCI_OF_MA35D1)	+= sdhci-of-ma35d1.o
+ obj-$(CONFIG_MMC_SDHCI_BCM_KONA)	+= sdhci-bcm-kona.o
+ obj-$(CONFIG_MMC_SDHCI_IPROC)		+= sdhci-iproc.o
+ obj-$(CONFIG_MMC_SDHCI_NPCM)		+= sdhci-npcm.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_MMC_SDHCI_MSM)		+= sdhci-msm.o
++endif
+ obj-$(CONFIG_MMC_SDHCI_ST)		+= sdhci-st.o
+ obj-$(CONFIG_MMC_SDHCI_MICROCHIP_PIC32)	+= sdhci-pic32.o
+ obj-$(CONFIG_MMC_SDHCI_BRCMSTB)		+= sdhci-brcmstb.o
+ obj-$(CONFIG_MMC_SDHCI_OMAP)		+= sdhci-omap.o
+ obj-$(CONFIG_MMC_SDHCI_SPRD)		+= sdhci-sprd.o
+ obj-$(CONFIG_MMC_SUNPLUS)		+= sunplus-mmc.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_MMC_CQHCI)			+= cqhci.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ cqhci-y					+= cqhci-core.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ cqhci-$(CONFIG_MMC_CRYPTO)		+= cqhci-crypto.o
++endif
+ obj-$(CONFIG_MMC_HSQ)			+= mmc_hsq.o
+ obj-$(CONFIG_MMC_LITEX)			+= litex_mmc.o
+ 
+diff --git a/drivers/nvmem/Makefile b/drivers/nvmem/Makefile
+index 70a4464dcb1e..2a0bd77895f0 100644
+--- a/drivers/nvmem/Makefile
++++ b/drivers/nvmem/Makefile
+@@ -52,8 +52,12 @@ obj-$(CONFIG_NVMEM_MXS_OCOTP)		+= nvmem-mxs-ocotp.o
+ nvmem-mxs-ocotp-y			:= mxs-ocotp.o
+ obj-$(CONFIG_NVMEM_NINTENDO_OTP)	+= nvmem-nintendo-otp.o
+ nvmem-nintendo-otp-y			:= nintendo-otp.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_NVMEM_QCOM_QFPROM)		+= nvmem_qfprom.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ nvmem_qfprom-y				:= qfprom.o
++endif
+ obj-$(CONFIG_NVMEM_QCOM_SEC_QFPROM)	+= nvmem_sec_qfprom.o
+ nvmem_sec_qfprom-y			:= sec-qfprom.o
+ obj-$(CONFIG_NVMEM_RAVE_SP_EEPROM)	+= nvmem-rave-sp-eeprom.o
+@@ -70,8 +74,12 @@ obj-$(CONFIG_NVMEM_SC27XX_EFUSE)	+= nvmem-sc27xx-efuse.o
+ nvmem-sc27xx-efuse-y			:= sc27xx-efuse.o
+ obj-$(CONFIG_NVMEM_SNVS_LPGPR)		+= nvmem_snvs_lpgpr.o
+ nvmem_snvs_lpgpr-y			:= snvs_lpgpr.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_NVMEM_SPMI_SDAM)		+= nvmem_qcom-spmi-sdam.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ nvmem_qcom-spmi-sdam-y			+= qcom-spmi-sdam.o
++endif
+ obj-$(CONFIG_NVMEM_SPRD_EFUSE)		+= nvmem_sprd_efuse.o
+ nvmem_sprd_efuse-y			:= sprd-efuse.o
+ obj-$(CONFIG_NVMEM_STM32_ROMEM)		+= nvmem_stm32_romem.o
+diff --git a/drivers/phy/qualcomm/Makefile b/drivers/phy/qualcomm/Makefile
+index b71a6a0bed3f..4fd5f26129fa 100644
+--- a/drivers/phy/qualcomm/Makefile
++++ b/drivers/phy/qualcomm/Makefile
+@@ -8,7 +8,9 @@ obj-$(CONFIG_PHY_QCOM_M31_USB)		+= phy-qcom-m31.o
+ obj-$(CONFIG_PHY_QCOM_M31_EUSB)		+= phy-qcom-m31-eusb2.o
+ obj-$(CONFIG_PHY_QCOM_PCIE2)		+= phy-qcom-pcie2.o
+ 
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_PHY_QCOM_QMP_COMBO)	+= phy-qcom-qmp-combo.o phy-qcom-qmp-usbc.o
++endif
+ obj-$(CONFIG_PHY_QCOM_QMP_PCIE)		+= phy-qcom-qmp-pcie.o
+ obj-$(CONFIG_PHY_QCOM_QMP_PCIE_8996)	+= phy-qcom-qmp-pcie-msm8996.o
+ obj-$(CONFIG_PHY_QCOM_QMP_UFS)		+= phy-qcom-qmp-ufs.o
+@@ -16,7 +18,9 @@ obj-$(CONFIG_PHY_QCOM_QMP_USB)		+= phy-qcom-qmp-usb.o
+ obj-$(CONFIG_PHY_QCOM_QMP_USB_LEGACY)	+= phy-qcom-qmp-usb-legacy.o
+ 
+ obj-$(CONFIG_PHY_QCOM_QUSB2)		+= phy-qcom-qusb2.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_PHY_QCOM_EUSB2_REPEATER)	+= phy-qcom-eusb2-repeater.o
++endif
+ obj-$(CONFIG_PHY_QCOM_UNIPHY_PCIE_28LP)	+= phy-qcom-uniphy-pcie-28lp.o
+ obj-$(CONFIG_PHY_QCOM_USB_HS) 		+= phy-qcom-usb-hs.o
+ obj-$(CONFIG_PHY_QCOM_USB_HSIC) 	+= phy-qcom-usb-hsic.o
+diff --git a/drivers/pinctrl/qcom/Makefile b/drivers/pinctrl/qcom/Makefile
+index 9d7ada203d4c..ca93fe47f1cb 100644
+--- a/drivers/pinctrl/qcom/Makefile
++++ b/drivers/pinctrl/qcom/Makefile
+@@ -1,6 +1,8 @@
+ # SPDX-License-Identifier: GPL-2.0
+ # Qualcomm pin control drivers
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_PINCTRL_MSM)	+= pinctrl-msm.o
++endif
+ obj-$(CONFIG_PINCTRL_APQ8064)	+= pinctrl-apq8064.o
+ obj-$(CONFIG_PINCTRL_APQ8084)	+= pinctrl-apq8084.o
+ obj-$(CONFIG_PINCTRL_GLYMUR)	+= pinctrl-glymur.o
+@@ -32,8 +34,12 @@ obj-$(CONFIG_PINCTRL_QDF2XXX)	+= pinctrl-qdf2xxx.o
+ obj-$(CONFIG_PINCTRL_MDM9607)	+= pinctrl-mdm9607.o
+ obj-$(CONFIG_PINCTRL_MDM9615)	+= pinctrl-mdm9615.o
+ obj-$(CONFIG_PINCTRL_MILOS) += pinctrl-milos.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_PINCTRL_QCOM_SPMI_PMIC) += pinctrl-spmi-gpio.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_PINCTRL_QCOM_SPMI_PMIC) += pinctrl-spmi-mpp.o
++endif
+ obj-$(CONFIG_PINCTRL_QCOM_SSBI_PMIC) += pinctrl-ssbi-gpio.o
+ obj-$(CONFIG_PINCTRL_QCOM_SSBI_PMIC) += pinctrl-ssbi-mpp.o
+ obj-$(CONFIG_PINCTRL_QDU1000)	+= pinctrl-qdu1000.o
+diff --git a/drivers/power/reset/Makefile b/drivers/power/reset/Makefile
+index 51da87e05ce7..411099598699 100644
+--- a/drivers/power/reset/Makefile
++++ b/drivers/power/reset/Makefile
+@@ -16,7 +16,9 @@ obj-$(CONFIG_POWER_RESET_LINKSTATION) += linkstation-poweroff.o
+ obj-$(CONFIG_POWER_RESET_MACSMC) += macsmc-reboot.o
+ obj-$(CONFIG_POWER_RESET_MSM) += msm-poweroff.o
+ obj-$(CONFIG_POWER_RESET_MT6323) += mt6323-poweroff.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_POWER_RESET_QCOM_PON) += qcom-pon.o
++endif
+ obj-$(CONFIG_POWER_RESET_OCELOT_RESET) += ocelot-reset.o
+ obj-$(CONFIG_POWER_RESET_ODROID_GO_ULTRA_POWEROFF) += odroid-go-ultra-poweroff.o
+ obj-$(CONFIG_POWER_RESET_PIIX4_POWEROFF) += piix4-poweroff.o
+@@ -35,7 +37,9 @@ obj-$(CONFIG_POWER_RESET_KEYSTONE) += keystone-reset.o
+ obj-$(CONFIG_POWER_RESET_SYSCON) += syscon-reboot.o
+ obj-$(CONFIG_POWER_RESET_SYSCON_POWEROFF) += syscon-poweroff.o
+ obj-$(CONFIG_POWER_RESET_RMOBILE) += rmobile-reset.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_REBOOT_MODE) += reboot-mode.o
++endif
+ obj-$(CONFIG_SYSCON_REBOOT_MODE) += syscon-reboot-mode.o
+ obj-$(CONFIG_POWER_RESET_SC27XX) += sc27xx-poweroff.o
+ obj-$(CONFIG_NVMEM_REBOOT_MODE) += nvmem-reboot-mode.o
+diff --git a/drivers/remoteproc/Makefile b/drivers/remoteproc/Makefile
+index 1c7598b8475d..9b5167c2a082 100644
+--- a/drivers/remoteproc/Makefile
++++ b/drivers/remoteproc/Makefile
+@@ -21,14 +21,24 @@ obj-$(CONFIG_DA8XX_REMOTEPROC)		+= da8xx_remoteproc.o
+ obj-$(CONFIG_KEYSTONE_REMOTEPROC)	+= keystone_remoteproc.o
+ obj-$(CONFIG_MESON_MX_AO_ARC_REMOTEPROC)+= meson_mx_ao_arc.o
+ obj-$(CONFIG_PRU_REMOTEPROC)		+= pru_rproc.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_QCOM_PIL_INFO)		+= qcom_pil_info.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_QCOM_RPROC_COMMON)		+= qcom_common.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_QCOM_Q6V5_COMMON)		+= qcom_q6v5.o
++endif
+ obj-$(CONFIG_QCOM_Q6V5_ADSP)		+= qcom_q6v5_adsp.o
+ obj-$(CONFIG_QCOM_Q6V5_MSS)		+= qcom_q6v5_mss.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_QCOM_Q6V5_PAS)		+= qcom_q6v5_pas.o
++endif
+ obj-$(CONFIG_QCOM_Q6V5_WCSS)		+= qcom_q6v5_wcss.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_QCOM_SYSMON)		+= qcom_sysmon.o
++endif
+ obj-$(CONFIG_QCOM_WCNSS_PIL)		+= qcom_wcnss_pil.o
+ qcom_wcnss_pil-y			+= qcom_wcnss.o
+ qcom_wcnss_pil-y			+= qcom_wcnss_iris.o
+diff --git a/drivers/rpmsg/Makefile b/drivers/rpmsg/Makefile
+index 1e02b58ff61f..c47a50b1ffc5 100644
+--- a/drivers/rpmsg/Makefile
++++ b/drivers/rpmsg/Makefile
+@@ -5,9 +5,17 @@ obj-$(CONFIG_RPMSG_CTRL)	+= rpmsg_ctrl.o
+ obj-$(CONFIG_RPMSG_NS)		+= rpmsg_ns.o
+ obj-$(CONFIG_RPMSG_MTK_SCP)	+= mtk_rpmsg.o
+ CFLAGS_qcom_glink_native.o	:= -I$(src)
++ifndef KBUILD_EXT_PREFIX
+ qcom_glink-objs			:= qcom_glink_native.o qcom_glink_ssr.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_RPMSG_QCOM_GLINK) += qcom_glink.o
++endif
+ obj-$(CONFIG_RPMSG_QCOM_GLINK_RPM) += qcom_glink_rpm.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_RPMSG_QCOM_GLINK_SMEM) += qcom_glink_smem.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_RPMSG_QCOM_SMD)	+= qcom_smd.o
++endif
+ obj-$(CONFIG_RPMSG_VIRTIO)	+= virtio_rpmsg_bus.o
+diff --git a/drivers/rtc/Makefile b/drivers/rtc/Makefile
+index 8221bda6e6dc..ea738872c837 100644
+--- a/drivers/rtc/Makefile
++++ b/drivers/rtc/Makefile
+@@ -136,7 +136,9 @@ obj-$(CONFIG_RTC_DRV_PCF8583)	+= rtc-pcf8583.o
+ obj-$(CONFIG_RTC_DRV_PIC32)	+= rtc-pic32.o
+ obj-$(CONFIG_RTC_DRV_PL030)	+= rtc-pl030.o
+ obj-$(CONFIG_RTC_DRV_PL031)	+= rtc-pl031.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_RTC_DRV_PM8XXX)	+= rtc-pm8xxx.o
++endif
+ obj-$(CONFIG_RTC_DRV_POLARFIRE_SOC)	+= rtc-mpfs.o
+ obj-$(CONFIG_RTC_DRV_PS3)	+= rtc-ps3.o
+ obj-$(CONFIG_RTC_DRV_PXA)	+= rtc-pxa.o
+diff --git a/drivers/scsi/Makefile b/drivers/scsi/Makefile
+index 16de3e41f94c..6ac1443dbc0d 100644
+--- a/drivers/scsi/Makefile
++++ b/drivers/scsi/Makefile
+@@ -147,7 +147,9 @@ obj-$(CONFIG_ARM)		+= arm/
+ obj-$(CONFIG_CHR_DEV_ST)	+= st.o
+ obj-$(CONFIG_BLK_DEV_SD)	+= sd_mod.o
+ obj-$(CONFIG_BLK_DEV_SR)	+= sr_mod.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_CHR_DEV_SG)	+= sg.o
++endif
+ obj-$(CONFIG_CHR_DEV_SCH)	+= ch.o
+ obj-$(CONFIG_SCSI_ENCLOSURE)	+= ses.o
+ 
+diff --git a/drivers/slimbus/Makefile b/drivers/slimbus/Makefile
+index 3cfb41c3b592..72d6a64f2652 100644
+--- a/drivers/slimbus/Makefile
++++ b/drivers/slimbus/Makefile
+@@ -2,9 +2,17 @@
+ #
+ # Makefile for kernel SLIMbus framework.
+ #
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_SLIMBUS)			+= slimbus.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ slimbus-y				:= core.o messaging.o sched.o stream.o
++endif
+ 
+ #Controllers
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_SLIM_QCOM_NGD_CTRL)	+= slim-qcom-ngd-ctrl.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ slim-qcom-ngd-ctrl-y			:= qcom-ngd-ctrl.o
++endif
+diff --git a/drivers/soc/qcom/Makefile b/drivers/soc/qcom/Makefile
+index b7f1d2a57367..90ce6c9dd8bf 100644
+--- a/drivers/soc/qcom/Makefile
++++ b/drivers/soc/qcom/Makefile
+@@ -1,42 +1,76 @@
+ # SPDX-License-Identifier: GPL-2.0
+ CFLAGS_rpmh-rsc.o := -I$(src)
+ CFLAGS_qcom_aoss.o := -I$(src)
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_QCOM_AOSS_QMP) +=	qcom_aoss.o
++endif
+ obj-$(CONFIG_QCOM_GENI_SE) +=	qcom-geni-se.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_QCOM_COMMAND_DB) += cmd-db.o
++endif
+ obj-$(CONFIG_QCOM_GSBI)	+=	qcom_gsbi.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_QCOM_MDT_LOADER)	+= mdt_loader.o
++endif
+ obj-$(CONFIG_QCOM_OCMEM)	+= ocmem.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_QCOM_PD_MAPPER)	+= qcom_pd_mapper.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_QCOM_PDR_HELPERS)	+= pdr_interface.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_QCOM_PDR_MSG)	+= qcom_pdr_msg.o
++endif
+ obj-$(CONFIG_QCOM_PMIC_GLINK)	+= pmic_glink.o
+ obj-$(CONFIG_QCOM_PMIC_GLINK)	+= pmic_glink_altmode.o
+ obj-$(CONFIG_QCOM_PMIC_PDCHARGER_ULOG)	+= pmic_pdcharger_ulog.o
+ CFLAGS_pmic_pdcharger_ulog.o	:=  -I$(src)
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_QCOM_QMI_HELPERS)	+= qmi_helpers.o
+ qmi_helpers-y	+= qmi_encdec.o qmi_interface.o
++endif
+ obj-$(CONFIG_QCOM_RAMP_CTRL)	+= ramp_controller.o
+ obj-$(CONFIG_QCOM_RMTFS_MEM)	+= rmtfs_mem.o
+ obj-$(CONFIG_QCOM_RPM_MASTER_STATS)	+= rpm_master_stats.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_QCOM_RPMH)		+= qcom_rpmh.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ qcom_rpmh-y			+= rpmh-rsc.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ qcom_rpmh-y			+= rpmh.o
++endif
+ obj-$(CONFIG_QCOM_SMD_RPM)	+= rpm-proc.o smd-rpm.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_QCOM_SMEM) +=	smem.o
++endif
+ obj-$(CONFIG_QCOM_SMEM_STATE) += smem_state.o
+ CFLAGS_smp2p.o := -I$(src)
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_QCOM_SMP2P)	+= smp2p.o
++endif
+ obj-$(CONFIG_QCOM_SMSM)	+= smsm.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_QCOM_SOCINFO)	+= socinfo.o
++endif
+ obj-$(CONFIG_QCOM_SPM)		+= spm.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_QCOM_STATS)	+= qcom_stats.o
++endif
+ obj-$(CONFIG_QCOM_WCNSS_CTRL) += wcnss_ctrl.o
+ obj-$(CONFIG_QCOM_APR) += apr.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_QCOM_LLCC) += llcc-qcom.o
++endif
+ obj-$(CONFIG_QCOM_KRYO_L2_ACCESSORS) +=	kryo-l2-accessors.o
+ obj-$(CONFIG_QCOM_ICC_BWMON)	+= icc-bwmon.o
++ifndef KBUILD_EXT_PREFIX
+ qcom_ice-objs			+= ice.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_QCOM_INLINE_CRYPTO_ENGINE)	+= qcom_ice.o
++endif
+ obj-$(CONFIG_QCOM_PBS) +=	qcom-pbs.o
+ obj-$(CONFIG_QCOM_UBWC_CONFIG) += ubwc_config.o
+diff --git a/drivers/spi/Makefile b/drivers/spi/Makefile
+index 1f7c06a3091d..28a80e0359b8 100644
+--- a/drivers/spi/Makefile
++++ b/drivers/spi/Makefile
+@@ -117,7 +117,9 @@ obj-$(CONFIG_SPI_PXA2XX)		+= spi-pxa2xx-core.o
+ spi-pxa2xx-core-y			:= spi-pxa2xx.o spi-pxa2xx-dma.o
+ obj-$(CONFIG_SPI_PXA2XX)		+= spi-pxa2xx-platform.o
+ obj-$(CONFIG_SPI_PXA2XX_PCI)		+= spi-pxa2xx-pci.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_SPI_QCOM_GENI)		+= spi-geni-qcom.o
++endif
+ obj-$(CONFIG_SPI_QCOM_QSPI)		+= spi-qcom-qspi.o
+ obj-$(CONFIG_SPI_QPIC_SNAND)            += spi-qpic-snand.o
+ obj-$(CONFIG_SPI_QUP)			+= spi-qup.o
+diff --git a/drivers/spmi/Makefile b/drivers/spmi/Makefile
+index 38ac635645ba..9d3e35c16972 100644
+--- a/drivers/spmi/Makefile
++++ b/drivers/spmi/Makefile
+@@ -6,5 +6,7 @@ obj-$(CONFIG_SPMI)	+= spmi.o spmi-devres.o
+ 
+ obj-$(CONFIG_SPMI_APPLE)	+= spmi-apple-controller.o
+ obj-$(CONFIG_SPMI_HISI3670)	+= hisi-spmi-controller.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_SPMI_MSM_PMIC_ARB)	+= spmi-pmic-arb.o
++endif
+ obj-$(CONFIG_SPMI_MTK_PMIF)	+= spmi-mtk-pmif.o
+diff --git a/drivers/thermal/qcom/Makefile b/drivers/thermal/qcom/Makefile
+index 0fa2512042e7..6ca0d84809ee 100644
+--- a/drivers/thermal/qcom/Makefile
++++ b/drivers/thermal/qcom/Makefile
+@@ -1,8 +1,14 @@
+ # SPDX-License-Identifier: GPL-2.0-only
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_QCOM_TSENS)	+= qcom_tsens.o
++endif
+ 
++ifndef KBUILD_EXT_PREFIX
+ qcom_tsens-y			+= tsens.o tsens-v2.o tsens-v1.o tsens-v0_1.o \
+ 				   tsens-8960.o
++endif
+ obj-$(CONFIG_QCOM_SPMI_ADC_TM5)	+= qcom-spmi-adc-tm5.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_QCOM_SPMI_TEMP_ALARM)	+= qcom-spmi-temp-alarm.o
++endif
+ obj-$(CONFIG_QCOM_LMH)		+= lmh.o
+diff --git a/drivers/ufs/host/Makefile b/drivers/ufs/host/Makefile
+index 2f97feb5db3f..26d81e9eaeb4 100644
+--- a/drivers/ufs/host/Makefile
++++ b/drivers/ufs/host/Makefile
+@@ -3,7 +3,9 @@
+ obj-$(CONFIG_SCSI_UFS_DWC_TC_PCI) += tc-dwc-g210-pci.o ufshcd-dwc.o tc-dwc-g210.o
+ obj-$(CONFIG_SCSI_UFS_DWC_TC_PLATFORM) += tc-dwc-g210-pltfrm.o ufshcd-dwc.o tc-dwc-g210.o
+ obj-$(CONFIG_SCSI_UFS_CDNS_PLATFORM) += cdns-pltfrm.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_SCSI_UFS_QCOM) += ufs-qcom.o
++endif
+ obj-$(CONFIG_SCSI_UFS_EXYNOS) += ufs-exynos.o
+ obj-$(CONFIG_SCSI_UFSHCD_PCI) += ufshcd-pci.o
+ obj-$(CONFIG_SCSI_UFSHCD_PLATFORM) += ufshcd-pltfrm.o
+diff --git a/drivers/usb/misc/Makefile b/drivers/usb/misc/Makefile
+index 494ab0377f35..74dc40130bd5 100644
+--- a/drivers/usb/misc/Makefile
++++ b/drivers/usb/misc/Makefile
+@@ -32,6 +32,8 @@ obj-$(CONFIG_USB_HSIC_USB4604)		+= usb4604.o
+ obj-$(CONFIG_USB_CHAOSKEY)		+= chaoskey.o
+ 
+ obj-$(CONFIG_USB_SISUSBVGA)		+= sisusbvga/
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_USB_LINK_LAYER_TEST)	+= lvstest.o
++endif
+ obj-$(CONFIG_BRCM_USB_PINMAP)		+= brcmstb-usb-pinmap.o
+ obj-$(CONFIG_USB_ONBOARD_DEV)		+= onboard_usb_dev.o
+diff --git a/drivers/usb/phy/Makefile b/drivers/usb/phy/Makefile
+index ceae46c5341d..b41786f0348f 100644
+--- a/drivers/usb/phy/Makefile
++++ b/drivers/usb/phy/Makefile
+@@ -9,7 +9,9 @@ obj-$(CONFIG_OF)			+= of.o
+ 
+ obj-$(CONFIG_AB8500_USB)		+= phy-ab8500-usb.o
+ obj-$(CONFIG_FSL_USB2_OTG)		+= phy-fsl-usb.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_NOP_USB_XCEIV)		+= phy-generic.o
++endif
+ obj-$(CONFIG_TAHVO_USB)			+= phy-tahvo.o
+ obj-$(CONFIG_AM335X_CONTROL_USB)	+= phy-am335x-control.o
+ obj-$(CONFIG_AM335X_PHY_USB)		+= phy-am335x.o
+diff --git a/kernel/Makefile b/kernel/Makefile
+index 9fe722305c9b..0247c5f2cb4b 100644
+--- a/kernel/Makefile
++++ b/kernel/Makefile
+@@ -132,7 +132,9 @@ obj-$(CONFIG_USER_RETURN_NOTIFIER) += user-return-notifier.o
+ obj-$(CONFIG_PADATA) += padata.o
+ obj-$(CONFIG_JUMP_LABEL) += jump_label.o
+ obj-$(CONFIG_CONTEXT_TRACKING) += context_tracking.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_TORTURE_TEST) += torture.o
++endif
+ 
+ obj-$(CONFIG_HAS_IOMEM) += iomem.o
+ obj-$(CONFIG_RSEQ) += rseq.o
+diff --git a/kernel/locking/Makefile b/kernel/locking/Makefile
+index a114949eeed5..a0262601eae5 100644
+--- a/kernel/locking/Makefile
++++ b/kernel/locking/Makefile
+@@ -30,6 +30,8 @@ obj-$(CONFIG_PREEMPT_RT) += spinlock_rt.o ww_rt_mutex.o
+ obj-$(CONFIG_DEBUG_SPINLOCK) += spinlock.o
+ obj-$(CONFIG_DEBUG_SPINLOCK) += spinlock_debug.o
+ obj-$(CONFIG_QUEUED_RWLOCKS) += qrwlock.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_LOCK_TORTURE_TEST) += locktorture.o
++endif
+ obj-$(CONFIG_WW_MUTEX_SELFTEST) += test-ww_mutex.o
+ obj-$(CONFIG_LOCK_EVENT_COUNTS) += lock_events.o
+diff --git a/kernel/rcu/Makefile b/kernel/rcu/Makefile
+index 0cfb009a99b9..1008082f6749 100644
+--- a/kernel/rcu/Makefile
++++ b/kernel/rcu/Makefile
+@@ -10,7 +10,9 @@ endif
+ obj-y += update.o sync.o
+ obj-$(CONFIG_TREE_SRCU) += srcutree.o
+ obj-$(CONFIG_TINY_SRCU) += srcutiny.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_RCU_TORTURE_TEST) += rcutorture.o
++endif
+ obj-$(CONFIG_RCU_SCALE_TEST) += rcuscale.o
+ obj-$(CONFIG_RCU_REF_SCALE_TEST) += refscale.o
+ obj-$(CONFIG_TREE_RCU) += tree.o
+diff --git a/lib/Makefile b/lib/Makefile
+index 1ab2c4be3b66..26be848026c0 100644
+--- a/lib/Makefile
++++ b/lib/Makefile
+@@ -215,7 +215,9 @@ obj-$(CONFIG_GENERIC_CSUM) += checksum.o
+ 
+ obj-$(CONFIG_GENERIC_ATOMIC64) += atomic64.o
+ 
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_ATOMIC64_SELFTEST) += atomic64_test.o
++endif
+ 
+ obj-$(CONFIG_CPU_RMAP) += cpu_rmap.o
+ 
+diff --git a/mm/Makefile b/mm/Makefile
+index a6eeea2f4445..9b204bb1269a 100644
+--- a/mm/Makefile
++++ b/mm/Makefile
+@@ -117,7 +117,9 @@ obj-$(CONFIG_DEBUG_VM_PGTABLE) += debug_vm_pgtable.o
+ obj-$(CONFIG_PAGE_OWNER) += page_owner.o
+ obj-$(CONFIG_CLEANCACHE) += cleancache.o
+ obj-$(CONFIG_MEMORY_ISOLATION) += page_isolation.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_ZSMALLOC)	+= zsmalloc.o
++endif
+ obj-$(CONFIG_GENERIC_EARLY_IOREMAP) += early_ioremap.o
+ obj-$(CONFIG_CMA)	+= cma.o
+ obj-$(CONFIG_GCMA)	+= gcma.o
+diff --git a/net/mac80211/Makefile b/net/mac80211/Makefile
+index a33884967f21..549cae4a9b8d 100644
+--- a/net/mac80211/Makefile
++++ b/net/mac80211/Makefile
+@@ -1,7 +1,10 @@
+ # SPDX-License-Identifier: GPL-2.0
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_MAC80211) += mac80211.o
++endif
+ 
+ # mac80211 objects
++ifndef KBUILD_EXT_PREFIX
+ mac80211-y := \
+ 	main.o status.o \
+ 	driver-ops.o \
+@@ -37,6 +40,7 @@ mac80211-y := \
+ 	ocb.o \
+ 	airtime.o \
+ 	eht.o
++endif
+ 
+ mac80211-$(CONFIG_MAC80211_LEDS) += led.o
+ mac80211-$(CONFIG_MAC80211_DEBUGFS) += \
+@@ -53,7 +57,9 @@ mac80211-$(CONFIG_MAC80211_MESH) += \
+ 	mesh_sync.o \
+ 	mesh_ps.o
+ 
++ifndef KBUILD_EXT_PREFIX
+ mac80211-$(CONFIG_PM) += pm.o
++endif
+ 
+ CFLAGS_trace.o := -I$(src)
+ 
+@@ -67,6 +73,8 @@ mac80211-$(CONFIG_MAC80211_RC_MINSTREL) += $(rc80211_minstrel-y)
+ 
+ obj-y += tests/
+ 
++ifndef KBUILD_EXT_PREFIX
+ mac80211-y += wbrf.o
++endif
+ 
+ ccflags-y += -DDEBUG
+diff --git a/net/qrtr/Makefile b/net/qrtr/Makefile
+index 8e0605f88a73..561527a43f6c 100644
+--- a/net/qrtr/Makefile
++++ b/net/qrtr/Makefile
+@@ -1,10 +1,22 @@
+ # SPDX-License-Identifier: GPL-2.0-only
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_QRTR) += qrtr.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ qrtr-y	:= af_qrtr.o ns.o
++endif
+ 
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_QRTR_SMD) += qrtr-smd.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ qrtr-smd-y	:= smd.o
++endif
+ obj-$(CONFIG_QRTR_TUN) += qrtr-tun.o
+ qrtr-tun-y	:= tun.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_QRTR_MHI) += qrtr-mhi.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ qrtr-mhi-y	:= mhi.o
++endif
+diff --git a/net/wireless/Makefile b/net/wireless/Makefile
+index 62a83faf0e07..8b8292f1ff19 100644
+--- a/net/wireless/Makefile
++++ b/net/wireless/Makefile
+@@ -1,15 +1,25 @@
+ # SPDX-License-Identifier: GPL-2.0
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_CFG80211) += cfg80211.o
++endif
+ obj-y += tests/
+ 
+ obj-$(CONFIG_WEXT_CORE) += wext-core.o
+ obj-$(CONFIG_WEXT_PROC) += wext-proc.o
+ obj-$(CONFIG_WEXT_PRIV) += wext-priv.o
+ 
++ifndef KBUILD_EXT_PREFIX
+ cfg80211-y += core.o sysfs.o radiotap.o util.o reg.o scan.o nl80211.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ cfg80211-y += mlme.o ibss.o sme.o chan.o ethtool.o mesh.o ap.o trace.o ocb.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ cfg80211-y += pmsr.o
++endif
++ifndef KBUILD_EXT_PREFIX
+ cfg80211-$(CONFIG_OF) += of.o
++endif
+ cfg80211-$(CONFIG_CFG80211_DEBUGFS) += debugfs.o
+ cfg80211-$(CONFIG_CFG80211_WEXT) += wext-compat.o wext-sme.o
+ 
+@@ -17,8 +27,10 @@ CFLAGS_trace.o := -I$(src)
+ 
+ cfg80211-$(CONFIG_CFG80211_USE_KERNEL_REGDB_KEYS) += shipped-certs.o
+ ifneq ($(CONFIG_CFG80211_EXTRA_REGDB_KEYDIR),)
++ifndef KBUILD_EXT_PREFIX
+ cfg80211-y += extra-certs.o
+ endif
++endif
+ 
+ $(obj)/shipped-certs.c: $(sort $(wildcard $(src)/certs/*.hex))
+ 	@$(kecho) "  GEN     $@"
+diff --git a/sound/soc/codecs/Makefile b/sound/soc/codecs/Makefile
+index da4077463278..af7022a0a744 100644
+--- a/sound/soc/codecs/Makefile
++++ b/sound/soc/codecs/Makefile
+@@ -202,7 +202,9 @@ snd-soc-nau8825-y := nau8825.o
+ snd-soc-ntp8835-y := ntp8835.o
+ snd-soc-ntp8918-y := ntp8918.o
+ snd-soc-ntpfw-y := ntpfw.o
++ifndef KBUILD_EXT_PREFIX
+ snd-soc-hdmi-codec-y := hdmi-codec.o
++endif
+ snd-soc-pcm1681-y := pcm1681.o
+ snd-soc-pcm1754-y := pcm1754.o
+ snd-soc-pcm1789-codec-y := pcm1789.o
+@@ -629,7 +631,9 @@ obj-$(CONFIG_SND_SOC_NAU8825)   += snd-soc-nau8825.o
+ obj-$(CONFIG_SND_SOC_NTP8835)	+= snd-soc-ntp8835.o
+ obj-$(CONFIG_SND_SOC_NTP8918)	+= snd-soc-ntp8918.o
+ obj-$(CONFIG_SND_SOC_NTPFW)	+= snd-soc-ntpfw.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_SND_SOC_HDMI_CODEC)	+= snd-soc-hdmi-codec.o
++endif
+ obj-$(CONFIG_SND_SOC_PCM1681)	+= snd-soc-pcm1681.o
+ obj-$(CONFIG_SND_SOC_PCM1754)	+= snd-soc-pcm1754.o
+ obj-$(CONFIG_SND_SOC_PCM179X)	+= snd-soc-pcm179x-codec.o
+diff --git a/sound/usb/qcom/Makefile b/sound/usb/qcom/Makefile
+index 6567727b66f0..8c04197f35f5 100644
+--- a/sound/usb/qcom/Makefile
++++ b/sound/usb/qcom/Makefile
+@@ -1,4 +1,6 @@
++ifndef KBUILD_EXT_PREFIX
+ snd-usb-audio-qmi-y := usb_audio_qmi_v01.o qc_audio_offload.o
+ snd-usb-audio-qmi-y += mixer_usb_offload.o
+ obj-$(CONFIG_SND_USB_AUDIO_QMI) += snd-usb-audio-qmi.o
++endif
+ 
+diff --git a/drivers/tty/Makefile b/drivers/tty/Makefile
+index 07aca5184a55..18a1ac91b90c 100644
+--- a/drivers/tty/Makefile
++++ b/drivers/tty/Makefile
+@@ -26,6 +26,8 @@ obj-$(CONFIG_PPC_EPAPR_HV_BYTECHAN) += ehv_bytechan.o
+ obj-$(CONFIG_GOLDFISH_TTY)	+= goldfish.o
+ obj-$(CONFIG_MIPS_EJTAG_FDC_TTY) += mips_ejtag_fdc.o
+ obj-$(CONFIG_VCC)		+= vcc.o
++ifndef KBUILD_EXT_PREFIX
+ obj-$(CONFIG_RPMSG_TTY)		+= rpmsg_tty.o
++endif
+
+ obj-y += ipwireless/
+--
+2.43.0
+--
+2.43.0
+

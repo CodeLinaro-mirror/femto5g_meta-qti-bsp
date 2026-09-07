@@ -3,6 +3,7 @@ SYSTEM_IMAGE_ROOTFS_SIZE   = "${@get_size_in_bytes(d.getVar('SYSTEM_SIZE_EXT4') 
 
 # support veritysetup tools.
 DEPENDS += "cryptsetup-native"
+DEPENDS += "fec-native avbtool-native"
 
 # if A/B support is supported, generate OTA pkg by default.
 GENERATE_AB_OTA_PACKAGE ?= "${@bb.utils.contains('COMBINED_FEATURES', 'qti-ab-boot', '1', '', d)}"
@@ -75,7 +76,7 @@ create_symlink_systemd_ext4_mount_rootfs() {
         mountname="${entry:1}"
         # Replace "/" with "-" for systemd to understand mount unit.
         mountname=${mountname//'/'/"-"}
-        if [[ "$mountname" == "firmware" || "$mountname" == "bt_firmware" || "$mountname" == "vendor-bt_firmware" || "$mountname" == "dsp" ]] && \
+        if [[ "$mountname" == "firmware" || "$mountname" == "bt_firmware" || "$mountname" == "vendor-bt_firmware" || "$mountname" == "vendor-soccp_firmware" || "$mountname" == "dsp" ]] && \
            [[ "${COMBINED_FEATURES}" =~ .*qti-ab-boot.* ]] ; then
             cp ${IMAGE_ROOTFS_EXT4}/lib/systemd/system/${mountname}-mount-ext4.service ${IMAGE_ROOTFS_EXT4}/lib/systemd/system/${mountname}-mount.service
             ln -sf ${systemd_unitdir}/system/${mountname}-mount.service ${IMAGE_ROOTFS_EXT4}/lib/systemd/system/local-fs.target.requires/${mountname}-mount.service
@@ -313,7 +314,37 @@ do_makesystem() {
             img2simg ${ImgPath} ${sparseImgPath}
             break
         done
+    elif ${@bb.utils.contains('MACHINE_FEATURES', 'qti-avb', bb.utils.contains('MACHINE_FEATURES', 'dm-verity-none', 'true', 'false', d), 'false', d)} ; then
 
+        adjustedSystemSize=$(avbtool.py add_hashtree_footer --partition_size ${SYSTEM_IMAGE_ROOTFS_SIZE}  --calc_max_image_size)
+        echo adjustedSystemSize: $adjustedSystemSize
+        ImgPath="${IMGDEPLOYDIR}/${IMAGE_BASENAME}/${SYSTEMIMAGE_UNSPARSE_TARGET}"
+        make_ext4fs -C ${WORKDIR}/rootfs-fsconfig.conf \
+                    -B ${IMGDEPLOYDIR}/${IMAGE_BASENAME}/${SYSTEMIMAGE_MAP_TARGET} \
+                    -a / -b 4096 -l ${adjustedSystemSize} \
+                    ${IMAGE_EXT4_SELINUX_OPTIONS} \
+                    ${ImgPath} ${IMAGE_ROOTFS_EXT4} /dev/null || invalid_image=1
+
+        if [ $invalid_image -eq 1 ]; then
+            echo "Unsparse image generation failed...exiting."
+        fi
+
+        VERITY_SALT="aee087a5be3b982978c923f566a94613496b417f2af592639bc80d141e34dfe7"
+
+        avbtool.py add_hashtree_footer \
+        --image ${IMGDEPLOYDIR}/${IMAGE_BASENAME}/${SYSTEMIMAGE_UNSPARSE_TARGET} \
+        --partition_size  ${SYSTEM_IMAGE_ROOTFS_SIZE} \
+        --partition_name system \
+        --hash_algorithm sha256 \
+        --fec_num_roots 2 \
+        --salt ${VERITY_SALT} \
+        --key ${STAGING_DIR_NATIVE}${bindir}/SecImage/sigkeys/testkey_rsa4096.pem \
+        --rollback_index 0
+
+
+        # Convert to sparse image
+        sparseImgPath="${IMGDEPLOYDIR}/${IMAGE_BASENAME}/${SYSTEMIMAGE_TARGET}"
+        img2simg ${ImgPath} ${sparseImgPath}
     else
     # Directly generate sparsed image
             sparseImgPath="${IMGDEPLOYDIR}/${IMAGE_BASENAME}/${SYSTEMIMAGE_TARGET}"

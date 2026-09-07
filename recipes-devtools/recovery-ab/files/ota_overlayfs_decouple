@@ -1,0 +1,31 @@
+#!/bin/sh
+# Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+OVERLAYFS_DIRS="
+/overlay/etc
+/overlay/data
+/overlay/cache
+"
+
+CUR_SELINUX_STATE=$(getenforce)
+if [ "${CUR_SELINUX_STATE}" == "Enforcing" ]
+then
+    setenforce 0
+fi
+
+for dir in ${OVERLAYFS_DIRS}
+do
+    if [ -d "$dir" ]
+    then
+        find "$dir" -type f -exec /usr/bin/setfattr.attr -x trusted.overlay.origin {} \; 2>/dev/null
+    fi
+done
+
+if [ "${CUR_SELINUX_STATE}" == "Enforcing" ]
+then
+    setenforce 1
+fi
+
+exit 0
+

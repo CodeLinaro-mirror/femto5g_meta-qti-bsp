@@ -31,6 +31,7 @@ SRC_URI   =  "file://kernel \
               ${@oe.utils.conditional('DTBO_MACHINE', 'True', 'file://dt_overlay.cfg', '',d)} \
               ${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', 'file://verity.cfg', '', d)} \
               ${@bb.utils.contains('COMBINED_FEATURES', 'qti-audio', 'file://audio_common.cfg', '', d)} \
+              ${@bb.utils.contains('MACHINE_FEATURES', 'qti-avb', 'file://avb-verity.cfg', '', d)} \
 	      "
 # Don't set any version extention on debug build
 LINUX_VERSION_EXTENSION ?= "-perf"

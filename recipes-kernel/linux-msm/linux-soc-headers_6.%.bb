@@ -9,9 +9,9 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=6bc538ed5bd9a7fc9398086aedcd7e46"
 
 PROVIDES = "linux-msm-headers"
 
-COMPATIBLE_MACHINE = "seraph"
+COMPATIBLE_MACHINE = "seraph|pebble"
 
-FILESEXTRAPATHS:prepend := "${WORKSPACE}/kernel-6.12/kernel_platform/:"
+FILESEXTRAPATHS:prepend := "${WORKSPACE}/kernel-${PREFERRED_VERSION_linux-msm}/kernel_platform/:"
 
 SRC_URI = "file://common \
            file://soc-repo"
@@ -47,6 +47,11 @@ do_install () {
     if [ -d $headerdir/${includedir} ]; then
         mkdir -p $kerneldir/${includedir}
         cp -fR $headerdir/${includedir}/* $kerneldir/${includedir}
+    fi
+
+    if [ "${MACHINE}" = "pebble" ] && [ "${MACHINE_USES_KERNEL_PREBUILTS}" = "False" ]; then
+        install -d ${D}${includedir}/soc-repo
+        cp -fR ${SOC_REPO}/include/* ${D}${includedir}/soc-repo/
     fi
 
     # Remove ..install.cmd and .install

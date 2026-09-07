@@ -14,10 +14,16 @@ SRC_URI    = "file://clang-${CLANG_VERSION}"
 
 S = "${WORKDIR}/clang-${CLANG_VERSION}"
 INHIBIT_SYSROOT_STRIP = "1"
+# clang lib don't include  debug symbol
+INHIBIT_PACKAGE_STRIP = "1"
+INHIBIT_PACKAGE_DEBUG_SPLIT = "1"
+# clang prebuilts *.so are private to clang and should not enter global shlib
+# avoid cause Multiple shlib providers for libc++.so
+EXCLUDE_FROM_SHLIBS = "1"
 do_compile[noexec] = "1"
 do_configure[noexec] = "1"
 
-BBCLASSEXTEND = " native"
+BBCLASSEXTEND = " native nativesdk"
 
 do_install() {
     install -d ${D}/${bindir}/clang/

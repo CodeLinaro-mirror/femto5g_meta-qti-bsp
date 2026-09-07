@@ -1,0 +1,19 @@
+#Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+#SPDX-License-Identifier: BSD-3-Clause-Clear
+
+[Unit]
+SourcePath=/verity/avb-init-verity.sh
+Description=avb verity checks on %I
+ConditionKernelCommandLine=avb-verity=enabled
+BindsTo=@DEVICE@
+After=@DEVICE@ systemd-modules-load.service
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/bin/sh -c "/verity/avb-init-verity.sh -p %I -d @MAPDEVICE@"
+
+[Install]
+WantedBy=sysinit.target
+

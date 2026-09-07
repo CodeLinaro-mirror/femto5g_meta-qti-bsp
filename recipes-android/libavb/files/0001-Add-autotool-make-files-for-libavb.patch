@@ -1,0 +1,62 @@
+This patch file is from Qualcomm Innovation Center, Inc. and is provided under the following license:
+Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+SPDX-License-Identifier: BSD-3-Clause-Clear
+
+From 42eff1017ea2dd5d441eff8a91ba0d9163098826 Mon Sep 17 00:00:00 2001
+From: Keshihaa Rudra Gana Dev V <keshihaa@qti.qualcomm.com>
+Date: Fri, 16 May 2025 14:12:53 +0530
+Subject: [PATCH] Add autotool make files for libavb
+
+Signed-off-by: Keshihaa Rudra Gana Dev V <keshihaa@qti.qualcomm.com>
+---
+ Makefile.am  | 23 +++++++++++++++++++++++
+ configure.ac |  9 +++++++++
+ 2 files changed, 32 insertions(+)
+ create mode 100644 Makefile.am
+ create mode 100644 configure.ac
+
+diff --git a/Makefile.am b/Makefile.am
+new file mode 100644
+index 0000000..562bb0f
+--- /dev/null
++++ b/Makefile.am
+@@ -0,0 +1,23 @@
++lib_LTLIBRARIES = libavb.la
++libavb_la_SOURCES = \
++    libavb/avb_crc32.c \
++    libavb/avb_util.c \
++    libavb/avb_version.c \
++    libavb/avb_property_descriptor.c \
++    libavb/avb_hashtree_descriptor.c \
++    libavb/avb_hash_descriptor.c \
++    libavb/avb_footer.c \
++    libavb/avb_chain_partition_descriptor.c \
++    libavb/avb_kernel_cmdline_descriptor.c \
++    libavb/avb_rsa.c \
++    libavb/avb_crypto.c \
++    libavb/avb_vbmeta_image.c \
++    libavb/avb_descriptor.c \
++    libavb/avb_sha256.c \
++    libavb/avb_sha512.c \
++    libavb/avb_cmdline.c \
++    libavb/avb_slot_verify.c \
++    libavb/avb_sysdeps_posix.c
++
++libavb_la_CFLAGS = -DAVB_COMPILATION
++
+diff --git a/configure.ac b/configure.ac
+new file mode 100644
+index 0000000..ee8b049
+--- /dev/null
++++ b/configure.ac
+@@ -0,0 +1,9 @@
++AC_INIT([libavb], [1.0])
++AM_INIT_AUTOMAKE([-Wall -Werror foreign subdir-objects])
++AC_CONFIG_MACRO_DIRS([m4])
++AM_PROG_AR
++AC_PROG_CC
++AC_PROG_CXX
++LT_INIT
++AC_CONFIG_FILES([Makefile])
++AC_OUTPUT
++

@@ -1,4 +1,4 @@
-FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}-${PV}:"
+FILESEXTRAPATHS:prepend := "${THISDIR}/base-passwd-files:"
 
 SRC_URI += "\
            file://add-diag-user.patch \

@@ -31,8 +31,18 @@
 # SPDX-License-Identifier: BSD-3-Clause-Clear
 /bin/mount -n -o mode=0755 -t devtmpfs none "/dev"
 /bin/mount proc /proc -t proc
+/bin/mount -t sysfs none /sys
 /bin/mount -o remount,rw  /
 /bin/mkdir -p /mnt/vfs
+
+# Determine target-specific pinctrl name from device-tree compatible string
+# e.g. "qcom,art-vm-tlmm" -> "art"
+pinctrl_dt_path=$(ls /sys/firmware/devicetree/base/soc/pinctrl*/compatible 2>/dev/null | head -1)
+if [ -n "$pinctrl_dt_path" ]; then
+    read pinctrl_compat < "$pinctrl_dt_path"
+    pinctrl_target=$(echo "$pinctrl_compat" | sed -n 's/qcom,\([^-]*\)-.*/\1/p')
+fi
+echo  "pinctrl_target: $pinctrl_target"  > /dev/kmsg
 
 if [ -d "/extra" ]; then
     /bin/mkdir -p /lib/modules/$(uname -r)/extra/soc-repo
@@ -41,8 +51,24 @@ if [ -d "/extra" ]; then
     while IFS= read -r line; do
         echo "Inserting modules" > /dev/kmsg
         module=$(echo $line | cut -d':' -f1)
-        /bin/modprobe -s $(basename $module .ko) > /dev/kmsg
-        echo  "Inserted module: $module"  > /dev/kmsg
+        modname=$(basename $module .ko)
+        # Skip target-specific pinctrl modules that do not match this target
+        case "$modname" in
+            pinctrl*)
+                if [ -z "$pinctrl_target" ]; then
+                    :
+                elif [ "$modname" = "pinctrl-msm" ]; then
+                    :
+                elif [ "$modname" = "pinctrl-${pinctrl_target}" ]; then
+                    :
+                else
+                    echo "Skipping pinctrl module: $modname" > /dev/kmsg
+                    continue
+                fi
+                ;;
+        esac
+        /bin/modprobe -s $modname > /dev/kmsg
+        echo "Inserted module: $module" > /dev/kmsg
     done < /lib/modules/$(uname -r)/extra/soc-repo/modules.dep
 fi
 
@@ -50,6 +76,8 @@ fi
 echo 0 > /proc/sys/vm/watermark_boost_factor
 echo -n "Watermark boost has been disabled" > /dev/kmsg
 
+echo 1 > /sys/kernel/vm_set_status/os_boot
+echo -n "OS STATUS is now set" > /dev/kmsg
 # verity protection
 if [ -f /etc/verity.env ]; then
     source /etc/verity.env

@@ -1,0 +1,19 @@
+# Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+[Unit]
+Description=Mount early partitions (modem, persist)
+ConditionPathIsMountPoint=!/firmware
+Before=local-fs.target systemd-modules-load.service
+DefaultDependencies=no
+IgnoreOnIsolate=true
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+Nice=-20
+ExecStart=/bin/sh -c 'if command -v getslotsuffix >/dev/null 2>&1; then suffix=$(getslotsuffix) || suffix=""; else echo "WARNING: getslotsuffix not found, using empty slot suffix" >&2; suffix=""; fi; /sbin/mount_partition modem "$suffix"'
+ExecStart=/sbin/mount_partition persist
+
+[Install]
+WantedBy=local-fs.target

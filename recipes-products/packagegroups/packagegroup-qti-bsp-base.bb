@@ -43,6 +43,7 @@ ADDON_SCRIPTS ?= ""
 ADDON_SCRIPTS:neo = "helios-start"
 ADDON_SCRIPTS:qcs610-odk-64 = "cdsp-start"
 ADDON_SCRIPTS:vienna = "cdsp-start"
+ADDON_SCRIPTS:seraph = "cdsp-start"
 
 # Startup scripts needed during device bootup
 RDEPENDS:packagegroup-startup-scripts-base = "\

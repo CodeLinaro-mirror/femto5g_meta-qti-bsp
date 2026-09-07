@@ -1,0 +1,29 @@
+# Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+[Unit]
+Description=WLAN Pre-load Modules
+DefaultDependencies=no
+
+Before=systemd-modules-load.service
+After=early-mount.service
+Requires=early-mount.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+TimeoutStartSec=30
+StandardOutput=journal
+StandardError=journal
+
+# Mount overlay (userdata) partition so /etc overlayfs is available
+ExecStartPre=+/sbin/mount_partition overlay
+
+# Load pre-required modules
+ExecStartPre=+/bin/sh -c 'for m in pinctrl_spmi_gpio smc_client_driver; do /sbin/modprobe "$$m" 2>/dev/null || true; done'
+
+# Load WLAN modules from configuration
+ExecStart=+/bin/sh -c '[ -f /etc/modules-load.d/wlan_load.conf ] && grep -v "^#" /etc/modules-load.d/wlan_load.conf | grep -v "^[[:space:]]*$$" | while read -r m; do /sbin/modprobe "$$m" 2>/dev/null || true; done || true'
+
+[Install]
+WantedBy=local-fs.target

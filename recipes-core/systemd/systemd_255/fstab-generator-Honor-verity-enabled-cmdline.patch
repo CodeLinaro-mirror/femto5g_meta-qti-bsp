@@ -36,7 +36,7 @@ index 016f3baa7f..6549a792af 100644
  
                  return free_and_strdup_warn(&arg_root_hash, empty_to_null(value));
  
-+        } else if (streq(key, "verity")) {
++        } else if (streq(key, "verity") || streq(key, "avb-verity")) {
 +
 +                if (proc_cmdline_value_missing(key, value))
 +                        return 0;

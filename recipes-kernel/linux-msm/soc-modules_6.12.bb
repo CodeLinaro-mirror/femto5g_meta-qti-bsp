@@ -58,6 +58,10 @@ do_install() {
 
     # Expose soc-repo symbols for techpacks
     install -m 0755 ${B}/Module.symvers -D ${D}${includedir}/kernel-module-soc-repo/Module.symvers
+
+    # Install soc-repo include headers for dependent recipes.
+    install -d ${D}${includedir}/soc-repo/
+    cp -rp ${SOC_REPO}/include ${D}${includedir}/soc-repo/
 }
 
 do_deploy() {

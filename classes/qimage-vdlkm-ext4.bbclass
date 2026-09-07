@@ -1,38 +1,10 @@
-# Copyright (c) 2022 Qualcomm Innovation Center, Inc. All rights reserved.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted (subject to the limitations in the
-# disclaimer below) provided that the following conditions are met:
-#
-#    * Redistributions of source code must retain the above copyright
-#      notice, this list of conditions and the following disclaimer.
-#
-#    * Redistributions in binary form must reproduce the above
-#      copyright notice, this list of conditions and the following
-#      disclaimer in the documentation and/or other materials provided
-#       with the distribution.
-#
-#    * Neither the name of Qualcomm Innovation Center, Inc. nor the names of its
-#      contributors may be used to endorse or promote products derived
-#           from this software without specific prior written permission.
-#
-# NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE
-# GRANTED BY THIS LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT
-# HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED
-# WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-# MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
-# IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
-# ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
-# GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-# INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
-# IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
-# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
-# IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+#SPDX-License-Identifier: BSD-3-Clause-Clear
 
 ## Generate vendor_dlkm image
 
 DEPENDS += "cryptsetup-native"
+DEPENDS += "fec-native avbtool-native"
 
 # Convert human readable partition sizes into bytes
 VDLKM_IMAGE_ROOTFS_SIZE = "${@get_size_in_bytes(d.getVar('VDLKM_SIZE_EXT4') or '32MB')}"
@@ -92,6 +64,7 @@ get_verity_metdata_info(){
 
 do_makevdlkm[dirs] = "${IMGDEPLOYDIR}/${IMAGE_BASENAME}"
 do_makevdlkm() {
+    if ${@bb.utils.contains('MACHINE_FEATURES', 'dm-verity-none', 'false', 'true', d)} ; then
     for count in {99..1}
     do
         invalid_image=0
@@ -135,6 +108,45 @@ do_makevdlkm() {
         break
 
     done
+    elif ${@bb.utils.contains('MACHINE_FEATURES', 'qti-avb', bb.utils.contains('MACHINE_FEATURES', 'dm-verity-none', 'true', 'false', d), 'false', d)} ; then
+        invalid_image=0
+        adjustedVdlkmSize=$(avbtool.py add_hashtree_footer --partition_size ${VDLKM_IMAGE_ROOTFS_SIZE}  --calc_max_image_size)
+        echo adjustedVdlkmSize: $adjustedVdlkmSize
+        ImgPath="${IMGDEPLOYDIR}/${IMAGE_BASENAME}/${VDLKMIMAGE_UNSPARSE_TARGET}"
+        make_ext4fs -B ${IMGDEPLOYDIR}/${IMAGE_BASENAME}/${VDLKMIMAGE_MAP_TARGET} \
+                    -l ${adjustedVdlkmSize} ${ImgPath} \
+                    ${IMAGE_ROOTFS}/lib/modules  /dev/null || invalid_image=1
+
+        if [ $invalid_image -eq 1 ]; then
+            echo "Unsparse image generation failed...exiting."
+        fi
+
+        VERITY_SALT="aee087a5be3b982978c923f566a94613496b417f2af592639bc80d141e34dfe7"
+
+        avbtool.py add_hashtree_footer \
+        --image ${ImgPath} \
+        --partition_size  ${VDLKM_IMAGE_ROOTFS_SIZE} \
+        --partition_name vendor_dlkm \
+        --hash_algorithm sha256 \
+        --fec_num_roots 2 \
+        --salt ${VERITY_SALT} \
+        --key ${STAGING_DIR_NATIVE}/${bindir}/SecImage/sigkeys/testkey_rsa4096.pem \
+        --rollback_index 0
+
+        # Convert to sparse image
+        sparseImgPath="${IMGDEPLOYDIR}/${IMAGE_BASENAME}/${VDLKMIMAGE_TARGET}"
+        img2simg ${ImgPath} ${sparseImgPath}
+
+        echo "image is good to use..."
+    else
+        sparseImgPath="${IMGDEPLOYDIR}/${IMAGE_BASENAME}/${VDLKMIMAGE_TARGET}"
+        make_ext4fs -s -B ${IMGDEPLOYDIR}/${IMAGE_BASENAME}/${VDLKMIMAGE_MAP_TARGET} \
+                    -l ${VDLKM_IMAGE_ROOTFS_SIZE} ${sparseImgPath} \
+                    ${IMAGE_ROOTFS}/lib/modules  /dev/null || invalid_image=1
+
+        echo "image is good to use..."
+
+    fi
 }
 # It must be before do_makesystem to remove /lib/modules
 addtask do_makevdlkm after do_image before do_makesystem

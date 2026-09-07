@@ -14,6 +14,12 @@ SRC_URI:append:batcam = " file://post_hibernate.sh"
 SRC_URI:append:vienna = " \
     file://factory_reset.service \
     file://factory_reset.sh \
+    file://wlan_pre_load.service \
+    file://msm_serial_init.service \
+    file://mount_partition.sh \
+    file://early-mount.service \
+    file://shutdown_perf.service \
+    file://shutdown_perf.sh \
 "
 USERDATA_IMAGE_SIZE = "${@get_size_in_bytes(d.getVar('USERDATA_SIZE') or '1GB')}"
 
@@ -29,6 +35,28 @@ do_install:append:vienna() {
     install -d ${D}${systemd_unitdir}/system/local-fs.target.wants
     ln -sf ../factory_reset.service \
         ${D}${systemd_unitdir}/system/local-fs.target.wants/factory_reset.service
+
+    install -m 0644 ${WORKDIR}/wlan_pre_load.service ${D}${systemd_unitdir}/system/
+    ln -sf ../wlan_pre_load.service \
+        ${D}${systemd_unitdir}/system/local-fs.target.wants/wlan_pre_load.service
+
+    install -m 0644 ${WORKDIR}/msm_serial_init.service ${D}${systemd_unitdir}/system/
+    ln -sf ../msm_serial_init.service \
+        ${D}${systemd_unitdir}/system/local-fs.target.wants/msm_serial_init.service
+
+    install -d ${D}${base_sbindir}
+    install -m 0755 ${WORKDIR}/mount_partition.sh ${D}${base_sbindir}/mount_partition
+
+    install -m 0644 ${WORKDIR}/early-mount.service ${D}${systemd_unitdir}/system/
+    ln -sf ../early-mount.service \
+        ${D}${systemd_unitdir}/system/local-fs.target.wants/early-mount.service
+
+    install -m 0755 ${WORKDIR}/shutdown_perf.sh ${D}${bindir}/shutdown_perf.sh
+
+    install -m 0644 ${WORKDIR}/shutdown_perf.service ${D}${systemd_unitdir}/system/
+    install -d ${D}${systemd_unitdir}/system/poweroff.target.wants
+    ln -sf ../shutdown_perf.service \
+        ${D}${systemd_unitdir}/system/poweroff.target.wants/shutdown_perf.service
 }
 
 # Various mount related files assume selinux support by default.

@@ -24,12 +24,13 @@ CORE_IMAGE_EXTRA_INSTALL += "\
         packagegroup-qti-gfx \
         packagegroup-qti-mmframeworks \
         packagegroup-qti-ppat \
-        packagegroup-qti-securemsm \
+        ${@bb.utils.contains('COMBINED_FEATURES', 'qti-security', "packagegroup-qti-securemsm", "", d)} \
         packagegroup-qti-sensors-see \
         packagegroup-qti-ss-mgr \
         packagegroup-qti-test-sensors-see \
         packagegroup-qti-video \
         ${@bb.utils.contains('MACHINE','sxrneo-ar-sg1', 'packagegroup-qti-gst', '', d)} \
+        ${@bb.utils.contains('MACHINE','seraph', 'packagegroup-qti-gst', '', d)} \
         packagegroup-qti-wifi \
         packagegroup-startup-scripts \
         packagegroup-support-utils \

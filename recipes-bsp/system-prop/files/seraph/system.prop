@@ -9,3 +9,12 @@ debug.atrace.tags.enableflags=0
 
 #property to select target platform for codec2 lib
 vendor.media.target_variant=seraph
+
+#property to enable BT a2dp_offload
+ro.bluetooth.a2dp_offload.supported=true
+persist.bluetooth.a2dp_offload.disabled=false
+
+#args runtime debug setup
+vendor.audio.args.enable.debug.logs=0
+vendor.audio.args.enable.verbose.logs=0
+vendor.audio.gpr.enable.packet.logs=0

@@ -1,0 +1,38 @@
+# Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+[Unit]
+Description=Load msm_geni_serial and Register ttyHS1
+DefaultDependencies=no
+
+Before=systemd-modules-load.service
+After=systemd-udevd.service
+Requires=systemd-udevd.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+TimeoutStartSec=30
+StandardOutput=journal
+StandardError=journal
+
+# Load msm_geni_serial module
+ExecStartPre=+/bin/sh -c '/sbin/modprobe msm_geni_serial 2>/dev/null || true'
+
+# Register ttyHS1 to Systemd
+# Use /sys/class/tty/ttyHS1 symlink instead of hardcoded soc bus address,
+# so this works across vienna hardware variants with different memory maps.
+ExecStart=/bin/sh -c '\
+  CLASSPATH=/sys/class/tty/ttyHS1; \
+  i=0; while [ $i -lt 20 ]; do test -e $$CLASSPATH && break; sleep 0.1; i=$((i+1)); done; \
+  if ! test -e $$CLASSPATH; then \
+    echo "ttyHS1 not found in /sys/class/tty after timeout" >&2; exit 1; \
+  fi; \
+  udevadm trigger --action=add $$(readlink -f $$CLASSPATH); \
+  i=0; while [ $i -lt 50 ]; do test -c /dev/ttyHS1 && break; sleep 0.1; i=$((i+1)); done; \
+  if ! test -c /dev/ttyHS1; then \
+    echo "ttyHS1 device node not created after timeout" >&2; exit 1; \
+  fi'
+
+[Install]
+WantedBy=local-fs.target

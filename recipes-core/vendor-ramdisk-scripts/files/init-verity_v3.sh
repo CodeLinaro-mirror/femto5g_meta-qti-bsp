@@ -33,14 +33,32 @@ fi
 # get Verity metadata and signature
 # Block size is considered as 4096
 # Half block size is considered as 2048
-dd if=$DEVICE$SLOT_SUFFIX bs=4096 count=1 skip=$verity_metadata_offset | dd bs=1 count=2048 of=/tmp/$MAPDEV.env
-dd if=$DEVICE$SLOT_SUFFIX bs=4096 count=1 skip=$verity_metadata_offset | dd skip=2048 bs=1 count=2048 of=/tmp/$MAPDEV.sig
+dd if="$DEVICE$SLOT_SUFFIX" bs=4096 count=1 skip="$verity_metadata_offset" | dd bs=1 count=2048 of="/tmp/$MAPDEV.env"
+dd if="$DEVICE$SLOT_SUFFIX" bs=4096 count=1 skip="$verity_metadata_offset" | dd skip=2048 bs=1 count=2048 of="/tmp/$MAPDEV.sig"
+
 
 verity_setup() {
     local env_path=$1
     local sig_path=$2
 
-    source "$env_path"
+    # Extracts exactly the needed fields and sanitizes them (only allows digits/hex)
+    VERITY_ROOT_HASH=$(awk -F= '$1=="VERITY_ROOT_HASH" {print $2; exit}' "$env_path" | tr -cd 'a-fA-F0-9')
+    VERITY_SALT=$(awk -F= '$1=="VERITY_SALT" {print $2; exit}' "$env_path" | tr -cd 'a-fA-F0-9')
+    VERITY_HASH_OFFSET=$(awk -F= '$1=="VERITY_HASH_OFFSET" {print $2; exit}' "$env_path" | tr -cd '0-9')
+    VERITY_DATA_BLOCKS=$(awk -F= '$1=="VERITY_DATA_BLOCKS" {print $2; exit}' "$env_path" | tr -cd '0-9')
+    VERITY_FEC_OFFSET=$(awk -F= '$1=="VERITY_FEC_OFFSET" {print $2; exit}' "$env_path" | tr -cd '0-9')
+    VERITY_FEC_ROOTS=$(awk -F= '$1=="VERITY_FEC_ROOTS" {print $2; exit}' "$env_path" | tr -cd '0-9')
+
+    if [ -z "$VERITY_ROOT_HASH" ] || [ -z "$VERITY_DATA_BLOCKS" ] || \
+       [ -z "$VERITY_HASH_OFFSET" ] || [ -z "$VERITY_SALT" ] || \
+       [ -z "$VERITY_FEC_OFFSET" ] || [ -z "$VERITY_FEC_ROOTS" ]; then
+        echo "error: Missing or malformed Verity metadata. Rebooting." >/dev/kmsg
+        systemctl reboot "dm-verity metadata invalid" -f
+        sleep 5
+        echo b > /proc/sysrq-trigger
+        exit 1
+    fi
+
     /usr/sbin/veritysetup open "$DEVICE$SLOT_SUFFIX" "$MAPDEV" \
         "$DEVICE$SLOT_SUFFIX" "$VERITY_ROOT_HASH" --salt "$VERITY_SALT" \
         --hash-offset "$VERITY_HASH_OFFSET" --data-blocks "$VERITY_DATA_BLOCKS" \

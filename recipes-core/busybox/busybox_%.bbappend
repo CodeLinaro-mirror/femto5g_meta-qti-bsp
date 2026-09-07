@@ -65,7 +65,7 @@ do_install:append() {
            ${D}${systemd_unitdir}/system/multi-user.target.wants/busybox-syslog.service
 
         # /etc folder execute file/permission is disallow hence syslog and 50default are move to /usr/sbin
-        if ${@bb.utils.contains_any('BASEMACHINE', 'vienna alor', 'true', 'false', d)}; then
+        if ${@bb.utils.contains_any('BASEMACHINE', 'vienna alor pebble', 'true', 'false', d)}; then
             sed -i 's|^ExecStart=/etc|ExecStart=/usr/sbin|' ${D}${systemd_unitdir}/system/busybox-syslog.service
             sed -i 's|^ExecStop=/etc|ExecStop=/usr/sbin|' ${D}${systemd_unitdir}/system/busybox-syslog.service
             install -d ${D}${sbindir}/initscripts

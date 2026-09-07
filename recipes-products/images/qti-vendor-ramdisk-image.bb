@@ -13,6 +13,7 @@ PACKAGE_INSTALL = "\
     gki-kernel-modules-first-stage \
     first-stage-scripts \
     ${@bb.utils.contains('MACHINE_FEATURES', 'dm-verity-initramfs-v2', 'cryptsetup verity-scripts lvm2-udevrules', '', d)} \
+    ${@bb.utils.contains('MACHINE_FEATURES', 'qti-avb', 'cryptsetup avb-verity-scripts lvm2-udevrules', '', d)} \
 "
 
 IMAGE_FSTYPES = "${INITRAMFS_FSTYPES}"

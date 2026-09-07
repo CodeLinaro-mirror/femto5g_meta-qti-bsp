@@ -5,10 +5,10 @@
 Description=Factory Reset Userdata
 DefaultDependencies=no
 
-After=persist.mount
+After=early-mount.service
 RequiresMountsFor=/persist
 
-Before=overlay.mount data.mount
+Before=overlay.mount data.mount wlan_pre_load.service
 
 ConditionPathExists=/persist/factory_reset.flag
 
