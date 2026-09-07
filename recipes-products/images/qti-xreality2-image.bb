@@ -9,14 +9,11 @@ CORE_IMAGE_EXTRA_INSTALL:remove:seraph = " \
     packagegroup-qti-qesdk-core \
     packagegroup-qti-dcf-lib \
     packagegroup-qti-dcf-hal \
-    packagegroup-qti-ppat \
-    packagegroup-qti-camera \
     libmeminfo \
     kernel-modules \
 "
 
 CORE_IMAGE_EXTRA_INSTALL:append:seraph = " \
     userspace-resource-manager \
-    userspace-resource-manager-extensions \
 "
 CORE_IMAGE_EXTRA_INSTALL:append:seraph = " packagegroup-qcom-sensors"

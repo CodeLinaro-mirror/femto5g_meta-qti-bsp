@@ -78,11 +78,15 @@ EXTRA_OEMAKE += 'DTC_INCLUDE="${SOC_REPO}/scripts/dtc/include-prefixes/ ${STAGIN
 EXTRA_OEMAKE += 'DTC_FLAGS+="-@"'
 
 do_compile_dtb() {
-    oe_runmake -C ${STAGING_KERNEL_DIR} O=${B} V=1 dtbs \
-        dtstree=soc-repo-ext/arch/arm64/boot/dts/vendor
+    dtb_targets=""
+    for dtbof in ${TARGET_DTBS}; do
+        dtb_targets="$dtb_targets ${dtbof}"
+    done
+    oe_runmake -C ${STAGING_KERNEL_DIR} O=${B} V=1 \
+        dtstree=soc-repo-ext/arch/arm64/boot/dts/vendor/qcom \
+        $dtb_targets
 }
-addtask compile_dtb after do_compile before do_deploy
-
+addtask compile_dtb after do_compile_kernelmodules before do_deploy
 
 do_configure:append() {
     oe_runmake -C ${S} O=${B} savedefconfig
@@ -118,7 +122,7 @@ do_deploy() {
 
     install -d ${DEPLOYDIR}/kernel_dtbs
     for dtbof in ${TARGET_DTBS}; do
-        path=$(find -L ${WORKDIR} -name "$dtbof" -print -quit)
+        path=$(find -L ${B} -name "$dtbof" -print -quit)
         if [ -n "$path" ]; then
             install -m 0644 "$path" "${DEPLOYDIR}/kernel_dtbs"
         else
