@@ -1,0 +1,222 @@
+From: Parikshit Thakur <parithak@qti.qualcomm.com>
+Date: Wed, 16 Jul 2026 00:00:00 +0530
+Subject: [PATCH] core: report reset reason to Fault Manager on watchdog reboot
+
+Report the restart cause to Fault Manager from emergency_action() when the
+reboot was triggered by a watchdog. Three cases are covered:
+
+  1. Start-limit hit (StartLimitAction=reboot*)  -> EMERGENCY_ACTION_IS_WATCHDOG
+  2. Job timeout     (JobTimeoutAction=reboot*)  -> EMERGENCY_ACTION_IS_WATCHDOG
+  3. Per-service watchdog (WatchdogSec=) whose unit then reboots via
+     FailureAction=reboot*                       -> EMERGENCY_ACTION_WATCHDOG_TRIGGERED
+
+Case 3 arrives through the generic failure_action path in unit_notify(), which
+does not carry EMERGENCY_ACTION_IS_WATCHDOG (that flag also gates the action on
+the global service_watchdogs switch, which must NOT suppress FailureAction). To
+distinguish a watchdog-caused failure from any other failure at that generic
+layer, a new report-only flag EMERGENCY_ACTION_WATCHDOG_TRIGGERED is introduced
+and set only when the unit's failure cause was a watchdog, queried via a new
+optional UnitVTable method failure_was_watchdog() (implemented by services as
+result == SERVICE_FAILURE_WATCHDOG).
+
+Ordinary reboot/poweroff/halt and non-watchdog failure actions are not reported.
+Emitted before the reboot (reboot-immediate never returns) and skipped inside
+containers.
+
+systemd (PID 1) cannot build-depend on faultmgr (circular via libsystemmanager),
+so it invokes the faultdbg CLI at runtime via RESTART_CAUSE_DBUS_SET; faultdbg
+is pulled in through RDEPENDS in systemd_%.bbappend.
+
+Upstream-Status: Inappropriate [QTI product-specific]
+---
+diff --git a/src/core/emergency-action.c b/src/core/emergency-action.c
+index 4330c0f..e0a5ccc 100644
+--- a/src/core/emergency-action.c
++++ b/src/core/emergency-action.c
+@@ -1,6 +1,10 @@
+ /* SPDX-License-Identifier: LGPL-2.1+ */
+ 
+ #include <sys/reboot.h>
++#include <sys/wait.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <time.h>
+ 
+ #include "bus-error.h"
+ #include "bus-util.h"
+@@ -20,6 +24,53 @@ static void log_and_status(Manager *m, bool warn, const char *message, const cha
+                                       "%s: %s", message, reason);
+ }
+ 
++/*
++ * Report a watchdog-triggered reboot to Fault Manager. systemd (PID 1) cannot
++ * build-depend on faultmgr (that would be circular via libsystemmanager), so
++ * we invoke the faultdbg CLI at runtime (RDEPENDS, see systemd_%.bbappend).
++ * Numeric args match faultmgr's enums:
++ *   -C SOFTWARE_FAILURE = 3  -S PLATFORM = 6  -B APPS = 0
++ *   -T restart time in epoch milliseconds (UTC)
++ */
++#define FM_RESTART_CAUSE_SOFTWARE_FAILURE 3
++#define FM_RESTART_SOURCE_PLATFORM        6
++#define FM_SUBSYSTEM_APPS                 0
++
++static void report_watchdog_reset_to_faultmgr(void) {
++        char fm_cmd[256];
++        uint64_t reset_ms;
++        struct timespec ts;
++        int r;
++
++        if (clock_gettime(CLOCK_REALTIME, &ts) < 0)
++                reset_ms = (uint64_t) time(NULL) * 1000;
++        else
++                reset_ms = (uint64_t) ts.tv_sec * 1000 + (uint64_t) ts.tv_nsec / 1000000;
++
++        r = snprintf(fm_cmd, sizeof(fm_cmd),
++                 "faultdbg -e RESTART_CAUSE_DBUS_SET -C %i -S %i -B %i -T %llu",
++                 FM_RESTART_CAUSE_SOFTWARE_FAILURE,
++                 FM_RESTART_SOURCE_PLATFORM,
++                 FM_SUBSYSTEM_APPS,
++                 (unsigned long long) reset_ms);
++        if (r < 0 || (size_t) r >= sizeof(fm_cmd)) {
++                log_warning("Failed to build faultmgr restart-cause command.");
++                return;
++        }
++
++        log_info("Reporting reset reason to faultmgr: %s", fm_cmd);
++
++        r = system(fm_cmd);
++        if (r < 0)
++                log_warning("Failed to spawn shell for faultmgr restart-cause report.");
++        else if (!WIFEXITED(r))
++                log_warning("faultmgr restart-cause report terminated abnormally (status=%i).", r);
++        else if (WEXITSTATUS(r) == 127)
++                log_warning("faultmgr restart-cause report failed: faultdbg not found (shell exit 127).");
++        else if (WEXITSTATUS(r) != 0)
++                log_warning("faultmgr restart-cause report exited with status %i.", WEXITSTATUS(r));
++}
++
+ void emergency_action(
+                 Manager *m,
+                 EmergencyAction action,
+@@ -42,6 +93,20 @@ void emergency_action(
+ 
+         bool warn = FLAGS_SET(options, EMERGENCY_ACTION_WARN);
+ 
++        /* Report watchdog-triggered reboots, never ordinary reboot/poweroff/halt.
++         * Two flavours reach us:
++         *   - EMERGENCY_ACTION_IS_WATCHDOG: start-limit / job-timeout supervision.
++         *   - EMERGENCY_ACTION_WATCHDOG_TRIGGERED: a per-service WatchdogSec= expiry
++         *     that reboots via FailureAction (generic failure_action path, which
++         *     cannot carry IS_WATCHDOG because that flag also gates on
++         *     service_watchdogs).
++         * Emitted before the reboot since reboot-immediate never returns. */
++        if ((FLAGS_SET(options, EMERGENCY_ACTION_IS_WATCHDOG) ||
++             FLAGS_SET(options, EMERGENCY_ACTION_WATCHDOG_TRIGGERED)) &&
++            IN_SET(action, EMERGENCY_ACTION_REBOOT, EMERGENCY_ACTION_REBOOT_FORCE, EMERGENCY_ACTION_REBOOT_IMMEDIATE) &&
++            detect_container() <= 0)
++                report_watchdog_reset_to_faultmgr();
++
+         switch (action) {
+ 
+         case EMERGENCY_ACTION_REBOOT:
+diff --git a/src/core/emergency-action.h b/src/core/emergency-action.h
+index 706c38a..851c0ad 100644
+--- a/src/core/emergency-action.h
++++ b/src/core/emergency-action.h
+@@ -19,6 +19,7 @@ typedef enum EmergencyAction {
+ typedef enum EmergencyActionFlags {
+         EMERGENCY_ACTION_IS_WATCHDOG = 1 << 0,
+         EMERGENCY_ACTION_WARN        = 1 << 1,
++        EMERGENCY_ACTION_WATCHDOG_TRIGGERED = 1 << 2,
+ } EmergencyActionFlags;
+ 
+ #include "macro.h"
+diff --git a/src/core/service.c b/src/core/service.c
+index 49ad166..f512e57 100644
+--- a/src/core/service.c
++++ b/src/core/service.c
+@@ -1715,6 +1715,14 @@ static bool service_will_restart(Unit *u) {
+         return unit_will_restart_default(u);
+ }
+ 
++static bool service_failure_was_watchdog(Unit *u) {
++        Service *s = SERVICE(u);
++
++        assert(s);
++
++        return s->result == SERVICE_FAILURE_WATCHDOG;
++}
++
+ static void service_enter_dead(Service *s, ServiceResult f, bool allow_restart) {
+         ServiceState end_state;
+         int r;
+@@ -4419,6 +4427,8 @@ const UnitVTable service_vtable = {
+ 
+         .will_restart = service_will_restart,
+ 
++        .failure_was_watchdog = service_failure_was_watchdog,
++
+         .may_gc = service_may_gc,
+ 
+         .sigchld_event = service_sigchld_event,
+diff --git a/src/core/unit.c b/src/core/unit.c
+index c406bb7..5ea09e7 100644
+--- a/src/core/unit.c
++++ b/src/core/unit.c
+@@ -2580,8 +2580,13 @@ void unit_notify(Unit *u, UnitActiveState os, UnitActiveState ns, UnitNotifyFlag
+                 unit_check_binds_to(u);
+ 
+                 if (os != UNIT_FAILED && ns == UNIT_FAILED) {
++                        EmergencyActionFlags fa_flags = 0;
++
++                        if (unit_failure_was_watchdog(u))
++                                fa_flags |= EMERGENCY_ACTION_WATCHDOG_TRIGGERED;
++
+                         reason = strjoina("unit ", u->id, " failed");
+-                        emergency_action(m, u->failure_action, 0, u->reboot_arg, unit_failure_action_exit_status(u), reason);
++                        emergency_action(m, u->failure_action, fa_flags, u->reboot_arg, unit_failure_action_exit_status(u), reason);
+                 } else if (!UNIT_IS_INACTIVE_OR_FAILED(os) && ns == UNIT_INACTIVE) {
+                         reason = strjoina("unit ", u->id, " succeeded");
+                         emergency_action(m, u->success_action, 0, u->reboot_arg, unit_success_action_exit_status(u), reason);
+@@ -4036,6 +4041,15 @@ bool unit_will_restart(Unit *u) {
+         return UNIT_VTABLE(u)->will_restart(u);
+ }
+ 
++bool unit_failure_was_watchdog(Unit *u) {
++        assert(u);
++
++        if (!UNIT_VTABLE(u)->failure_was_watchdog)
++                return false;
++
++        return UNIT_VTABLE(u)->failure_was_watchdog(u);
++}
++
+ int unit_kill(Unit *u, KillWho w, int signo, sd_bus_error *error) {
+         assert(u);
+         assert(w >= 0 && w < _KILL_WHO_MAX);
+diff --git a/src/core/unit.h b/src/core/unit.h
+index c5d8170..0e6c6db 100644
+--- a/src/core/unit.h
++++ b/src/core/unit.h
+@@ -507,6 +507,10 @@ typedef struct UnitVTable {
+         /* Additionally to UnitActiveState determine whether unit is to be restarted. */
+         bool (*will_restart)(Unit *u);
+ 
++        /* Return true when the unit's last failure was caused by a watchdog
++         * timeout, so a resulting FailureAction reboot can be attributed. */
++        bool (*failure_was_watchdog)(Unit *u);
++
+         /* Return false when there is a reason to prevent this unit from being gc'ed
+          * even though nothing references it and it isn't active in any way. */
+         bool (*may_gc)(Unit *u);
+@@ -754,6 +758,7 @@ bool unit_inactive_or_pending(Unit *u) _pure_;
+ bool unit_active_or_pending(Unit *u);
+ bool unit_will_restart_default(Unit *u);
+ bool unit_will_restart(Unit *u);
++bool unit_failure_was_watchdog(Unit *u);
+ 
+ int unit_add_default_target_dependency(Unit *u, Unit *target);
+ 
+--
+2.17.1
+
