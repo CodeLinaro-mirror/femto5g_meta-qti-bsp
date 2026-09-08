@@ -59,7 +59,7 @@ do_cleanup_sepolicy() {
 ROOTFS_POSTPROCESS_COMMAND += "${@bb.utils.contains('DISTRO_FEATURES', 'selinux', 'do_cleanup_sepolicy;', '', d)}"
 
 #Install bash
-CORE_IMAGE_EXTRA_INSTALL += "bash"
+CORE_IMAGE_EXTRA_INSTALL += "bash procrank"
 
 #Install Audio packagegroup
 CORE_IMAGE_EXTRA_INSTALL += "packagegroup-qcom-audio"
