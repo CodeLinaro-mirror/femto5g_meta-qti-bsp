@@ -55,6 +55,7 @@ CORE_IMAGE_EXTRA_INSTALL += "\
               process-monitor \
               bist \
               spidev-test \
+              qsfp-client \
 "
 
 do_merge_dtbs() {

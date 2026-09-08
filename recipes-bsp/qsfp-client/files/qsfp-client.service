@@ -5,17 +5,21 @@
 [Unit]
 Description=QSFP28 25G client port bring-up (eth00)
 Documentation=man:ip(8) man:ethtool(8)
-After=network-pre.target systemd-networkd.service
-Wants=network-pre.target
-Before=network-online.target
+Wants=network-online.target
+After=network-online.target
+StartLimitIntervalSec=300
+StartLimitBurst=5
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
+Restart=on-failure
+RestartSec=10s
+ExecCondition=/bin/grep -Fxq build_type:NTN /firmware/image/build_conf/build_conf.txt
+ExecStartPre=/bin/sleep 10
 ExecStart=/usr/sbin/qsfp-client-up.sh up
 ExecStop=/usr/sbin/qsfp-client-up.sh down
 TimeoutStartSec=90
-SuccessExitStatus=0 1
 
 [Install]
 WantedBy=multi-user.target
