@@ -1,0 +1,23 @@
+# short-description: Create a single EFI disk image with systemd-boot for vSOC LV
+# long-description: Creates a single partitioned EFI disk image for the vSOC LV.
+# vSoC visor provides only one virtio-blk device per VM, so all partitions live on vda.
+#   vda1: /boot  (EFI)
+#   vda2: /      (rootfs)
+#   vda3: swap
+#   vda4: /data  (userdata)
+#   vda5: /var   (persist, bind mounted to /persist)
+#   vda6: /firmware (empty, read-only)
+
+part /boot --source bootimg-efi --sourceparams="loader=systemd-boot,initrd=early-ramdisk-image-${MACHINE}.${INITRAMFS_FSTYPES}" --ondisk vda --label msdos --active --align 1024 --use-uuid
+
+part / --source rootfs --ondisk vda --fstype=ext4 --label platform --align 1024 --use-uuid
+
+part swap --ondisk vda --size 44 --label swap1 --fstype=swap --use-uuid
+
+part --source rawcopy --sourceparams="file=usrfs-raw.ext4" --ondisk vda --align 1024
+
+part --source rawcopy --sourceparams="file=persist-raw.ext4" --ondisk vda --align 1024
+
+part --ondisk vda --fstype=ext4 --size=16 --label firmware --align 1024
+
+bootloader --ptable gpt --timeout=0 --append="rootwait rootfstype=ext4 system_name=lv rdinit=/sbin/early-ramdisk-init early-ramdisk.mode=3"
