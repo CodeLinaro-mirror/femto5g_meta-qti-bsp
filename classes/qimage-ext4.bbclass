@@ -77,9 +77,10 @@ create_symlink_systemd_ext4_mount_rootfs() {
         mountname="${entry:1}"
         # Replace "/" with "-" for systemd to understand mount unit.
         mountname=${mountname//'/'/"-"}
+
 	if { [[ "$mountname" == "firmware" || "$mountname" == "bt_firmware" || "$mountname" == "dsp" ]] && \
 	     [[ "${COMBINED_FEATURES}" =~ .*qti-ab-boot.* ]]; } || \
-	   { [[ "$mountname" == "dsp" ]] && [[ "${MACHINE_FEATURES}" =~ mount-dsp-usr-lib ]]; }; then
+	   { [[ "$mountname" == "dsp" || "$mountname" == "firmware" ]] && [[ "${MACHINE_FEATURES}" =~ mount-dsp-firmware ]]; }; then
             cp ${IMAGE_ROOTFS_EXT4}/lib/systemd/system/${mountname}-mount-ext4.service ${IMAGE_ROOTFS_EXT4}/lib/systemd/system/${mountname}-mount.service
             ln -sf ${systemd_unitdir}/system/${mountname}-mount.service ${IMAGE_ROOTFS_EXT4}/lib/systemd/system/local-fs.target.requires/${mountname}-mount.service
         else
@@ -90,6 +91,9 @@ create_symlink_systemd_ext4_mount_rootfs() {
                 ln -sf ${systemd_unitdir}/system/${mountname}.mount ${IMAGE_ROOTFS_EXT4}/lib/systemd/system/multi-user.target.wants/${mountname}.mount
             elif [[ "$mountname" == "persist" ]] ; then
                 ln -sf ${systemd_unitdir}/system/${mountname}.mount ${IMAGE_ROOTFS_EXT4}/lib/systemd/system/local-fs.target.requires/${mountname}.mount
+                if [[ "${MACHINE_FEATURES}" =~ var-persist ]] ; then
+                    ln -sf ${systemd_unitdir}/system/var-persist.mount ${IMAGE_ROOTFS_EXT4}/lib/systemd/system/local-fs.target.wants/var-persist.mount
+                fi
             elif [[ "$mountname" == "overlay" ]] ; then
                 if ${@bb.utils.contains('DISTRO_FEATURES', 'full-disk-encryption', 'false', 'true', d)} ; then
                    ln -sf ${systemd_unitdir}/system/${mountname}.mount ${IMAGE_ROOTFS_EXT4}/lib/systemd/system/local-fs.target.requires/${mountname}.mount

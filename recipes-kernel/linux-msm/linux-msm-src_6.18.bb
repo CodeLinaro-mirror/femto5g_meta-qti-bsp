@@ -27,7 +27,7 @@ KERNEL_CONFIG_FRAGMENTS:append:echo = " \
     ${S}/arch/arm64/configs/vendor/echo-cpe-plus.config \
     ${S}/arch/arm64/configs/vendor/echo-mbb-plus.config \
     ${S}/arch/arm64/configs/vendor/echo-rdkb-plus.config"
-KERNEL_CONFIG_FRAGMENTS:append:echo = " ${@oe.utils.vartrue('DEBUG_BUILD', '${S}/arch/arm64/configs/vendor/echo-debug.config', '', d)}"
+KERNEL_CONFIG_FRAGMENTS:append:echo = " ${@oe.utils.vartrue('DEBUG_BUILD', '${S}/arch/arm64/configs/vendor/echo-debug.config ${S}/arch/arm64/configs/vendor/echo-plus-debug.config', '', d)}"
 
 SRC_URI += " \
           ${@bb.utils.contains('DISTRO_FEATURES', 'apparmor', 'file://apparmor.cfg', '', d)} \
@@ -54,7 +54,7 @@ do_configure:prepend() {
         done
 
         # Now that all the fragments are located merge them.
-        ( cd ${WORKDIR} && ${S}/scripts/kconfig/merge_config.sh -m -r -y -O ${B} ${B}/.config ${KERNEL_CONFIG_FRAGMENTS}  ${@" ".join(find_cfgs(d))} 1>&2 )
+        ( cd ${WORKDIR} && ${S}/scripts/kconfig/merge_config.sh -m -r -O ${B} ${B}/.config ${KERNEL_CONFIG_FRAGMENTS}  ${@" ".join(find_cfgs(d))} 1>&2 )
     fi
 
     # generate pair of private/public keys for module signing
