@@ -8,7 +8,6 @@ LIC_FILES_CHKSUM = "file://secure-gst-codec2.c;beginline=1;endline=33;md5=8d6426
 DEPENDS += "\
     glib-2.0 \
     gstreamer1.0 \
-    gstreamer1.0-omx \
     gstreamer1.0-plugins-base \
     virtual/kernel-headers \
 "
@@ -27,6 +26,4 @@ CFLAGS += "\
     -I${STAGING_INCDIR}/glib-2.0/glib \
     -I${STAGING_INCDIR}/gstreamer-1.0 \
     -I${STAGING_INCDIR}/${PREFERRED_PROVIDER_virtual/kernel} \
-    -I${STAGING_INCDIR}/ion_headers \
-    -I${STAGING_INCDIR}/mm-core/ \
 "
