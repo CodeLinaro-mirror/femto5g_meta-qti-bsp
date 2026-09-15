@@ -26,6 +26,12 @@ PACKAGECONFIG += " \
                   vulkan \
                  "
 
+# Keep Mesa and Meson on the OE-Core LLVM 13.0.1 recipe when meta-clang is enabled.
+LLVMVERSION = "13.0.1"
+MESA_LLVM_RELEASE = "13.0.1"
+export YOCTO_ALTERNATE_EXE_PATH = "${STAGING_LIBDIR}/llvm${MESA_LLVM_RELEASE}/llvm-config"
+PACKAGECONFIG[gallium-llvm] = "-Dllvm=enabled -Dshared-llvm=enabled, -Dllvm=disabled, llvm${MESA_LLVM_RELEASE} llvm-native elfutils"
+
 PACKAGECONFIG:append:class-native = "gallium-llvm"
 
 VULKAN_DRIVERS = "swrast"
