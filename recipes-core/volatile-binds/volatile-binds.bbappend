@@ -68,6 +68,7 @@ VOLATILE_BINDS:echo = "\
 /systemrw/resolv.conf /etc/resolv.conf\n\
 /var/volatile/lib /var/lib\n\
 /systemrw/dump_level /etc/dump_level\n\
+/systemrw/config /etc/qca-nss-ecm/config\n\
 ${@bb.utils.contains('BBFILE_COLLECTIONS', 'qti-rdkb', '/systemrw/dibbler /etc/dibbler', '', d)}\n\
 ${@bb.utils.contains('BBFILE_COLLECTIONS', 'qti-rdkb', '/systemrw/afc /etc/afc', '', d)}\n\
 ${@bb.utils.contains('BBFILE_COLLECTIONS', 'qti-rdkb', '/systemrw/afc-daemon /etc/afc-daemon', '', d)}\n\
