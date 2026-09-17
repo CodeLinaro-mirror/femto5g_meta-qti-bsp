@@ -1,5 +1,5 @@
 DESCRIPTION = "AOSP clang/llvm compiler"
-LICENSE = "Apache-2.0 WITH LLVM-exception & MIT & NCSA"
+LICENSE = "Apache-2.0-with-LLVM-exception & MIT & NCSA"
 
 # Allow machine/distro to select a different prebuilt clang drop.
 AOSP_LLVM_VERSION ?= "clang-r584948"
@@ -7,7 +7,7 @@ AOSP_LLVM_VERSION ?= "clang-r584948"
 FILESEXTRAPATHS:prepend := "${WORKSPACE}/prebuilts/clang/host/linux-x86:"
 
 SRC_URI = "file://${AOSP_LLVM_VERSION}"
-S = "${WORKDIR}/${AOSP_LLVM_VERSION}"
+S = "${UNPACKDIR}/${AOSP_LLVM_VERSION}"
 
 INHIBIT_SYSROOT_STRIP = "1"
 INHIBIT_PACKAGE_STRIP = "1"

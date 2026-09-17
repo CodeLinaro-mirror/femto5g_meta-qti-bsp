@@ -1,7 +1,15 @@
 FILESEXTRAPATHS:prepend := "${THISDIR}/systemd:"
 
-SRC_URI += "file://sysctl-coredump.conf"
-SRC_URI += "file://limits-coredump.conf"
+SRC_URI += " \
+    file://sysctl-coredump.conf \
+    file://limits-coredump.conf \
+"
+
+
+#SRC_URI += "file://sysctl-coredump.conf"
+#SRC_URI += "file://limits-coredump.conf"
+
+
 
 # Modify default CONFFILES as per machine needs
 
@@ -17,10 +25,10 @@ SYSTEMD_COREDUMP_PATH ?= "${userfsdatadir}/coredump"
 
 do_install:append() {
    if [ "${COREDUMP}" == "1" ]; then
-       sed -i "s#@COREDUMP_PATH@#${SYSTEMD_COREDUMP_PATH}#" ${WORKDIR}/sysctl-coredump.conf
+       sed -i "s#@COREDUMP_PATH@#${SYSTEMD_COREDUMP_PATH}#" ${UNPACKDIR}/sysctl-coredump.conf
 
-       install -m 0644 ${WORKDIR}/sysctl-coredump.conf -D ${D}${sysconfdir}/sysctl.d/sys-coredump.conf
-       install -m 0644 ${WORKDIR}/limits-coredump.conf -D ${D}${sysconfdir}/security/limits.d/sys-coredump.conf
+       install -m 0644 ${UNPACKDIR}/sysctl-coredump.conf -D ${D}${sysconfdir}/sysctl.d/sys-coredump.conf
+       install -m 0644 ${UNPACKDIR}/limits-coredump.conf -D ${D}${sysconfdir}/security/limits.d/sys-coredump.conf
 
        #create coredump folder if needed
        install -m 0666 -d ${D}${SYSTEMD_COREDUMP_PATH}

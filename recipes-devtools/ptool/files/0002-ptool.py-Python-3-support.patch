@@ -4,6 +4,8 @@ Date: Fri, 28 Aug 2020 11:52:21 +0530
 Subject: [PATCH] ptool.py: Python 3 support
 
 Signed-off-by: Viswanath Kraleti <vkraleti@codeaurora.org>
+Upstream-Status: Pending [Not submitted to upstream]
+
 ---
  ptool.py | 1048 +++++++++++++++++++++++++++++++-------------------------------
  1 file changed, 524 insertions(+), 524 deletions(-)

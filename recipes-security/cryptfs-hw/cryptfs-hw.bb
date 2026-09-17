@@ -9,7 +9,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta/files/common-licenses/${LICENSE};md5
 SRC_URI = "${CLO_LA_GIT}/device/qcom/common;protocol=https;nobranch=1;rev=de9a4014a349d23cce6acec077aa648a4a07bcc9;subpath=cryptfs_hw"
 SRC_URI += "file://0001-cryptfs_hw-Replace-LOGE-with-SLOGE.patch"
 
-S = "${WORKDIR}/cryptfs_hw"
+S = "${UNPACKDIR}/cryptfs_hw"
 
 DEPENDS += "libcutils libhardware system-core libselinux libscrypt"
 

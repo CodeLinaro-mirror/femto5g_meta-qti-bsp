@@ -14,7 +14,7 @@ RDEPENDS:${PN} += "zlib attr"
 RDEPENDS:${PN} += "${@bb.utils.contains('MACHINE_FEATURES', 'ota-package-verification', 'openssl', '', d)}"
 RDEPENDS:${PN} += "${@bb.utils.contains('MACHINE_FEATURES', 'ota-package-verification', 'openssl-bin', '', d)}"
 
-FILESEXTRAPATHS:prepend := "${WORKSPACE}:"
+FILESEXTRAPATHS:prepend := "${WORKSPACE_SOURCES}:"
 
 SRC_URI = "file://OTA/recovery/"
 SRC_URI += "file://fstab_AB"
@@ -22,7 +22,7 @@ SRC_URI += "file://fstab_AB_cache_ext4"
 SRC_URI += "file://update_engine.service"
 SRC_URI += "file://ota_overlayfs_decouple"
 
-S = "${WORKDIR}/OTA/recovery"
+S = "${UNPACKDIR}/OTA/recovery"
 
 EXTRA_OECONF = "--with-glib --with-sanitized-headers=${STAGING_KERNEL_BUILDDIR}/usr/include \
                 --with-core-headers=${STAGING_INCDIR}"

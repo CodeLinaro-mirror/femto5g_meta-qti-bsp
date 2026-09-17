@@ -11,7 +11,7 @@ SRC_URI = "\
 "
 SRCREV = "93b4e4a7fb335fdccc24d18bfb284e0828d2596d"
 
-S = "${WORKDIR}/git"
+S = "${UNPACKDIR}/git"
 
 inherit lib_package cmake
 

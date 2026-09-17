@@ -8,7 +8,7 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/Apache-2.0;md5=89aea4e17d99a7ca
 # OTA/build is repo-manifest managed and already checked out under ${WORKSPACE};
 # reference its Java sources via FILESEXTRAPATHS rather than a duplicate git
 # SRC_URI revision, so the manifest stays the single source of revision truth.
-FILESEXTRAPATHS:prepend := "${WORKSPACE}/OTA/build/tools/signapk/src/com/android/signapk/:"
+FILESEXTRAPATHS:prepend := "${WORKSPACE_SOURCES}/OTA/build/tools/signapk/src/com/android/signapk/:"
 
 SRC_URI = " \
     file://SignApk.java \

@@ -11,4 +11,4 @@ DEPENDS += "expat liblog tinyalsa"
 FILESEXTRAPATHS:prepend := "${WORKSPACE}/frameworks/:"
 SRC_URI   = "file://audio_route/"
 
-S = "${WORKDIR}/audio_route"
+S = "${UNPACKDIR}/audio_route"

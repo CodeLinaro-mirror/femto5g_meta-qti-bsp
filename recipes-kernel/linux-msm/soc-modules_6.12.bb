@@ -14,7 +14,7 @@ SRC_URI = "file://soc-repo \
            file://qcom/opensource/devicetree"
 
 PROVIDES= "kernel-module-soc-repo"
-S = "${WORKDIR}/soc-repo/build"
+S = "${UNPACKDIR}/soc-repo/build"
 SOC_REPO = "${WORKDIR}/soc-repo"
 
 KERNEL_BUILD_DIR = "${STAGING_KERNEL_BUILDDIR}"

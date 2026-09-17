@@ -16,7 +16,7 @@ SRC_URI  +=  "file://${KERNEL_MODULES_LIST}"
 SRC_URI  +=  "file://linkmodulesload.service"
 SRC_URI:remove:qcs40x = "file://${KERNEL_MODULES_LIST}"
 
-S  =  "${WORKDIR}/dist"
+S  =  "${UNPACKDIR}/dist"
 
 EXISTING_MODULES = "${@bb.utils.contains('MACHINE_USES_KERNEL_PREBUILTS', 'True', \
     '*.ko', \

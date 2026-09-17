@@ -5,7 +5,7 @@ LIC_FILES_CHKSUM = "file://GPL;md5=94d55d512a9ba36caa9b7df079bae19f \
 
 SRCREV = "bb8b81602c1d27e0fda0e5139b502010a624e447"
 
-S = "${WORKDIR}/git"
+S = "${UNPACKDIR}/git"
 
 BBCLASSEXTEND = "native nativesdk"
 

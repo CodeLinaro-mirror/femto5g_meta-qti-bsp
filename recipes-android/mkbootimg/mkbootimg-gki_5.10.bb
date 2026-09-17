@@ -10,7 +10,7 @@ FILESEXTRAPATHS:prepend := "${WORKSPACE}/kernel-5.10/kernel_platform/tools/mkboo
 SRC_URI = "file://mkbootimg.py"
 SRC_URI += "file://include"
 
-S = "${WORKDIR}"
+S = "${UNPACKDIR}"
 do_compile[noexec] = "1"
 do_configure[noexec] = "1"
 

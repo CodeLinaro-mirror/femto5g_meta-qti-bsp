@@ -10,7 +10,7 @@ FILESEXTRAPATHS:prepend := "${KERNEL_PLATFORM_PATH}/:"
 
 SRC_URI = "file://common"
 
-S = "${WORKDIR}/common"
+S = "${UNPACKDIR}/common"
 B = "${WORKDIR}/out"
 
 PR = "r0"

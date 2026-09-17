@@ -8,6 +8,7 @@ can compile it automatically
 
 Change-Id: I9ccb298f69a8d83ff178503c10e10a74ecdb2c3c
 Signed-off-by: Lei wang <leiwan@codeaurora.org>
+Upstream-Status: Pending [Not submitted to upstream]
 ---
  Makefile.am  | 38 +++++++++++++++++++++++++++++++++++++++
  configure.ac | 45 ++++++++++++++++++++++++++++++++++++++++++++

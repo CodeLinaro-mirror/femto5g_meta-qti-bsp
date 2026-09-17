@@ -9,10 +9,10 @@ HOMEPAGE = "https://www.codeaurora.org/gitweb/quic/la?p=platform/bootable/recove
 DEPENDS += "glib-2.0 mtd-utils oem-recovery adbd libbase libsparse libmincrypt bzip2 bison-native openssl"
 RDEPENDS:${PN} = "zlib"
 
-FILESEXTRAPATHS:prepend := "${WORKSPACE}:"
+FILESEXTRAPATHS:prepend := "${WORKSPACE_SOURCES}:"
 SRC_URI = "file://OTA/recovery/"
 SRC_URI += "file://recovery.service"
-S = "${WORKDIR}/OTA/recovery"
+S = "${UNPACKDIR}/OTA/recovery"
 
 EXTRA_OECONF = "--with-glib --with-sanitized-headers=${STAGING_KERNEL_BUILDDIR}/usr/include \
                 --with-core-headers=${STAGING_INCDIR}"

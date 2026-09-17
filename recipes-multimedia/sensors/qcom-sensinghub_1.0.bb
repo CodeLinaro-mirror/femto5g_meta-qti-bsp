@@ -15,7 +15,7 @@ DEPENDS:append:pebble = " nanopb-runtime nanopb-generator-native glib-2.0"
 
 FILESPATH =+ "${WORKSPACE}:"
 SRC_URI  = "file://sensors/sensing-hub/"
-S = "${WORKDIR}/sensors/sensing-hub"
+S = "${UNPACKDIR}/sensors/sensing-hub"
 
 SRC_URI:alor  = "file://vendor/qcom/opensource/sensing-hub/"
 S:alor = "${WORKDIR}/vendor/qcom/opensource/sensing-hub"

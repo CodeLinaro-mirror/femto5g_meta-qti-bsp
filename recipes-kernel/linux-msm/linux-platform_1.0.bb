@@ -3,7 +3,7 @@ COMPATIBLE_MACHINE = "genericarmv8|trustedvm"
 
 FILESEXTRAPATHS:prepend := "${WORKSPACE}:"
 SRC_URI = "file://kernel-${PREFERRED_VERSION_linux-msm}/kernel_platform/"
-S = "${WORKDIR}/kernel-${PREFERRED_VERSION_linux-msm}/kernel_platform"
+S = "${UNPACKDIR}/kernel-${PREFERRED_VERSION_linux-msm}/kernel_platform"
 PR = "r0"
 
 LICENSE = "GPLv2.0-with-linux-syscall-note"

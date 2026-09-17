@@ -5,14 +5,14 @@ LICENSE = "Apache-2.0"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta/files/common-licenses/\
 ${LICENSE};md5=89aea4e17d99a7cacdbeed46a0096b10"
 
-FILESEXTRAPATHS:prepend := "${WORKSPACE}/OTA/build/tools/:${WORKSPACE}/OTA/device/qcom/common/:"
+FILESEXTRAPATHS:prepend := "${WORKSPACE_SOURCES}/OTA/build/tools/:${WORKSPACE}/OTA/device/qcom/common/:"
 
 SRC_URI   = "file://releasetools/"
 SRC_URI  += "file://releasetools.py"
 SRC_URI  += "file://full_ota.sh"
 SRC_URI  += "file://incremental_ota.sh"
 
-S = "${WORKDIR}/releasetools"
+S = "${UNPACKDIR}/releasetools"
 
 do_configure[noexec] = "1"
 do_compile[noexec] = "1"

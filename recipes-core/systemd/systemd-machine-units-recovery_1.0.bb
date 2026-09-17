@@ -8,7 +8,7 @@ SRC_URI += " file://mountpartitions.rules"
 SRC_URI += " file://systemrw.conf"
 SRC_URI += " file://systemrw-ubi.mount"
 
-S = "${WORKDIR}"
+S = "${UNPACKDIR}"
 
 do_install:append () {
     install -d ${D}${systemd_unitdir}/system

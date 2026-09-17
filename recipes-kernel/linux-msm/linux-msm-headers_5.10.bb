@@ -10,7 +10,7 @@ FILESEXTRAPATHS:prepend := "${WORKSPACE}:"
 
 SRC_URI   =  "file://kernel-5.10/kernel_platform/msm-kernel"
 
-S  =  "${WORKDIR}/kernel-5.10/kernel_platform/msm-kernel"
+S  =  "${UNPACKDIR}/kernel-5.10/kernel_platform/msm-kernel"
 
 do_configure[noexec] = "1"
 do_compile[noexec] = "1"
