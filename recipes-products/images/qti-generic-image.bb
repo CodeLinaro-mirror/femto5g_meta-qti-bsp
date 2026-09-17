@@ -1,7 +1,10 @@
 # Provides packages required to build
 # QTI Generic Linux image.
 
-inherit qimage populate_sdk_ext
+QTI_GENERIC_IMAGE_SDK_CLASS = "populate_sdk_ext"
+QTI_GENERIC_IMAGE_SDK_CLASS:qcs610-odk-64 = "populate_sdk_qti"
+
+inherit qimage ${QTI_GENERIC_IMAGE_SDK_CLASS}
 
 IMAGE_FEATURES += "ssh-server-openssh"
 
@@ -34,9 +37,10 @@ CORE_IMAGE_EXTRA_INSTALL += " \
 USBCOMPOSITION:forcevariable = "4EE7"
 
 python copy_buildsystem:append() {
-    # Create src directory in extensible SDK to copy the project sources
-    bb.utils.mkdirhier(baseoutpath + '/src')
-    # Enable the use of WORKSPACE variable on an extensible SDK
-    with open(baseoutpath + '/conf/bblayers.conf', 'a') as f:
-        f.write('WORKSPACE = "$' + '{TOPDIR}/src"\n')
+    if d.getVar('MACHINE') != 'qcs610-odk-64':
+        # Create src directory in extensible SDK to copy the project sources
+        bb.utils.mkdirhier(baseoutpath + '/src')
+        # Enable the use of WORKSPACE variable on an extensible SDK
+        with open(baseoutpath + '/conf/bblayers.conf', 'a') as f:
+            f.write('WORKSPACE = "$' + '{TOPDIR}/src"\n')
 }
