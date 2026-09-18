@@ -4,7 +4,6 @@ LICENSE = "BSD-2-Clause-Patent"
 LIC_FILES_CHKSUM = " \
     file://${COMMON_LICENSE_DIR}/BSD-2-Clause-Patent;md5=0518d409dae93098cca8dfa932f3ab1b \
 "
- 
 SIGNING_FUNCTION = "sectoolv2_sign_abl"
  
 INHIBIT_DEFAULT_DEPS = "1"
@@ -29,7 +28,10 @@ do_deploy() {
 do_deploy[dirs] = "${DEPLOYDIR}"
 addtask deploy before do_build after do_install
 
-sectoolv2_sign_abl() {
+edk2_sectoolv2_sign_abl() {
+    sectools="${WORKSPACE}/vendor/qcom/proprietary/sectools/Linux/sectools"
+    profiles_dir="${WORKSPACE}/security/securemsm/security_profiles"
+
     security_profile_xml="${profiles_dir}/${QSIGN_TARGET}_tz_security_profile.xml"
 
     if [ ! -f "${security_profile_xml}" ]; then
@@ -46,7 +48,8 @@ sectoolv2_sign_abl() {
         echo "ERROR: Security profile not found:"
         echo "${security_profile_xml}"
         echo "QSIGN_TARGET=${QSIGN_TARGET}"
-        echo "Profiles directory=${profiles_dir}"
+        echo "Profiles directory:"
+        echo "${profiles_dir}"
         ls -la "${profiles_dir}" 2>/dev/null || true
         exit 1
     fi
@@ -62,3 +65,4 @@ sectoolv2_sign_abl() {
         --signing-mode TEST \
         --outfile "${WORKDIR}/abl.elf"
 }
+

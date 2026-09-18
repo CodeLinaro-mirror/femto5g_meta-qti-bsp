@@ -92,6 +92,7 @@ EXTRA_OEMAKE:append = " \
     HOST_CXX='${WORKDIR}/edk2-host-tools/clang++' \
     CLANG_BIN='${STAGING_BINDIR_NATIVE}' \
     CLANG_PREBUILT_BIN='${STAGING_BINDIR_NATIVE}' \
+    FUSE_LD='${STAGING_BINDIR_NATIVE}/${TARGET_SYS}/${TARGET_PREFIX}ld' \
 "
 
 do_compile:prepend() {
@@ -188,6 +189,7 @@ do_compile() {
     oe_runmake -j 1 -f makefile all \
         CLANG_BIN="${STAGING_BINDIR_NATIVE}/" \
         CLANG_PREBUILT_BIN="${STAGING_BINDIR_NATIVE}/" \
+        FUSE_LD="${STAGING_BINDIR_NATIVE}/${TARGET_SYS}/${TARGET_PREFIX}ld" \
         HOST_CC="${WORKDIR}/edk2-host-tools/clang" \
         HOST_CXX="${WORKDIR}/edk2-host-tools/clang++"
 

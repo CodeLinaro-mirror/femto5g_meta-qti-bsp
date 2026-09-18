@@ -2,7 +2,7 @@ SUMMARY = "Scripts to mimic GKI vendor RAM Disk"
 DESCRIPTION = "first_stage.sh contains vendor initializations"
 
 LICENSE = "BSD-3-Clause-Clear"
-LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti-bsp/files/common-licenses/\
+LIC_FILES_CHKSUM = "file://${QTI_METADATA_ROOT}/meta-qti-bsp/files/common-licenses/\
 ${LICENSE};md5=3771d4920bd6cdb8cbdf1e8344489ee0"
 
 SRC_URI  +=  "file://run-firststage-script.service"
@@ -13,7 +13,7 @@ do_compile[noexec] = "1"
 do_install () {
   install -m 755 /dev/null ${D}/first_stage.sh
   install -d ${D}${systemd_unitdir}/system/
-  install -m 0644 ${WORKDIR}/run-firststage-script.service ${D}${systemd_unitdir}/system/run-firststage-script.service
+  install -m 0644 ${UNPACKDIR}/run-firststage-script.service ${D}${systemd_unitdir}/system/run-firststage-script.service
 }
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"

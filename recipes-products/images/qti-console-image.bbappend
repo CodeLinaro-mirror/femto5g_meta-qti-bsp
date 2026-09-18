@@ -21,3 +21,4 @@ RDEPENDS:${PN}:remove = "packagegroup-qti-dsp"
 
 # mkdtimg-gki-native stages the utility below mkdtboimg/bin.
 MKDTUTIL = "mkdtboimg/bin/mkdtimg"
+
