@@ -23,7 +23,7 @@ DTBO_MACHINE = "${@d.getVar('MACHINE_SUPPORTS_DTBO') or "False"}"
 FILESEXTRAPATHS:prepend := "${WORKSPACE}:"
 SRC_URI   =  "file://kernel \
               file://overlayfs.cfg \
-	      ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', 'file://systemd.cfg', '', d)} \
+              ${@bb.utils.contains('DISTRO_FEATURES', 'systemd', 'file://systemd.cfg', '', d)} \
               ${@bb.utils.contains('DISTRO_FEATURES', 'virtualization', 'file://virtualization.cfg', '', d)} \
               ${@bb.utils.contains('DISTRO_FEATURES', 'nand-squashfs', 'file://squashfs.cfg', '', d)} \
               ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', 'file://selinux.cfg', '', d)} \
@@ -32,7 +32,8 @@ SRC_URI   =  "file://kernel \
               ${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', 'file://verity.cfg', '', d)} \
               ${@bb.utils.contains('COMBINED_FEATURES', 'qti-audio', 'file://audio_common.cfg', '', d)} \
               ${@bb.utils.contains('MACHINE_FEATURES', 'qti-avb', 'file://avb-verity.cfg', '', d)} \
-	      "
+              ${@bb.utils.contains('DISTRO_FEATURES', 'apparmor', 'file://apparmor.cfg', '', d)} \
+              "
 # Don't set any version extention on debug build
 LINUX_VERSION_EXTENSION ?= "-perf"
 LINUX_VERSION_EXTENSION_qti-distro-debug = ""

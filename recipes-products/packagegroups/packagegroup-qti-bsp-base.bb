@@ -42,7 +42,7 @@ RDEPENDS:packagegroup-startup-scripts-base = "\
     ${@oe.utils.conditional('USB_SUPPORT', 'True', 'usb-composition', '', d)} \
     ${@oe.utils.conditional('USB_AUTOSUSPEND_SUPPORT', 'True', oe.utils.conditional('DISABLE_USBD_SUPPORT', 'True', '', 'usb-composition-usbd', d), '', d)} \
     post-boot \
-    sdcard-scripts-automount \
+    ${@oe.utils.conditional('BASEMACHINE', 'echo', '', 'sdcard-scripts-automount', d)} \
     ${ADDON_SCRIPTS} \
     mod-blacklist \
     "

@@ -13,6 +13,8 @@ python () {
 ALTERNATIVE:${PN} = "${bindir_progs} ${base_bindir_progs} ${sbindir_progs}"
 ALTERNATIVE:${PN}-doc = ""
 
+FILES:${PN} += "${bindir}"
+
 PACKAGE_PREPROCESS_FUNCS += "${@oe.utils.conditional('CUSTOMIZE_COREUTILS_COMMANDS', 'True', 'remove_extra_progs', '', d)}"
 remove_extra_progs() {
     cd ${PKGD}${bindir}

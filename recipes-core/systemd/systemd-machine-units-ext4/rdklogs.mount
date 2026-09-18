@@ -1,0 +1,16 @@
+# Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+[Unit]
+Description=Non-persistent Directory (/rdklogs)
+ConditionPathIsSymbolicLink=!/rdklogs
+DefaultDependencies=no
+Conflicts=umount.target
+Before=local-fs.target umount.target
+After=swap.target
+
+[Mount]
+What=tmpfs
+Where=/rdklogs
+Type=tmpfs
+Options=mode=1777,strictatime,nosuid,nodev

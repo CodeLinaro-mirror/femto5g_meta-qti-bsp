@@ -30,8 +30,15 @@ add_mount_files () {
         mountname="${entry:1}"
         # Replace "/" with "-" for systemd to understand mount unit.
         mountname=${mountname//'/'/"-"}
-        if [[ "$mountname" == "firmware" || "$mountname" == "bt_firmware" || "$mountname" == "dsp" || "$mountname" == "lib-modules" || "$mountname" == "vm-bootsys" || "$mountname" == "lxcrootfs" ]] && \
-           [[ "${IMAGETYPE}" == "ubi" || "${COMBINED_FEATURES}" =~ .*qti-ab-boot.* ]] ; then
+        
+        if [[ "$mountname" == "dsp" ]] && [[ "${MACHINE_FEATURES}" =~ mount-dsp-firmware ]] ; then
+            sed -i '\|^ExecStart=/bin/mount .* /dev/disk/by-partlabel/dsp\${SLOT_SUFFIX} /dsp$| s|/dsp$|/usr/lib/dsp|' ${S}/dsp-mount.service
+            install -d ${D}/usr/lib/dsp
+        fi
+
+        if { [[ "$mountname" == "firmware" || "$mountname" == "bt_firmware" || "$mountname" == "dsp" || "$mountname" == "lib-modules" || "$mountname" == "vm-bootsys" || "$mountname" == "lxcrootfs" ]] && \
+           [[ "${IMAGETYPE}" == "ubi" || "${COMBINED_FEATURES}" =~ .*qti-ab-boot.* ]]; } || \
+           { [[ "$mountname" == "dsp" || "$mountname" == "firmware" ]] && [[ "${MACHINE_FEATURES}" =~ mount-dsp-firmware ]]; }; then
             install -m 0644 ${S}/${mountname}-mount.service ${D}${systemd_unitdir}/system/${mountname}-mount-${IMAGETYPE}.service
         else
             # Update fstype for userdata
@@ -45,6 +52,9 @@ add_mount_files () {
                 fi
 	    fi
             install -m 0644 ${S}/${mountname}.mount ${D}${systemd_unitdir}/system/${mountname}-${IMAGETYPE}.mount
+            if [[ "$mountname" == "persist" ]] && ${@bb.utils.contains('MACHINE_FEATURES', 'var-persist', 'true', 'false', d)}; then
+                install -m 0644 ${S}/var-persist.mount ${D}${systemd_unitdir}/system/var-persist.mount
+            fi
         fi
 	# Install mount generator
         if [[ ! -z "${GENERATED_MACHINE_MNT_POINTS}" ]] ; then
@@ -91,6 +101,32 @@ fix_sepolicies () {
     sed -i "s#,rootcontext=system_u:object_r:data_t:s0##g" ${WORKDIR}/overlay-data.mount
     sed -i "s#,rootcontext=system_u:object_r:cache_t:s0##g" ${WORKDIR}/overlay-cache.mount
     sed -i "s#,context=system_u:object_r:lib_t:s0##g" ${WORKDIR}/qti-mount-generator
+}
+
+# Echo-only fix:
+# Drop SELinux rootcontext option from mount service files as SELinux is not in use
+fix_sepolicies:echo () {
+    sed -i "s#,context=system_u:object_r:firmware_t:s0##g" ${WORKDIR}/firmware-mount.service
+    sed -i "s#,context=system_u:object_r:adsprpcd_t:s0##g" ${WORKDIR}/dsp-mount.service
+    sed -i "s#,rootcontext=system_u:object_r:data_t:s0##g" ${WORKDIR}/data.mount
+    sed -i "s#,rootcontext=system_u:object_r:persist_t:s0##g" ${WORKDIR}/persist.mount
+    sed -i "s#,rootcontext=system_u:object_r:system_data_t:s0##g" ${WORKDIR}/systemrw.mount
+    sed -i "s#,rootcontext=system_u:object_r:cache_t:s0##g" ${WORKDIR}/cache.mount
+}
+
+fix_mount_services:echo () {
+    devdiskstr="dev-disk-by\\\x2dpartlabel-"
+    dspdevice="${devdiskstr}dsp.device"
+    modemdevice="${devdiskstr}modem.device"
+    if [[ "${MACHINE_FEATURES}" =~ .*qti-ab-boot* ]]; then
+        dspdevice="${devdiskstr}dsp.device ${devdiskstr}dsp_b.device"
+        modemdevice="${devdiskstr}modem.device ${devdiskstr}modem_b.device"
+        sed -i "/^After=@DSPDEVICE@/a After=ab-symlink.service" ${WORKDIR}/dsp-mount.service
+        sed -i "/^After=@MODEMDEVICE@/a After=ab-symlink.service" ${WORKDIR}/firmware-mount.service
+    fi
+
+    sed -i "s#@DSPDEVICE@#$dspdevice#g" ${WORKDIR}/dsp-mount.service
+    sed -i "s#@MODEMDEVICE@#$modemdevice#g" ${WORKDIR}/firmware-mount.service
 }
 
 
@@ -143,7 +179,7 @@ PACKAGES =+ " ${PN}-generators "
 
 FILES:${PN} += " ${systemd_unitdir}/*"
 FILES:${PN}-generators = " ${systemd_unitdir}/system-generators/* "
-
+FILES:${PN}:append:echo = " /usr/lib/dsp"
 ALLOW_EMPTY:${PN}-generators = "1"
 
 RDEPENDS:${PN} += "${PN}-generators"

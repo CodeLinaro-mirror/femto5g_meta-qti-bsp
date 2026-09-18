@@ -44,6 +44,7 @@ generate_public_key() {
 }
 
 do_install[prefuncs] += "${@bb.utils.contains('MACHINE_FEATURES', 'ota-package-verification', 'generate_public_key', '', d)}"
+do_install[nostamp] = "1"
 
 do_install:append() {
         install -d ${D}/res/

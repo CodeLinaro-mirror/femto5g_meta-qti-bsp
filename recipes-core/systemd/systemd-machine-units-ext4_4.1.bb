@@ -12,6 +12,7 @@ SRC_URI += " file://bt_firmware.mount"
 SRC_URI += " file://firmware.mount"
 SRC_URI += " file://overlay.mount"
 SRC_URI += " file://persist.mount"
+SRC_URI += " ${@bb.utils.contains('MACHINE_FEATURES', 'var-persist', 'file://var-persist.mount', '', d)}"
 SRC_URI += " file://systemrw.mount"
 SRC_URI += " file://overlay-etc.mount"
 SRC_URI += " file://overlay-data.mount"
@@ -21,6 +22,8 @@ SRC_URI += " file://overlay-workdir.service"
 SRC_URI += " file://overlay-workdir-with-fde.service"
 SRC_URI += " file://bt_firmware-mount.service"
 SRC_URI += " file://cache.mount"
+SRC_URI += " file://nvram.mount"
+SRC_URI += " file://rdklogs.mount"
 SRC_URI += " file://data.mount"
 SRC_URI += " file://dsp-mount.service"
 SRC_URI += " file://firmware-mount.service"
@@ -29,6 +32,19 @@ SRC_URI += " file://set-slotsuffix.service"
 SRC_URI += " file://systemrw.conf"
 SRC_URI += " file://systemrw.mount"
 SRC_URI += " file://qti-mount-generator"
+
+SRC_URI:echo = " file://persist.mount \
+                 file://systemrw.mount \
+                 file://cache.mount \
+                 file://nvram.mount \
+                 file://rdklogs.mount \
+                 file://data.mount \
+                 file://var-volatile.mount \
+                 file://set-slotsuffix.service \
+                 file://systemrw.conf \
+                 file://dsp-mount.service \
+                 file://firmware-mount.service \
+                 file://var-persist.mount"
 
 IMAGETYPE = "ext4"
 

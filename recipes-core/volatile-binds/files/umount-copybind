@@ -33,11 +33,20 @@
 # overlaid path has the necessary content.
 
 mountpoint=$1
+mode=$2
 
 if [ -f "$mountpoint" ]; then
-    umount $mountpoint
+    umount "$mountpoint"
 fi
 if [ -d "$mountpoint" ]; then
-    umount $mountpoint/*
+    if [ "$mode" = "dir" ]; then
+        umount "$mountpoint"
+    else
+         for entry in "$mountpoint"/*; do
+            if [ -f "$entry" ] && grep -qs "$entry" /proc/mounts; then
+                umount "$entry"
+            fi
+        done
+    fi
 fi
 

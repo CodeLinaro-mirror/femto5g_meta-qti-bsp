@@ -95,7 +95,7 @@ do_gen_partition_bin[dirs] = "${IMGDEPLOYDIR}/${IMAGE_BASENAME}"
 
 do_gen_partition_bin () {
     # Generate partition.xml using gen_partition utility
-    $(PYTHON) ${STAGING_BINDIR_NATIVE}/gen_partition.py \
+    ${PYTHON} ${STAGING_BINDIR_NATIVE}/gen_partition.py \
         -i ${MACHINE_PARTITION_CONF_FULL_PATH} \
         -o ${WORKDIR}/partition.xml \
         -m ${PARTITION_IMAGE_MAP}
@@ -103,7 +103,7 @@ do_gen_partition_bin () {
     install -m 0644 ${WORKDIR}/partition.xml .
 
     # Call ptool to generate partition bins
-    $(PYTHON) ${STAGING_BINDIR_NATIVE}/ptool.py -x partition.xml
+    ${PYTHON} ${STAGING_BINDIR_NATIVE}/ptool.py -x partition.xml
 }
 
 python () {
@@ -116,6 +116,7 @@ python () {
 # from actual recipes.
 
 do_deploy_fixup[dirs] = "${IMGDEPLOYDIR}/${IMAGE_BASENAME}"
+do_deploy_fixup[depends] += "virtual/kernel:do_deploy"
 do_deploy_fixup () {
     # copy the bootloader ELF file
     for f in ${EXTRA_IMAGEDEPENDS}; do

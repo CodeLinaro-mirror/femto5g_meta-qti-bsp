@@ -22,7 +22,7 @@ AVB = "${@bb.utils.contains('MACHINE_FEATURES', 'qti-avb','1', '0', d)}"
 
 VERITY_ENABLED = "${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', bb.utils.contains('MACHINE_FEATURES', 'dm-verity-bootloader', '1', '0', d), '0', d)}"
 
-EARLY_ETH = "${@bb.utils.contains('DISTRO_FEATURES', 'early-eth', '1', '0', d)}"
+EARLY_ETH = "${@bb.utils.contains('DISTRO_FEATURES', 'qti-early-eth', '1', '0', d)}"
 
 SYSTEMD_BOOTSLOT_ENABLED = "${@bb.utils.contains('COMBINED_FEATURES', 'qti-ab-boot','1', '0', d)}"
 
@@ -37,6 +37,8 @@ TARGET_HIBERNATION_NO_AES = "${@bb.utils.contains('HIBERNATION_NO_AES', 'True', 
 HIBERNATION_PARTITION = "${@d.getVar('HIBERNATION_PARTITION_NAME') or 'none'}"
 
 TARGET_HIBERNATION_TZ_ENC = "${@bb.utils.contains('HIBERNATION_TZ_ENC', 'True', '1', '0', d)}"
+
+TARGET_HIBERNATION_SUPPORT_AES= "${@bb.utils.contains('HIBERNATION_AES', 'True', '1', '0', d)}"
 
 EXTRA_OEMAKE = " \
     'TARGET_ARCHITECTURE=${TARGET_ARCH}' \
@@ -55,6 +57,7 @@ EXTRA_OEMAKE = " \
     'TARGET_SUPPORTS_EARLY_USB_INIT=${EARLY_USB_INIT}' \
     'HIBERNATION_SUPPORT_NO_AES=${TARGET_HIBERNATION_NO_AES}' \
     'HIBERNATION_PARTITION_NAME=${HIBERNATION_PARTITION}' \
+    'HIBERNATION_SUPPORT_AES=${TARGET_HIBERNATION_SUPPORT_AES}' \
     'HIBERNATION_TZ_ENCRYPTION=${TARGET_HIBERNATION_TZ_ENC}' \
 "
 # Nested quotes and escape characters as per CLANG needs.
