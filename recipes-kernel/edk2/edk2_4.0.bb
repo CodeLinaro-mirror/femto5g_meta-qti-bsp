@@ -4,6 +4,7 @@ LICENSE = "BSD-2-Clause-Patent"
 LIC_FILES_CHKSUM = " \
     file://${COMMON_LICENSE_DIR}/BSD-2-Clause-Patent;md5=0518d409dae93098cca8dfa932f3ab1b \
 "
+ 
 SIGNING_FUNCTION = "sectoolv2_sign_abl"
  
 INHIBIT_DEFAULT_DEPS = "1"
@@ -28,10 +29,16 @@ do_deploy() {
 do_deploy[dirs] = "${DEPLOYDIR}"
 addtask deploy before do_build after do_install
 
+# Use the workspace layout:
+#   vendor/ is below the workspace root
+#   security/ is below src/
+
+
+# Recipe-local ABL signing function.
+# vendor/ is below the workspace root; security profiles are below src/.
 edk2_sectoolv2_sign_abl() {
     sectools="${WORKSPACE}/vendor/qcom/proprietary/sectools/Linux/sectools"
     profiles_dir="${WORKSPACE}/security/securemsm/security_profiles"
-
     security_profile_xml="${profiles_dir}/${QSIGN_TARGET}_tz_security_profile.xml"
 
     if [ ! -f "${security_profile_xml}" ]; then
@@ -66,3 +73,42 @@ edk2_sectoolv2_sign_abl() {
         --outfile "${WORKDIR}/abl.elf"
 }
 
+# Recipe-local override.
+# vendor/ is below the workspace root.
+# security profiles are below src/.
+sectoolv2_sign_abl() {
+    sectools="${WORKSPACE}/vendor/qcom/proprietary/sectools/Linux/sectools"
+    profiles_dir="${WORKSPACE}/security/securemsm/security_profiles"
+
+    security_profile_xml="${profiles_dir}/${QSIGN_TARGET}_tz_security_profile.xml"
+
+    if [ ! -f "${security_profile_xml}" ]; then
+        security_profile_xml="${profiles_dir}/${QSIGN_TARGET}_security_profile.xml"
+    fi
+
+    if [ ! -x "${sectools}" ]; then
+        echo "ERROR: Sectools executable not found:"
+        echo "${sectools}"
+        exit 1
+    fi
+
+    if [ ! -f "${security_profile_xml}" ]; then
+        echo "ERROR: Security profile not found:"
+        echo "${security_profile_xml}"
+        echo "QSIGN_TARGET=${QSIGN_TARGET}"
+        echo "Profiles directory=${profiles_dir}"
+        ls -la "${profiles_dir}" 2>/dev/null || true
+        exit 1
+    fi
+
+    echo "Using Sectools: ${sectools}"
+    echo "Using security profile: ${security_profile_xml}"
+
+    "${sectools}" secure-image \
+        "${WORKDIR}/unsigned_abl.elf" \
+        --image-id ABL \
+        --security-profile "${security_profile_xml}" \
+        --sign \
+        --signing-mode TEST \
+        --outfile "${WORKDIR}/abl.elf"
+}

@@ -12,7 +12,7 @@ FILESEXTRAPATHS:prepend := "${WORKSPACE}:${KERNEL_PREBUILT_PATH}:"
 
 SRC_URI =  " \
     file://kernel-${MSM_KERNEL_VERSION}/kernel_platform/common/COPYING \
-    file://${KERNEL_PREBUILT_DISTDIR}/${BASEMACHINE}-le_${KERNEL_VARIANT}_kernel-uapi-headers.tar.gz \
+    file://${KERNEL_PREBUILT_DISTDIR}/${BASEMACHINE}-le_${@d.getVar('KERNEL_DEFCONFIG_VARIANT').replace('_', '-')}_kernel-uapi-headers.tar.gz \
 "
 
 S  =  "${UNPACKDIR}/kernel-${MSM_KERNEL_VERSION}/kernel_platform/common"
