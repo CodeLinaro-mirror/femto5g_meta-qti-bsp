@@ -41,10 +41,7 @@ CXXFLAGS += "\
 "
 
 EXTRA_OEMESON += "\
-    -Dusedmaheap=true \
-    -Dagl-c2service=true \
     -Dav1-dec=enabled \
-    -Dmmmcolorfmt=true \
     -Dqprange_option=op1 \
     -Dreport_frame_qp_option=op1 \
 "

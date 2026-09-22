@@ -1,0 +1,66 @@
+From 93af780e33da6450c2a8f0613c149ec51bcd2a37 Mon Sep 17 00:00:00 2001
+From: Lei wang <leiwan@codeaurora.org>
+Date: Tue, 5 Nov 2019 14:05:47 +0800
+Subject: [PATCH] systemd: add slotselect support in fstab
+Upstream-Status: Inappropriate [QC platform specific]
+
+support a/b partition option in fstab
+
+Change-Id: I8ab0bb7eae2092d40f69f9b8e46b1a87f817c7e1
+Signed-off-by: Lei wang <leiwan@codeaurora.org>
+---
+ src/core/mount.c                      |  2 +-
+ src/fstab-generator/fstab-generator.c | 18 ++++++++++++++++++
+ 2 files changed, 19 insertions(+), 1 deletion(-)
+
+diff --git a/src/core/mount.c b/src/core/mount.c
+--- a/src/core/mount.c
++++ b/src/core/mount.c
+@@ -1155,7 +1155,7 @@ static void mount_enter_mounting(Mount *m) {
+         _cleanup_free_ char *opts = NULL;
+-        r = fstab_filter_options(p->options, "nofail\0" "noauto\0" "auto\0", NULL, NULL, NULL, &opts);
++        r = fstab_filter_options(p->options, "nofail\0" "noauto\0" "auto\0" "slotselect\0", NULL, NULL, NULL, &opts);
+         if (r < 0)
+                 return r;
+
+diff --git a/src/fstab-generator/fstab-generator.c b/src/fstab-generator/fstab-generator.c
+--- a/src/fstab-generator/fstab-generator.c
++++ b/src/fstab-generator/fstab-generator.c
+@@ -4,6 +4,11 @@
+ #include <stdio.h>
+ #include <unistd.h>
+
++#ifdef USE_GLIB
++#include <glib.h>
++#define strlcat g_strlcat
++#endif /* USE_GLIB */
++
+ #include "alloc-util.h"
+ #include "fd-util.h"
+ #include "fileio.h"
+@@ -73,6 +78,7 @@ static char *arg_usr_options = NULL;
+ static VolatileMode arg_volatile_mode = _VOLATILE_MODE_INVALID;
++static char* slot_suffix = NULL;
+
+ STATIC_DESTRUCTOR_REGISTER(arg_root_what, freep);
+ STATIC_DESTRUCTOR_REGISTER(arg_root_fstype, freep);
+@@ -810,6 +816,18 @@ static int parse_fstab_one(
+         if (fstab_test_yes_no_option(options, "nofail\0" "fail\0"))
+                 flags |= MOUNT_NOFAIL;
+
++        /*
++         * update what for slot support
++         */
++        if (fstab_test_option(options, "slotselect\0")) {
++                if (slot_suffix || proc_cmdline_get_key("androidboot.slot_suffix", 0, &slot_suffix)) {
++                        realloc(what, strlen(what) + strlen(slot_suffix) + 1);
++                        strlcat(what, slot_suffix, strlen(what) + strlen(slot_suffix) + 1);
++                        log_info("slotselect mount target changed to '%s' suffix is '%s'.", what, slot_suffix);
++                }
++                else
++                        log_warning("slotselect is not supported in cmdline, mount target changed to default '%s'.", what);
++        }
++
+         if (!is_swap) {
+                 if (fstab_test_option(options, "x-systemd.rw-only\0"))
+                         flags |= MOUNT_RW_ONLY;

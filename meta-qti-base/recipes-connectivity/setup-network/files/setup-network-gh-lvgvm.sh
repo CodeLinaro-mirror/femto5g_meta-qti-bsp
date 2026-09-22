@@ -70,10 +70,23 @@ setup_network_agl_vm_1() {
 
     echo "Enable forwarding"
     sysctl -w net.ipv4.conf.all.forwarding=1
-    sysctl -w net.core.rmem_max=67108864
+
+    echo "Apply GVM perf network tuning"
     sysctl -w net.core.wmem_max=67108864
-    sysctl -w net.ipv4.tcp_rmem="4096 87380 33554432"
-    sysctl -w net.ipv4.tcp_wmem="4096 65536 33554432"
+    sysctl -w net.core.rmem_max=33554432
+    sysctl -w net.ipv4.udp_mem="786432 1048576 16777216"
+    sysctl -w net.ipv4.tcp_mem="786432 1048576 16777216"
+    sysctl -w net.core.rmem_default=16777216
+    sysctl -w net.core.optmem_max=25165824
+    sysctl -w net.ipv4.tcp_rmem="8192 87380 16777216"
+    sysctl -w net.ipv4.tcp_wmem="8192 87380 16777216"
+    sysctl -w net.core.somaxconn=10000
+    sysctl -w net.core.netdev_max_backlog=10000
+    sysctl -w net.ipv4.ipfrag_high_thresh=50000000
+    sysctl -w net.ipv6.ip6frag_high_thresh=50000000
+    sysctl -w net.ipv4.ipfrag_time=2
+    sysctl -w net.ipv6.ip6frag_time=2
+
     sysctl -p
 }
 
@@ -84,7 +97,7 @@ setup_network_agl_vm_2() {
     ip link set dev eth0 up
 
     echo "Assign IP address"
-    ifconfig eth0 192.168.1.3 up
+    ifconfig eth0 192.168.1.8 up
 
     echo "Setup route"
     ip route add default dev eth0 via 192.168.1.10

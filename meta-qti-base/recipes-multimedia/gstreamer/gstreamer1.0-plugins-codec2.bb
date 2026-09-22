@@ -38,13 +38,8 @@ CXXFLAGS += "\
     -I${STAGING_INCDIR}/${PREFERRED_PROVIDER_virtual/kernel} \
 "
 
-EXTRA_OEMESON += "\
-    ${@oe.utils.version_less_or_equal('${preferred-kernel}', '5.5', '', '-Dusedmaheap=true', d)} \
-    -Dagl-c2service=true \
-"
-
-EXTRA_OEMESON:append:quin-gvm-gen4 = " -Dset_dec_input_framerate=true"
-EXTRA_OEMESON:append:qtiquingvm8295 = " -Dset_dec_input_framerate=true"
+EXTRA_OEMESON:append:quin-gvm-gen4 = " -Dset_dec_input_framerate=true -Dmmmcolorfmt=false"
+EXTRA_OEMESON:append:qtiquingvm8295 = " -Dset_dec_input_framerate=true -Dmmmcolorfmt=false"
 
 PACKAGE_ARCH ?= "${MACHINE_ARCH}"
 

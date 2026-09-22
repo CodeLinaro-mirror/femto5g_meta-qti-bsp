@@ -1,0 +1,45 @@
+From 8ef8476380fc0ff8f14ba46f28eed95747205c24 Mon Sep 17 00:00:00 2001
+From: Lei wang <leiwan@codeaurora.org>
+Date: Thu, 16 Apr 2020 19:35:32 +0800
+Subject: [PATCH] systemd: add handover support for early service
+Upstream-Status: Inappropriate [QC platform specific]
+
+Signed-off-by: Lei wang <leiwan@codeaurora.org>
+---
+ src/core/service.c | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
+
+diff --git a/src/core/service.c b/src/core/service.c
+index 73b3c9c..f951e2c 100644
+--- a/src/core/service.c
++++ b/src/core/service.c
+@@ -2126,6 +2126,26 @@ static void service_enter_start(Service *s) {
+                 timeout = USEC_INFINITY;
+         else
+                 timeout = s->timeout_start_usec;
++        /*
++         * Check Early PIDFile
++         * s->type == simple && s->PIDFile in /run/early path, then read from pid file
++         * first to check if this serivce has been ready.
++         * If ready, we set the mainpid from the pidfile, remove this pidfile and mark it as successful
++         * else, use the normal bootup sequence
++         */
++        if (s->pid_file && strneq(s->pid_file, "/run/early", strlen("/run/early")) && IN_SET(s->type, SERVICE_SIMPLE)) {
++                r = service_load_pid_file(s, false);
++                if (1 == r) {
++                        (void) unlink(s->pid_file);
++                        s->pid_file = mfree(s->pid_file);
++                        service_enter_running(s, SERVICE_SUCCESS);
++                        return;
++                }
++
++                /* only need early pid file at first startup */
++                log_unit_info_errno(UNIT(s), r, "Early PID file %s not readable (yet?) after %s: %m", s->pid_file, service_state_to_string(s->state));
++                s->pid_file = mfree(s->pid_file);
++        }
+ 
+         r = service_spawn(s,
+                           c,
+-- 
+2.7.4
+

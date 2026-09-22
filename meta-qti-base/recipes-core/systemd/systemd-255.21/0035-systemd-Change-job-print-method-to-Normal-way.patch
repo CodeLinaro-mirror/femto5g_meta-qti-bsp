@@ -1,0 +1,37 @@
+From 43bcfe6ff08bdb59b07e9b9a172711cc9b880ced Mon Sep 17 00:00:00 2001
+From: Lei wang <leiwan@qti.qualcomm.com>
+Date: Fri, 5 Sep 2025 12:15:21 +0800
+Subject: [PATCH] systemd: Change job print method to Normal way
+
+Upstream-Status: Inappropriate
+
+Signed-off-by: Lei wang <leiwan@qti.qualcomm.com>
+---
+ src/core/manager.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/core/manager.c b/src/core/manager.c
+index 05eb871040..983bd5cd6d 100644
+--- a/src/core/manager.c
++++ b/src/core/manager.c
+@@ -244,7 +244,7 @@ static void manager_print_jobs_in_progress(Manager *m) {
+         if (m->status_unit_format == STATUS_UNIT_FORMAT_DESCRIPTION)
+                 /* When using 'Description', we effectively don't have enough space to show the nested status
+                  * without ellipsization, so let's not even try. */
+-                manager_status_printf(m, STATUS_TYPE_EPHEMERAL, cylon,
++                manager_status_printf(m, STATUS_TYPE_NORMAL, cylon,
+                                       "%sA %s job is running for %s (%s / %s)",
+                                       job_of_n,
+                                       job_type_to_string(j->type),
+@@ -253,7 +253,7 @@ static void manager_print_jobs_in_progress(Manager *m) {
+         else {
+                 const char *status_text = unit_status_text(j->unit);
+
+-                manager_status_printf(m, STATUS_TYPE_EPHEMERAL, cylon,
++                manager_status_printf(m, STATUS_TYPE_NORMAL, cylon,
+                                       "%sJob %s/%s running (%s / %s)%s%s",
+                                       job_of_n,
+                                       ident,
+--
+2.34.1
+

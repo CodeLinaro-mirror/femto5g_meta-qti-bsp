@@ -16,7 +16,7 @@ S = "${WORKDIR}/vendor/qcom/opensource/platform-kernel"
 
 METAL_MODULES_BUILD = "drivers/aop-set-ddr.ko drivers/silent_boot.ko drivers/wallpower_charger.ko drivers/dump_boot_log.ko drivers/silent-mode-hw-monitoring.ko"
 
-VIRT_MODULES_BUILD = "${@bb.utils.contains('PREFERRED_VERSION_linux-msm', '6.12', 'socinfo_dt.ko subsystem_notif_virt.ko boot_marker.ko virtio_ssr.ko', 'drivers/socinfo_dt.ko drivers/subsystem_notif_virt.ko drivers/virtio_ssr.ko', d)}"
+VIRT_MODULES_BUILD = "${@bb.utils.contains('PREFERRED_VERSION_linux-msm', '6.12', 'socinfo_dt.ko subsystem_notif_virt.ko boot_marker.ko virtio_ssr.ko rsm_fe.ko', 'drivers/socinfo_dt.ko drivers/subsystem_notif_virt.ko drivers/virtio_ssr.ko drivers/rsm_fe/rsm_fe.ko', d)}"
 
 VIRT_MODULES_BUILD:append:qtiquingvm8295 = "${@bb.utils.contains('PREFERRED_VERSION_linux-msm', '6.12', ' vfastrpc.ko', ' drivers/virtual_fastrpc/vfastrpc.ko', d)}"
 VIRT_MODULES_BUILD:append:quin-gvm-gen4 = "${@bb.utils.contains('PREFERRED_VERSION_linux-msm', '6.12', ' vfastrpc.ko', ' drivers/virtual_fastrpc/vfastrpc.ko', d)}"
@@ -44,6 +44,7 @@ VIRT_PROVIDES_MODULES = "\
     kernel-module-subsystem-notif-virt-${KERNEL_VERSION} \
     kernel-module-boot-marker-${KERNEL_VERSION} \
     kernel-module-virtio-ssr-${KERNEL_VERSION} \
+    kernel-module-rsm-fe-${KERNEL_VERSION} \
 "
 
 VIRT_PROVIDES_MODULES:append:qtiquingvm8295 = " kernel-module-vfastrpc-${KERNEL_VERSION}"
