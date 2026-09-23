@@ -10,6 +10,7 @@ SRC_URI += " \
     file://0001-Skip-Selinux-Check.patch \
 "
 
+PACKAGECONFIG:append = " ${@bb.utils.filter('DISTRO_FEATURES', 'seccomp', d)}"
 
 do_install:append() {
     install -d ${D}${sysconfdir}/systemd/system/systemd-tmpfiles-setup-dev.service.d

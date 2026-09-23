@@ -3,6 +3,7 @@ FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 SRC_URI:append = " \
         file://autodev.sh \
         file://config \
+        file://seccomp.conf \
         file://file_contexts \
         file://dbus_contexts \
         file://0001-fix-error-msg-Unsupported-config-key-lxc.seccomp.patch \
@@ -47,6 +48,7 @@ do_install:append() {
     install -d ${D}/etc/selinux/targeted/contexts/files
     mv ${D}/usr/bin ${D}/lxc
     cp ${WORKDIR}/config ${D}/lxc/lxc-conf/lv
+    install -m 644 ${WORKDIR}/seccomp.conf ${D}/lxc/lxc-conf/lv
     install -m 755 ${WORKDIR}/autodev.sh ${D}/lxc/lxc-conf
     install -m 644 ${WORKDIR}/file_contexts ${D}/etc/selinux/mls/contexts/files
     install -m 644 ${WORKDIR}/file_contexts ${D}/etc/selinux/targeted/contexts/files

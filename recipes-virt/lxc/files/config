@@ -16,6 +16,8 @@ lxc.console.logfile = /vendor_early_services/run/lxc_console.log
 
 lxc.autodev = 1
 
+lxc.seccomp.profile = /vendor_early_services/vendor/vm-system/lxc/lxc-conf/lv/seccomp.conf
+
 # CGroup whitelist
 #lxc.cgroup2.devices.allow = a
 lxc.cgroup.devices.allow = a
