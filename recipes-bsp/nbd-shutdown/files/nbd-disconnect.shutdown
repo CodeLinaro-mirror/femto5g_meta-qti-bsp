@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+sync
+for d in /dev/nbd*; do
+    [ -b "$d" ] || continue
+    /usr/bin/nbd-client -d "$d" 2>/dev/null || nbd-client -d "$d" 2>/dev/null
+done
+exit 0
