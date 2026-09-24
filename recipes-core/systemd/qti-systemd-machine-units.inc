@@ -121,6 +121,8 @@ fix_mount_services:echo () {
     if [[ "${MACHINE_FEATURES}" =~ .*qti-ab-boot* ]]; then
         dspdevice="${devdiskstr}dsp.device ${devdiskstr}dsp_b.device"
         modemdevice="${devdiskstr}modem.device ${devdiskstr}modem_b.device"
+        sed -i "/^After=@DSPDEVICE@/a After=ab-symlink.service" ${WORKDIR}/dsp-mount.service
+        sed -i "/^After=@MODEMDEVICE@/a After=ab-symlink.service" ${WORKDIR}/firmware-mount.service
     fi
 
     sed -i "s#@DSPDEVICE@#$dspdevice#g" ${WORKDIR}/dsp-mount.service

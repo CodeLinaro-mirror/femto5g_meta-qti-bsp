@@ -22,6 +22,7 @@ CORE_IMAGE_EXTRA_INSTALL += "\
                 coreutils \
                 powerapp \
                 powerapp-powerconfig \
+                crash-collect-hlos \
                 powerapp-reboot \
                 powerapp-shutdown \
                 systemd-machine-units \
@@ -62,3 +63,5 @@ CORE_IMAGE_EXTRA_INSTALL += "bash"
 
 #Install Audio packagegroup
 CORE_IMAGE_EXTRA_INSTALL += "packagegroup-qcom-audio"
+
+CORE_IMAGE_EXTRA_INSTALL += "packagegroup-qcom-sensors"
