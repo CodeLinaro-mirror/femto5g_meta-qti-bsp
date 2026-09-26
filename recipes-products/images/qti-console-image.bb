@@ -20,12 +20,9 @@ CORE_IMAGE_EXTRA_INSTALL += "\
               kernel-modules \
               packagegroup-android-utils \
               packagegroup-filesystem-utils \
-              ${@bb.utils.contains('COMBINED_FEATURES', 'qti-bluetooth', "packagegroup-qti-bluetooth", "", d)} \
               packagegroup-qti-core \
-              ${@bb.utils.contains('MACHINE_FEATURES', 'qti-data-modem', "packagegroup-qti-data", "", d)} \
               packagegroup-qti-dsp \
               packagegroup-qti-ss-mgr \
-              ${@bb.utils.contains('COMBINED_FEATURES', 'qti-wifi', "packagegroup-qti-wifi", "", d)} \
               packagegroup-startup-scripts \
               packagegroup-support-utils \
               systemd-machine-units \
