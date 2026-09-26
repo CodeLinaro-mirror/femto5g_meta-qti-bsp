@@ -1,0 +1,12 @@
+#!/bin/sh
+
+# Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+# Must NOT disconnect nbd here - shutdown log collectors still use /data, /persist.
+# Boot-type gate (network_boot + flashless only) is on the systemd unit's
+# ConditionKernelCommandLine, so this runs only when nbd-backed.
+echo "<5>nbd-teardown: disarming automounts before umount" > /dev/kmsg 2>/dev/null
+systemctl stop data.automount cache.automount persist.automount systemrw.automount 2>/dev/null
+sync
+exit 0

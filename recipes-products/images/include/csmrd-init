@@ -428,7 +428,7 @@ retrive_host_ip() {
         echo "Remaining time: $count seconds"
 
         # check if /dev/mhi_pipe_16 is accesssible.
-        wait_for_mhi_ch $ctrl_dev 5
+        wait_for_mhi_ch $ctrl_dev 10
         ret="$?"
         if [ "$ret" -eq 0 ]; then
               success_mhi=1
@@ -573,16 +573,18 @@ do_nbdtab()
     portno="$2"
     config_portno="$3"
     local timeout=300
-    # Create nbd-server config
-    echo "nbd0 $1 system.img.raw persist" > /etc/nbdtab
-    echo "nbd1 $1 systemrw.img.raw  persist" >> /etc/nbdtab
-    echo "nbd2 $1 persist.img.raw  persist" >> /etc/nbdtab
-    echo "nbd3 $1 userdata.img.raw  persist" >> /etc/nbdtab
-    echo "nbd4 $1 cache.img.raw  persist" >> /etc/nbdtab
-    echo "nbd5 $1 NON-HLOS.bin persist" >> /etc/nbdtab
-    echo "nbd6 $1 default persist" >> /etc/nbdtab
-    echo "nbd7 $1 manifest.bin persist" >> /etc/nbdtab
-
+    # timeout= bounds a dead nbd link to -EIO instead of hanging forever
+    # (hung_task panic); nbd0/rootfs needs a longer timeout than the rest
+    # since it must stay up until shutdown exec's reboot(2).
+    echo "nbd0 $1 system.img.raw persist,timeout=180" > /etc/nbdtab
+    echo "nbd1 $1 systemrw.img.raw  persist,timeout=20" >> /etc/nbdtab
+    echo "nbd2 $1 persist.img.raw  persist,timeout=20" >> /etc/nbdtab
+    echo "nbd3 $1 userdata.img.raw  persist,timeout=20" >> /etc/nbdtab
+    echo "nbd4 $1 cache.img.raw  persist,timeout=20" >> /etc/nbdtab
+    echo "nbd5 $1 NON-HLOS.bin persist,timeout=20" >> /etc/nbdtab
+    echo "nbd6 $1 default persist,timeout=20" >> /etc/nbdtab
+    echo "nbd7 $1 manifest.bin persist,timeout=20" >> /etc/nbdtab
+    
     nbdclient nbd0 $portno # connect remote system.img
     nbdclient nbd1 $portno # connect remote systemrw.img
     nbdclient nbd2 $portno # connect remote persist.img
@@ -603,6 +605,12 @@ do_nbdtab()
         echo "NBD connection failed. Fall back to ramdisk shell for debugging"
         start_rdshell
     fi
+
+    # scheduler=none avoids a NULL rq->mq_hctx panic during shutdown's nbd I/O-error storm.
+    for n in 0 1 2 3 4 5 6 7; do
+        sched="/sys/block/nbd$n/queue/scheduler"
+        [ -f "$sched" ] && echo none > "$sched" 2>/dev/null
+    done
 
     # mount system.img
     mnt_dir="/mnt/system"
@@ -648,6 +656,18 @@ do_nbdtab()
     sed -i 's+/dev/disk/by-partlabel/persist+/dev/nbd2+g' persist.mount
     sed -i 's+/dev/disk/by-partlabel/userdata+/dev/nbd3+g' data.mount
     sed -i 's+/dev/disk/by-partlabel/cache+/dev/nbd4+g' cache.mount
+
+    # nbd fs are network-backed: mark _netdev and After=network.target
+    # instead of the stock Before=local-fs.target, which silently drops.
+    for u in systemrw persist data cache; do
+        [ -f "$u.mount" ] || continue
+        grep -q '_netdev' "$u.mount" || \
+            sed -i 's/^\(Options=.*\)$/\1,_netdev,x-systemd.device-timeout=30s/' "$u.mount"
+        sed -i '/^DefaultDependencies=no$/d' "$u.mount"
+        sed -i '/^Before=local-fs.target$/d' "$u.mount"
+        grep -q '^After=network.target$' "$u.mount" || \
+            sed -i 's/^\[Unit\]$/[Unit]\nAfter=network.target/' "$u.mount"
+    done
     if [ -f firmware-mount.service ]; then
         sed -i '/modemDirCheck/,/modemDirCheckend/d' firmware-mount.service
         sed -i 's+/dev/disk/by-partlabel/modem${SLOT_SUFFIX}+/dev/nbd5+g' firmware-mount.service

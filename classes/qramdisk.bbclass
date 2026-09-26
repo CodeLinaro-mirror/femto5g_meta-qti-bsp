@@ -73,7 +73,11 @@ fakeroot do_ramdisk_create() {
             cp ${IMAGE_ROOTFS}/usr/bin/devmem2 bin/
             cp ${IMAGE_ROOTFS}/usr/sbin/tcpdump bin/
             cp ${IMAGE_ROOTFS}/usr/lib/libpcap.so.1 lib/libpcap.so.1
-            cp ${IMAGE_ROOTFS}/usr/lib/libcrypto.so.1.1 lib/
+            if ${@bb.utils.contains_any('PREFERRED_VERSION_openssl', '3.0.10', 'true', 'false', d)}; then
+                cp ${IMAGE_ROOTFS}/usr/lib/libcrypto.so.3 lib/
+            else
+                cp ${IMAGE_ROOTFS}/usr/lib/libcrypto.so.1.1 lib/
+            fi
             ln -s mksh bin/sh
             ln -s ping.iputils bin/ping
             ln -s devmem2 bin/devmem
@@ -269,7 +273,8 @@ fakeroot do_ramdisk_create() {
             cp ${IMAGE_ROOTFS}/usr/lib/libpopt.so.0 lib/
             cp ${IMAGE_ROOTFS}/lib/libuuid.so.1 lib/
             cp ${IMAGE_ROOTFS}/usr/lib/libdevmapper.so.1.02 lib/
-            if ${@bb.utils.contains_any('PREFERRED_VERSION_openssl', '3.0.9', 'true', 'false', d)}; then
+
+            if ${@bb.utils.contains_any('PREFERRED_VERSION_openssl', '3.0.9 3.0.10', 'true', 'false', d)}; then
                 cp ${IMAGE_ROOTFS}/usr/lib/libssl.so.3 lib/
                 cp ${IMAGE_ROOTFS}/usr/lib/libcrypto.so.3 lib/
             else
