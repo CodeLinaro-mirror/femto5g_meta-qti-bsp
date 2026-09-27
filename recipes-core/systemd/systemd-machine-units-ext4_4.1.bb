@@ -12,6 +12,7 @@ SRC_URI += " file://bt_firmware.mount"
 SRC_URI += " file://firmware.mount"
 SRC_URI += " file://overlay.mount"
 SRC_URI += " file://persist.mount"
+SRC_URI += " ${@bb.utils.contains('MACHINE_FEATURES', 'var-persist', 'file://var-persist.mount', '', d)}"
 SRC_URI += " file://systemrw.mount"
 SRC_URI += " file://overlay-etc.mount"
 SRC_URI += " file://overlay-data.mount"
@@ -32,6 +33,20 @@ SRC_URI += " file://systemrw.conf"
 SRC_URI += " file://systemrw.mount"
 SRC_URI += " file://qti-mount-generator"
 
+SRC_URI:echo = " file://persist.mount \
+                 file://systemrw.mount \
+                 file://cache.mount \
+                 file://nvram.mount \
+                 file://rdklogs.mount \
+                 file://data.mount \
+                 file://var-volatile.mount \
+                 file://set-slotsuffix.service \
+                 file://systemrw.conf \
+                 file://dsp-mount.service \
+                 file://firmware-mount.service \
+                 ${@bb.utils.contains('MACHINE_FEATURES', 'qti-ab-boot', 'file://modem-mount.sh', '', d)} \
+                 file://var-persist.mount"
+
 IMAGETYPE = "ext4"
 
 do_install[prefuncs] += " ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', '', 'fix_sepolicies', d)}"
@@ -48,6 +63,14 @@ do_install:append () {
 
     if ${@bb.utils.contains('COMBINED_FEATURES', 'qti-ab-boot', 'true', 'false', d)}; then
         install -m 0644 ${S}/set-slotsuffix.service ${D}${systemd_unitdir}/system
+    fi
+
+}
+
+do_install:append:echo () {
+
+    if ${@bb.utils.contains('MACHINE_FEATURES', 'qti-ab-boot', 'true', 'false', d)}; then
+        install -m 0755 ${WORKDIR}/modem-mount.sh -D ${D}${sysconfdir}/initscripts/modem-mount.sh
     fi
 
 }

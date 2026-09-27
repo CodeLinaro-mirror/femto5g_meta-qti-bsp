@@ -10,7 +10,7 @@ dirs755:append = " /media/cf /media/net /media/ram \
 # userdata mount point is present by default in all machines.
 # TODO: Add this path to MACHINE_MNT_POINTS in machine conf.
 dirs755:append = " ${userfsdatadir}"
-dirs755:append = " /cache /persist"
+dirs755:append = " /cache /persist ${@bb.utils.contains('MACHINE_FEATURES', 'var-persist', '/var/persist', '', d)}"
 
 dirs755:append = " ${MACHINE_MNT_POINTS}"
 

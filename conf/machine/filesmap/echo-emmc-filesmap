@@ -9,6 +9,10 @@ aop.mbn                 /dev/block/bootdevice/by-name/aop
 aop_devcfg.mbn          /dev/block/bootdevice/by-name/aop_devcfg
 cmnlib64.mbn            /dev/block/bootdevice/by-name/cmnlib64
 cpucp.elf               /dev/block/bootdevice/by-name/cpucp
+cpucp_dtbs.elf          /dev/block/bootdevice/by-name/cpucp_dtb
+dspso.bin               /dev/block/bootdevice/by-name/dsp
+hyp_ac_config.mbn       /dev/block/bootdevice/by-name/hyp_ac_config
+tz_ac_config.mbn        /dev/block/bootdevice/by-name/tz_ac_config
 fw_ipa_gsi_6.0_p.elf    /dev/block/bootdevice/by-name/ipa_fw
 km41.mbn                /dev/block/bootdevice/by-name/keymaster
 logfs_ufs_8mb.bin       /dev/block/bootdevice/by-name/logfs
@@ -28,3 +32,4 @@ uefi.elf                /dev/block/bootdevice/by-name/uefi
 xbl_s.melf              /dev/block/bootdevice/by-name/xbl
 xbl_config.elf          /dev/block/bootdevice/by-name/xbl_config
 xbl_ramdump.elf         /dev/block/bootdevice/by-name/xbl_ramdump
+xbl_ac_config.mbn       /dev/block/bootdevice/by-name/xbl_ac_config

@@ -6,6 +6,9 @@ ENABLE_DISPLAY = "${@d.getVar('MACHINE_SUPPORTS_DISPLAY') or "True"}"
 ENABLE_TOUCH = "${@d.getVar('MACHINE_SUPPORTS_TOUCH') or "True"}"
 ENABLE_SECUREMSM = "${@d.getVar('MACHINE_SUPPORTS_SECUREMSM') or "True"}"
 ENABLE_MINK = "${@d.getVar('MACHINE_SUPPORTS_MINK') or "True"}"
+ENABLE_TIME_INIT = "${@d.getVar('MACHINE_SUPPORTS_TIME_INIT') or "False"}"
+
+CORE_IMAGE_EXTRA_INSTALL += "${@oe.utils.conditional('TOYBOX_RAMDISK', 'True', "bash", "", d)}"
 
 CORE_IMAGE_EXTRA_INSTALL += " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', 'packagegroup-selinux-minimal', '', d)} \
@@ -13,6 +16,7 @@ CORE_IMAGE_EXTRA_INSTALL += " \
     sdcard-scripts-automount \
     e2fsprogs-mke2fs \
     procrank \
+    ${@oe.utils.conditional('ENABLE_TIME_INIT', 'True', 'vm-time-init', '', d)} \
 "
 
 CORE_IMAGE_EXTRA_INSTALL += " ${@bb.utils.contains('MACHINE_FEATURES', 'qti-vm-idv', 'libturbojpeg', '', d)}"
@@ -28,7 +32,6 @@ CORE_IMAGE_EXTRA_INSTALL += " ${@bb.utils.contains('MACHINE_FEATURES', 'vm-dynam
 #Exclude packages
 PACKAGE_EXCLUDE += "readline"
 ROOTFS_POSTPROCESS_COMMAND:remove = " do_fsconfig;"
-USE_DEPMOD = "0"
 
 do_gen_partition_bin[noexec] = "1"
 

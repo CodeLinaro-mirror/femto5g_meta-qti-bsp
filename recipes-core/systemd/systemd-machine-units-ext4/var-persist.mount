@@ -1,0 +1,16 @@
+[Unit]
+Description=Bind mount /persist to /var/persist
+After=persist.mount
+Requires=persist.mount
+Before=local-fs.target
+DefaultDependencies=no
+ConditionPathExists=/persist
+
+[Mount]
+What=/persist
+Where=/var/persist
+Type=none
+Options=bind
+
+[Install]
+WantedBy=local-fs.target
