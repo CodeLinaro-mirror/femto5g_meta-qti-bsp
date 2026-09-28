@@ -50,8 +50,12 @@ CORE_IMAGE_EXTRA_INSTALL += "\
               packagegroup-ru-modem-client \
               packagegroup-ru-qrtr-modem-server \
               resize-data \
+              nbd-shutdown \
               collect-shutdown-logs \
               process-monitor \
+              bist \
+              spidev-test \
+              qsfp-client \
 "
 
 do_merge_dtbs() {
