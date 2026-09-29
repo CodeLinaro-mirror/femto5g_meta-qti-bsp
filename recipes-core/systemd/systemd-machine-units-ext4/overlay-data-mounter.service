@@ -7,6 +7,7 @@ Before=local-fs.target
 [Service]
 Type=oneshot
 RemainAfterExit=yes
+SELinuxContext=system_u:system_r:overlay_data_mounter_t:s0
 ExecStart=/usr/libexec/overlay-mounter data
 
 [Install]

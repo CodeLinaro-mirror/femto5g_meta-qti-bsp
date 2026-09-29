@@ -6,6 +6,9 @@ KERNEL=="diag_wm_cntl", MODE="0660", OWNER="system", GROUP="system"
 KERNEL=="diag_wm_cmd", MODE="0660", OWNER="system", GROUP="system"
 KERNEL=="diag_wm_data", MODE="0660", OWNER="system", GROUP="system"
 
+# CoreSight
+KERNEL=="byte-cntr", SUBSYSTEM=="coresight-tmc-etr-stream", MODE="0660", OWNER="diag", GROUP="diag"
+
 # Power state
 KERNEL=="power_state", MODE="0660", OWNER="system", GROUP="system"
 

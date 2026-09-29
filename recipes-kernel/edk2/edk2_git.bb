@@ -23,7 +23,12 @@ VBLE = "${@bb.utils.contains('DISTRO_FEATURES', 'qti-vble','1', '0', d)}"
 
 AVB = "${@bb.utils.contains('MACHINE_FEATURES', 'qti-avb','1', '0', d)}"
 
-VERITY_ENABLED = "${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', bb.utils.contains('MACHINE_FEATURES', 'dm-verity-bootloader', '1', '0', d), '0', d)}"
+VERITY_ENABLED = "${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', bb.utils.contains_any('MACHINE_FEATURES', 'dm-verity-bootloader dm-verity-bootloader-v2', '1', '0', d), '0', d)}"
+
+# no-ramdisk dm-verity (dm-verity-bootloader-v2): ABL emits the kernel-native
+# dm-mod.create= verity line instead of the legacy dm= line, and resolves the
+# system partition device path at runtime.
+VERITY_USE_DM_MOD_CREATE = "${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', bb.utils.contains('MACHINE_FEATURES', 'dm-verity-bootloader-v2', '1', '0', d), '0', d)}"
 
 EARLY_ETH = "${@bb.utils.contains('DISTRO_FEATURES', 'early-eth', '1', '0', d)}"
 
@@ -45,6 +50,7 @@ EXTRA_OEMAKE = " \
     'VERIFIED_BOOT_ENABLED=${AVB}' \
     'VERIFIED_BOOT_LE=${VBLE}' \
     'VERITY_LE=${VERITY_ENABLED}' \
+    'VERITY_USE_DM_MOD_CREATE=${VERITY_USE_DM_MOD_CREATE}' \
     'EDK_TOOLS_PATH=${S}/BaseTools' \
     'EARLY_ETH_ENABLED=${EARLY_ETH}' \
     'OVERRIDE_ABL_LOAD_ADDRESS=${ABL_LOAD_ADDRESS}' \
@@ -59,7 +65,15 @@ NAND_SQUASHFS_SUPPORT = "${@bb.utils.contains('DISTRO_FEATURES', 'nand-squashfs'
 EXTRA_OEMAKE:append = " 'NAND_SQUASHFS_SUPPORT=${NAND_SQUASHFS_SUPPORT}'"
 EXTRA_OEMAKE:append:qti-distro-base-user = " 'VERITY_LE_USE_EXT4_GLUEBI=1'"
 
-EXTRA_OEMAKE:append:seraph = " 'APPEND_RAM_PARTITIONS_TO_MEM_NODE=1' 'PVMFW_ENABLED=1'"
+EXTRA_OEMAKE:append:seraph = " \
+    'APPEND_RAM_PARTITIONS_TO_MEM_NODE=1' \
+    'PVMFW_ENABLED=1' \
+    'HIBERNATION_SUPPORT_NO_AES=1' \
+    'HIBERNATION_SUPPORT_AES=1' \
+    'NUM_CORES_DEVICE=5' \
+    'NUM_SILVER_CORES_DEVICE=2' \
+    'HIBERNATION_PARTITION_NAME="swap"' \
+"
 
 do_compile () {
     export BUILD_CC="clang"
