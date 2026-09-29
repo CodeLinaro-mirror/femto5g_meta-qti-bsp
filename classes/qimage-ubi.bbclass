@@ -41,12 +41,16 @@ create_symlink_userfs[cleandirs] = "${USERIMAGE_ROOTFS}"
 create_symlink_userfs() {
 
     #Symlink modules
+    # if usrmerge is enabled, configuration could already provide /lib -> /usr/lib
+    # checking the actual filesystem layout
     LIB_MODULES="${IMAGE_ROOTFS_UBI}/lib/modules"
-    if [ -d ${LIB_MODULES} ]; then
-        cp -rp ${LIB_MODULES} ${IMAGE_ROOTFS_UBI}/usr/lib/
+    if [ -d "${LIB_MODULES}" ] && [ ! -L "${IMAGE_ROOTFS_UBI}/lib" ]; then
+	cp -rp ${LIB_MODULES} ${IMAGE_ROOTFS_UBI}/usr/lib/
         rm -rf ${LIB_MODULES}
     fi
-    ln -sf /usr/lib/modules ${IMAGE_ROOTFS_UBI}/lib
+    if [ ! -L "${IMAGE_ROOTFS_UBI}/lib" ]; then
+	ln -sf /usr/lib/modules ${IMAGE_ROOTFS_UBI}/lib
+    fi
 
     # Move rootfs data to userfs directory
     # Content of userfs is added to data volume
