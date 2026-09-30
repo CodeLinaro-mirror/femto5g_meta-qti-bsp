@@ -60,29 +60,29 @@ do_install:append() {
         install -d ${D}/res/
 
         install -d ${D}/${base_bindir}
-        install -m 0755 ${WORKDIR}/ota_overlayfs_decouple -D ${D}${base_bindir}/ota_overlayfs_decouple
+        install -m 0755 ${UNPACKDIR}/ota_overlayfs_decouple -D ${D}${base_bindir}/ota_overlayfs_decouple
 
         if ${@bb.utils.contains('COMBINED_FEATURES', 'qti-nad-core', 'false', 'true', d)}; then
             install -d ${D}/cache/recovery
         fi
         if ${@bb.utils.contains('IMAGE_FSTYPES', 'ext4', 'true', 'false', d)}; then
             if ${@bb.utils.contains_any('MACHINE_MNT_POINTS', '/overlay', 'true', 'false', d)}; then
-                install -m 0755 ${WORKDIR}/fstab_AB -D ${D}/res/recovery_volume_config
+                install -m 0755 ${UNPACKDIR}/fstab_AB -D ${D}/res/recovery_volume_config
             elif ${@bb.utils.contains_any('MACHINE_MNT_POINTS', '/cache', 'true', 'false', d)}; then
-                install -m 0755 ${WORKDIR}/fstab_AB_cache_ext4 -D ${D}/res/recovery_volume_config
+                install -m 0755 ${UNPACKDIR}/fstab_AB_cache_ext4 -D ${D}/res/recovery_volume_config
             fi
         fi
 
         install -d ${D}${systemd_unitdir}/system/
 
         if ${@bb.utils.contains('DISTRO_FEATURES', 'qti-ab-boot', bb.utils.contains('COMBINED_FEATURES', 'qti-nad-core', 'false', 'true', d), 'false', d)}; then
-            install -m 0644 ${WORKDIR}/update_engine.service -D \
+            install -m 0644 ${UNPACKDIR}/update_engine.service -D \
                      ${D}${systemd_unitdir}/system/update_engine.service
         fi
         if ${@bb.utils.contains('MACHINE_FEATURES', 'ota-package-verification', 'true', 'false', d)}; then
-            install -m 0755 ${WORKDIR}/public.pem -D ${D}/res/public.pem
+            install -m 0755 ${UNPACKDIR}/public.pem -D ${D}/res/public.pem
         fi
         if ${@bb.utils.contains('OTA_WHOLE_FILE_SIGN', 'true', 'true', 'false', d)}; then
-            install -m 0644 ${WORKDIR}/keys -D ${D}/res/keys
+            install -m 0644 ${UNPACKDIR}/keys -D ${D}/res/keys
         fi
 }

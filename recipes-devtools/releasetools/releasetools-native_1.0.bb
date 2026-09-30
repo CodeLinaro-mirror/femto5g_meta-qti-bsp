@@ -19,17 +19,17 @@ do_compile[noexec] = "1"
 
 do_install:append() {
     install -d ${D}${bindir}/releasetools/
-    install -m 755 ${WORKDIR}/full_ota.sh ${D}${bindir}/releasetools/
-    install -m 755 ${WORKDIR}/incremental_ota.sh ${D}${bindir}/releasetools/
-    install -m 755 ${WORKDIR}/releasetools.py ${D}${bindir}/releasetools/
+    install -m 755 ${UNPACKDIR}/full_ota.sh ${D}${bindir}/releasetools/
+    install -m 755 ${UNPACKDIR}/incremental_ota.sh ${D}${bindir}/releasetools/
+    install -m 755 ${UNPACKDIR}/releasetools.py ${D}${bindir}/releasetools/
     cp -rf ${S}/* ${D}${bindir}/releasetools/
 }
 
 do_deploy[cleandirs] = "${DEPLOYDIR}/ota-scripts"
 do_deploy() {
-    install -m 755 ${WORKDIR}/full_ota.sh  ${DEPLOYDIR}/ota-scripts
-    install -m 755 ${WORKDIR}/incremental_ota.sh ${DEPLOYDIR}/ota-scripts
-    install -m 755 ${WORKDIR}/releasetools.py ${DEPLOYDIR}/ota-scripts
+    install -m 755 ${UNPACKDIR}/full_ota.sh  ${DEPLOYDIR}/ota-scripts
+    install -m 755 ${UNPACKDIR}/incremental_ota.sh ${DEPLOYDIR}/ota-scripts
+    install -m 755 ${UNPACKDIR}/releasetools.py ${DEPLOYDIR}/ota-scripts
     install -m 755 ${S}/blockimgdiff.py ${DEPLOYDIR}/ota-scripts
     install -m 755 ${S}/common.py ${DEPLOYDIR}/ota-scripts
     install -m 755 ${S}/edify_generator.py ${DEPLOYDIR}/ota-scripts
