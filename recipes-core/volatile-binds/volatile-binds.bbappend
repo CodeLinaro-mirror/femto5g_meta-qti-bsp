@@ -13,11 +13,15 @@ SRC_URI += "\
     ${@bb.utils.contains('MACHINE_MNT_POINTS', '/systemrw', 'file://volatile-binds.service.in', '', d)} \
 "
 do_compile:append:echo() {
-    if [ -e systemrw-data-eth.service ]; then
-        sed -i -e "s|ExecStart=/sbin/mount-copybind /systemrw/data/eth /etc/data/eth$|ExecStart=/sbin/mount-copybind /systemrw/data/eth /etc/data/eth dir|" \
-               -e "s|ExecStop=/sbin/umount-copybind /etc/data/eth$|ExecStop=/sbin/umount-copybind /etc/data/eth dir|" \
-               -e "s|RequiresMountsFor=\(/systemrw/data/eth\) \(/etc/data/eth\)|RequiresMountsFor=/systemrw|" \
-               systemrw-data-eth.service
+    if [ -e var-volatile-lib.service ]; then
+        sed -i -e "s|ExecStart=/sbin/mount-copybind /var/volatile/lib /var/lib$|ExecStart=/sbin/mount-copybind /var/volatile/lib /var/lib dir|" \
+               var-volatile-lib.service
+    fi
+    if [ -e systemrw-data-eth-eth_config.xml.service ]; then
+        sed -i -e "s|ConditionPathIsReadWrite=/systemrw/data/eth$|ConditionPathIsReadWrite=/systemrw|" \
+               -e "s|RequiresMountsFor=/etc/data/eth$|RequiresMountsFor=/systemrw|" \
+               -e "/ConditionPathIsReadWrite=!\/etc\/data\/eth\/eth_config.xml/d" \
+               systemrw-data-eth-eth_config.xml.service
     fi
     if [ -e systemrw-dropbear.service ]; then
         sed -i -e "s|RequiresMountsFor=/etc$|RequiresMountsFor=/systemrw|" \
@@ -58,7 +62,7 @@ VOLATILE_BINDS:echo = "\
 /systemrw/data/usb /etc/data/usb/\n\
 /systemrw/data/miniupnpd /etc/data/miniupnpd/\n\
 /systemrw/data/ipa /etc/data/ipa/\n\
-/systemrw/data/eth /etc/data/eth\n\
+/systemrw/data/eth/eth_config.xml /etc/data/eth/eth_config.xml\n\
 /systemrw/rt_tables /etc/data/iproute2/rt_tables\n\
 /systemrw/boot_hsusb_comp /etc/usb/boot_hsusb_comp\n\
 /systemrw/boot_hsic_comp /etc/usb/boot_hsic_comp\n\
@@ -68,6 +72,7 @@ VOLATILE_BINDS:echo = "\
 /systemrw/resolv.conf /etc/resolv.conf\n\
 /var/volatile/lib /var/lib\n\
 /systemrw/dump_level /etc/dump_level\n\
+/systemrw/config /etc/qca-nss-ecm/config\n\
 ${@bb.utils.contains('BBFILE_COLLECTIONS', 'qti-rdkb', '/systemrw/dibbler /etc/dibbler', '', d)}\n\
 ${@bb.utils.contains('BBFILE_COLLECTIONS', 'qti-rdkb', '/systemrw/afc /etc/afc', '', d)}\n\
 ${@bb.utils.contains('BBFILE_COLLECTIONS', 'qti-rdkb', '/systemrw/afc-daemon /etc/afc-daemon', '', d)}\n\
