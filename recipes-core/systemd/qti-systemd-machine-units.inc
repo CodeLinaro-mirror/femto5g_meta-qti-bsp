@@ -121,10 +121,23 @@ fix_mount_services:echo () {
     if [[ "${MACHINE_FEATURES}" =~ .*qti-ab-boot* ]]; then
         dspdevice="${devdiskstr}dsp.device ${devdiskstr}dsp_b.device"
         modemdevice="${devdiskstr}modem.device ${devdiskstr}modem_b.device"
+        sed -i "/^After=@DSPDEVICE@/a After=ab-symlink.service" ${WORKDIR}/dsp-mount.service
+        sed -i "/^After=@MODEMDEVICE@/a After=ab-symlink.service" ${WORKDIR}/firmware-mount.service
     fi
 
     sed -i "s#@DSPDEVICE@#$dspdevice#g" ${WORKDIR}/dsp-mount.service
     sed -i "s#@MODEMDEVICE@#$modemdevice#g" ${WORKDIR}/firmware-mount.service
+
+    if [[ "${MACHINE_FEATURES}" =~ .*qti-ab-boot* ]]; then
+        # For A/B targets: replace the direct mount command with modem-mount.sh
+        # which handles mount failure, slot switching, and EDL escalation.
+        # Also ensure set-slotsuffix.service (provides SLOT_SUFFIX env) and
+        # ab-symlink.service (provides /dev/block/bootdevice/by-name/recoveryinfo
+        # needed by abctl --print_rci) are ordered before this service.
+        sed -i '/^After=/s/$/ set-slotsuffix.service ab-symlink.service/' ${WORKDIR}/firmware-mount.service
+        sed -i '/^BindsTo=/a Requires=set-slotsuffix.service ab-symlink.service' ${WORKDIR}/firmware-mount.service
+        sed -i 's|^ExecStart=.*|ExecStart=/etc/initscripts/modem-mount.sh|' ${WORKDIR}/firmware-mount.service
+    fi
 }
 
 

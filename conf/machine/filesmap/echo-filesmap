@@ -9,7 +9,7 @@ aop.mbn                 /dev/block/bootdevice/by-name/aop
 aop_devcfg.mbn          /dev/block/bootdevice/by-name/aop_devcfg
 apdp.mbn                /dev/block/bootdevice/by-name/apdp
 cmnlib64.mbn            /dev/block/bootdevice/by-name/cmnlib64
-cpucp.elf               /dev/block/bootdevice/by-name/cpucpfw
+cpucp.elf               /dev/block/bootdevice/by-name/cpucp
 cpucp_dtbs.elf          /dev/block/bootdevice/by-name/cpucp_dtb
 dspso.bin               /dev/block/bootdevice/by-name/dsp
 hyp_ac_config.mbn       /dev/block/bootdevice/by-name/hyp_ac_config
@@ -23,7 +23,7 @@ hypvm.mbn               /dev/block/bootdevice/by-name/qhee
 Quantum.fv              /dev/block/bootdevice/by-name/quantumfv
 quantumsdk.fv           /dev/block/bootdevice/by-name/quantumsdk
 qupv3fw.elf             /dev/block/bootdevice/by-name/qupfw
-xbl_s_nand.melf         /dev/block/bootdevice/by-name/sbl
+xbl_s.melf              /dev/block/bootdevice/by-name/xbl
 sec.elf                 /dev/block/bootdevice/by-name/sec
 shrm.elf                /dev/block/bootdevice/by-name/shrm
 tools.fv                /dev/block/bootdevice/by-name/toolsfv
