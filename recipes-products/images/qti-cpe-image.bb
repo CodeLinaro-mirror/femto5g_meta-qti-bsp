@@ -22,7 +22,6 @@ CORE_IMAGE_EXTRA_INSTALL += "\
                 coreutils \
                 powerapp \
                 powerapp-powerconfig \
-                crash-collect-hlos \
                 powerapp-reboot \
                 powerapp-shutdown \
                 systemd-machine-units \
@@ -42,6 +41,8 @@ CORE_IMAGE_EXTRA_INSTALL += "\
                 ${@bb.utils.contains('BBFILE_COLLECTIONS', 'qti-internal', 'packagegroup-qti-internal', '', d)} \
                 ${@bb.utils.contains('BBFILE_COLLECTIONS', 'cta', 'packagegroup-qti-cta', '', d)} \
 "
+# Disable crash-collect-hlos on echo-min.
+CORE_IMAGE_EXTRA_INSTALL += "${@bb.utils.contains('MACHINE', 'echo-min', '', 'crash-collect-hlos', d)}"
 
 IMAGE_INSTALL:append = " libatomic"
 
