@@ -10,7 +10,7 @@ LIC_FILES_CHKSUM = "file://LICENSE.txt;md5=2998c54c288b081076c9af987bdf4838"
 SRC_URI = "git://github.com/qualcomm/userspace-resource-manager.git;protocol=https;branch=main"
 SRCREV = "b9fe1493cb0a86e1e98bd5f50c04e195a3a3d0c7"
 
-S = "${WORKDIR}/git"
+S = "${UNPACKDIR}/git"
 
 inherit cmake pkgconfig systemd
 

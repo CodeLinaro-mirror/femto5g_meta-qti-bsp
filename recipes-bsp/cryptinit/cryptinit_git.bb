@@ -14,7 +14,7 @@ SRC_URI = " \
     file://cryptshutdown.sh \
 "
 
-S = "${WORKDIR}"
+S = "${UNPACKDIR}"
 
 do_unpack[deptask] = "do_populate_sysroot"
 

@@ -13,7 +13,7 @@ SRC_URI += "file://Add-autotool-make-files-for-libsquashfs_utils.patch"
 
 SRCREV_FORMAT = "extras_squashfs-tools"
 
-S = "${WORKDIR}/squashfs_utils"
+S = "${UNPACKDIR}/squashfs_utils"
 
 DEPENDS += "libcutils"
 

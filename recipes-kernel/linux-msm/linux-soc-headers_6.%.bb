@@ -16,7 +16,7 @@ FILESEXTRAPATHS:prepend := "${WORKSPACE}/kernel-${PREFERRED_VERSION_linux-msm}/k
 SRC_URI = "file://common \
            file://soc-repo"
 
-S = "${WORKDIR}/common"
+S = "${UNPACKDIR}/common"
 SOC_REPO = "${WORKDIR}/soc-repo"
 
 DEPENDS += "rsync-native"

@@ -5,7 +5,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta/files/common-licenses/${LICENSE};md5
 
 SRC_URI +="file://${BASEMACHINE}/update_file_permissions.sh"
 
-S = "${WORKDIR}/${BASEMACHINE}"
+S = "${UNPACKDIR}/${BASEMACHINE}"
 
 PR = "r4"
 

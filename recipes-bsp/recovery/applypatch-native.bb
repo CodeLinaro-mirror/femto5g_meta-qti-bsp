@@ -13,4 +13,4 @@ RDEPENDS:${PN} = "zlib"
 FILESEXTRAPATHS:prepend := "${WORKSPACE}/OTA/recovery/:"
 SRC_URI   = "file://applypatch"
 
-S = "${WORKDIR}/applypatch"
+S = "${UNPACKDIR}/applypatch"

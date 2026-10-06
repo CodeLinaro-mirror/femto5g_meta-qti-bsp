@@ -12,7 +12,7 @@ RDEPENDS:${PN} = "zlib"
 FILESEXTRAPATHS:prepend := "${WORKSPACE}:"
 SRC_URI = "file://OTA/recovery/"
 SRC_URI += "file://recovery.service"
-S = "${WORKDIR}/OTA/recovery"
+S = "${UNPACKDIR}/OTA/recovery"
 
 EXTRA_OECONF = "--with-glib --with-sanitized-headers=${STAGING_KERNEL_BUILDDIR}/usr/include \
                 --with-core-headers=${STAGING_INCDIR}"

@@ -83,21 +83,21 @@ do_install:append () {
    rm -f ${D}${base_libdir}/udev/rules.d/60-persistent-v4l.rules
 
    # Place systemd-udevd.service in /etc/systemd/system
-   install -m 0644 ${WORKDIR}/systemd-udevd.service \
+   install -m 0644 ${UNPACKDIR}/systemd-udevd.service \
        -D ${D}/etc/systemd/system/systemd-udevd.service
-   install -m 0644 ${WORKDIR}/ffbm.target \
+   install -m 0644 ${UNPACKDIR}/ffbm.target \
        -D ${D}/etc/systemd/system/ffbm.target
 
    # Enable logind/getty/password-wall service in FFBM mode
    ln -sf ${base_libdir}/systemd/system/systemd-logind.service ${D}${base_libdir}/systemd/system/ffbm.target.wants/systemd-logind.service
    ln -sf ${base_libdir}/systemd/system/getty.target ${D}${base_libdir}/systemd/system/ffbm.target.wants/getty.target
    ln -sf ${base_libdir}/systemd/system/systemd-ask-password-wall.path ${D}${base_libdir}/systemd/system/ffbm.target.wants/systemd-ask-password-wall.path
-   install -d /etc/sysctl.d/
-   install -m 0644 ${WORKDIR}/sysctl.conf -D ${D}/etc/sysctl.d/sysctl.conf
-   install -m 0644 ${WORKDIR}/platform.conf -D ${D}/etc/tmpfiles.d/platform.conf
+   install -d ${D}${sysconfdir}/sysctl.d/
+   install -m 0644 ${UNPACKDIR}/sysctl.conf -D ${D}/etc/sysctl.d/sysctl.conf
+   install -m 0644 ${UNPACKDIR}/platform.conf -D ${D}/etc/tmpfiles.d/platform.conf
 
    if ${@bb.utils.contains('MACHINE_FEATURES', 'qti-vm', 'true', 'false', d)}; then
-       install -m 0644 ${WORKDIR}/trusted_touch.conf -D ${D}/etc/tmpfiles.d/trusted_touch.conf
+       install -m 0644 ${UNPACKDIR}/trusted_touch.conf -D ${D}/etc/tmpfiles.d/trusted_touch.conf
    fi
 
    #  'systemctl unmask' can be used on device to enable them if needed.
@@ -113,13 +113,13 @@ do_install:append () {
          ln -sf /dev/null ${D}${sysconfdir}/systemd/system/sys-kernel-debug.mount
    fi
    install -d ${D}${sysconfdir}/udev/rules.d/
-   install -m 0644 ${WORKDIR}/ion.rules -D ${D}${sysconfdir}/udev/rules.d/ion.rules
-   install -m 0644 ${WORKDIR}/tui.rules -D ${D}${sysconfdir}/udev/rules.d/tui.rules
-   install -m 0644 ${WORKDIR}/kgsl.rules -D ${D}${sysconfdir}/udev/rules.d/kgsl.rules
-   install -m 0644 ${WORKDIR}/set-mhi-nodes.rules -D ${D}${sysconfdir}/udev/rules.d/set-mhi-nodes.rules
-   install -m 0644 ${WORKDIR}/99-gpiochardev.rules -D ${D}${sysconfdir}/udev/rules.d/99-gpiochardev.rules
-   install -m 0644 ${WORKDIR}/kmem.rules -D ${D}${sysconfdir}/udev/rules.d/kmem.rules
-   install -m 0644 ${WORKDIR}/mmc-rpmb.rules -D ${D}${sysconfdir}/udev/rules.d/mmc-rpmb.rules
+   install -m 0644 ${UNPACKDIR}/ion.rules -D ${D}${sysconfdir}/udev/rules.d/ion.rules
+   install -m 0644 ${UNPACKDIR}/tui.rules -D ${D}${sysconfdir}/udev/rules.d/tui.rules
+   install -m 0644 ${UNPACKDIR}/kgsl.rules -D ${D}${sysconfdir}/udev/rules.d/kgsl.rules
+   install -m 0644 ${UNPACKDIR}/set-mhi-nodes.rules -D ${D}${sysconfdir}/udev/rules.d/set-mhi-nodes.rules
+   install -m 0644 ${UNPACKDIR}/99-gpiochardev.rules -D ${D}${sysconfdir}/udev/rules.d/99-gpiochardev.rules
+   install -m 0644 ${UNPACKDIR}/kmem.rules -D ${D}${sysconfdir}/udev/rules.d/kmem.rules
+   install -m 0644 ${UNPACKDIR}/mmc-rpmb.rules -D ${D}${sysconfdir}/udev/rules.d/mmc-rpmb.rules
 
    # Mask dev-ttyS0.device
    ln -sf /dev/null ${D}/etc/systemd/system/dev-ttyS0.device

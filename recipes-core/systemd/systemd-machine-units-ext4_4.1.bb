@@ -81,11 +81,11 @@ do_install:append() {
        rm -f ${D}${systemd_unitdir}/system/local-fs.target.wants/cache.mount
 
        # Install dedicated mounter service units
-       install -m 0644 ${WORKDIR}/overlay-data-mounter.service \
+       install -m 0644 ${UNPACKDIR}/overlay-data-mounter.service \
            ${D}${systemd_unitdir}/system/overlay-data-mounter.service
-       install -m 0644 ${WORKDIR}/overlay-etc-mounter.service \
+       install -m 0644 ${UNPACKDIR}/overlay-etc-mounter.service \
            ${D}${systemd_unitdir}/system/overlay-etc-mounter.service
-       install -m 0644 ${WORKDIR}/overlay-cache-mounter.service \
+       install -m 0644 ${UNPACKDIR}/overlay-cache-mounter.service \
            ${D}${systemd_unitdir}/system/overlay-cache-mounter.service
 
        # Enable them via local-fs.target.wants

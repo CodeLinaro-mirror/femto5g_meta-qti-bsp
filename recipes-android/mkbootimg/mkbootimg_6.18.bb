@@ -15,7 +15,7 @@ FILESEXTRAPATHS:prepend := "${KERNEL_PLATFORM_PATH}/bootable/libbootloader/gbl/l
 SRC_URI = "file://bin/mkbootimg"
 SRC_URI += "file://include/bootimg"
 SRC_URI += "file://lib64/libc_musl.so"
-S = "${WORKDIR}"
+S = "${UNPACKDIR}"
 do_compile[noexec] = "1"
 do_configure[noexec] = "1"
 

@@ -11,7 +11,7 @@ SRC_URI = "file://mkbootimg.py"
 SRC_URI += "file://include"
 SRC_URI += "file://gki/generate_gki_certificate.py"
 
-S = "${WORKDIR}"
+S = "${UNPACKDIR}"
 do_compile[noexec] = "1"
 do_configure[noexec] = "1"
 

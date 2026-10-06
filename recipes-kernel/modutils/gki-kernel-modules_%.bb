@@ -16,7 +16,7 @@ SRC_URI  +=  "file://${KERNEL_MODULES_LIST}"
 SRC_URI  +=  "file://linkmodulesload.service"
 SRC_URI:remove:qcs40x = "file://${KERNEL_MODULES_LIST}"
 
-S  =  "${WORKDIR}/dist"
+S  =  "${UNPACKDIR}/dist"
 
 EXISTING_MODULES = "${@bb.utils.contains('MACHINE_USES_KERNEL_PREBUILTS', 'True', \
     '*.ko', \
@@ -27,10 +27,10 @@ do_compile[depends] += "${@bb.utils.contains('MACHINE_USES_KERNEL_PREBUILTS', 'T
 do_compile () {
     existing_modules=$(ls ${EXISTING_MODULES} 2> /dev/null || true)
 
-    if [ ! -f ${WORKDIR}/${KERNEL_MODULES_LIST} ]; then
+    if [ ! -f ${UNPACKDIR}/${KERNEL_MODULES_LIST} ]; then
         bbfatal "Kernel modules list file ${KERNEL_MODULES_LIST} not found"
     fi
-    first_mod_list=$(cat ${WORKDIR}/${KERNEL_MODULES_LIST} | sed -e '/^ *#/d;/^ *$/d')
+    first_mod_list=$(cat ${UNPACKDIR}/${KERNEL_MODULES_LIST} | sed -e '/^ *#/d;/^ *$/d')
 
     # Check if any modules were found after filtering
     if [ -z "$first_mod_list" ]; then
@@ -78,7 +78,7 @@ do_install() {
     install -m 0644 secondmods.conf ${D}${sysconfdir}/modules-load.d/00-secondmods.conf
 
     install -d ${D}${systemd_unitdir}/system/
-    install -m 0644 ${WORKDIR}/linkmodulesload.service ${D}${systemd_unitdir}/system/linkmodulesload.service
+    install -m 0644 ${UNPACKDIR}/linkmodulesload.service ${D}${systemd_unitdir}/system/linkmodulesload.service
 }
 
 ALLOW_EMPTY:${PN} = "1"

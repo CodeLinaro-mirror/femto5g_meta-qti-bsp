@@ -7,7 +7,7 @@ SRC_URI = "file://early-ramdisk-init"
 
 SRCREV = "${AUTOREV}"
 DEPENDS += "kmod util-linux"
-S = "${WORKDIR}/early-ramdisk-init"
+S = "${UNPACKDIR}/early-ramdisk-init"
 
 inherit autotools
 

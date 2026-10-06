@@ -10,4 +10,4 @@ SRCREV = "b7ed902b2394f94e7f1fbe6c3194b5cd9a9429e6"
 SRCBRANCH = "caf_migration/systemd-stable/v244-stable"
 SRC_URI = "${CLO_LE_GIT}/systemd-stable.git;protocol=https;branch=${SRCBRANCH}"
 
-S = "${WORKDIR}/git"
+S = "${UNPACKDIR}/git"

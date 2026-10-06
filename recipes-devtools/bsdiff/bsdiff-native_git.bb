@@ -14,7 +14,7 @@ DEPENDS += "bzip2-replacement-native libdivsufsort-native"
 FILESEXTRAPATHS:prepend := "${WORKSPACE}:"
 SRC_URI = "file://OTA/external/bsdiff/"
 
-S = "${WORKDIR}/OTA/external/bsdiff"
+S = "${UNPACKDIR}/OTA/external/bsdiff"
 
 EXTRA_OECONF = "--with-sanitized-headers=${STAGING_KERNEL_BUILDDIR}/usr/include \
                 --with-core-headers=${STAGING_INCDIR_NATIVE}"

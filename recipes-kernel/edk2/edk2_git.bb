@@ -15,7 +15,7 @@ FILESEXTRAPATHS:prepend := "${WORKSPACE}/bootable/bootloader/:"
 FILESEXTRAPATHS:prepend := "${KERNEL_PLATFORM_PATH}/bootable/bootloader/:"
 
 SRC_URI = "file://edk2"
-S         =  "${WORKDIR}/edk2"
+S = "${UNPACKDIR}/edk2"
 
 INSANE_SKIP:${PN} = "arch"
 

@@ -9,7 +9,7 @@ HOMEPAGE = "https://www.codeaurora.org/gitweb/quic/la?p=device/qcom/common.git"
 FILESEXTRAPATHS:prepend := "${WORKSPACE}:"
 SRC_URI = "file://OTA/device/qcom/common/recovery/oem-recovery/"
 
-S = "${WORKDIR}/OTA/device/qcom/common/recovery/oem-recovery"
+S = "${UNPACKDIR}/OTA/device/qcom/common/recovery/oem-recovery"
 
 DEPENDS += "virtual/kernel linux-msm-headers"
 DEPENDS:pineapple += "securemsmdlkm-headers"

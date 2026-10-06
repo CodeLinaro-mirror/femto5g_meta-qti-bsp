@@ -4,7 +4,7 @@ COMPATIBLE_MACHINE = "genericarmv8|sdxlemur|scuba|qrbx210-rbx|sa2150p|sa2150p-na
 SRC_URI:append:sdxlemur = "${@bb.utils.contains('MACHINE_FEATURES', 'qti-audio', 'file://0001-ALSA-uapi-add-check-to-avoid-duplicate-include-of-ti.patch', '', d)}"
 SRC_URI:append:sdxlemur = "${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', 'file://gluebi.cfg', '', d)}"
 
-S         =  "${WORKDIR}/kernel/msm-5.4"
+S         =  "${UNPACKDIR}/kernel/msm-5.4"
 PR        =  "r0"
 
 # QCS610 specific

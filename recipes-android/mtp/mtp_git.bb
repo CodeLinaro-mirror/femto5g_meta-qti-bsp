@@ -14,7 +14,7 @@ FILESEXTRAPATHS:prepend := "${WORKSPACE}/frameworks/:"
 SRC_URI   = "file://mtp/"
 SRC_URI += "file://automtp.sh"
 
-S = "${WORKDIR}/mtp"
+S = "${UNPACKDIR}/mtp"
 
 EXTRA_OECONF += " \
     --with-kernel-headers=${STAGING_KERNEL_BUILDDIR}/include/uapi \

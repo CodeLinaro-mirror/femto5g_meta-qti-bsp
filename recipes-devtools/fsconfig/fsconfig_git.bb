@@ -13,7 +13,7 @@ DEPENDS += "libselinux libcutils"
 FILESEXTRAPATHS:prepend := "${WORKSPACE}:"
 SRC_URI = "file://OTA/build/tools/fs_config/"
 
-S = "${WORKDIR}/OTA/build/tools/fs_config"
+S = "${UNPACKDIR}/OTA/build/tools/fs_config"
 
 BBCLASSEXTEND = "native"
 

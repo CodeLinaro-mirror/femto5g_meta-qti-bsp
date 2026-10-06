@@ -7,7 +7,7 @@ PV = "0.0.0+git${SRCPV}"
 SRCREV = "0deb9c7e135e9380a6d09e9d2e938a146bb698c8"
 SRC_URI = "git://github.com/ago/pps-tools.git;branch=master;protocol=https"
 
-S = "${WORKDIR}/git"
+S = "${UNPACKDIR}/git"
 
 do_install() {
         install -d ${D}${bindir} ${D}${includedir} \

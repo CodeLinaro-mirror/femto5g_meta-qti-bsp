@@ -15,7 +15,7 @@ SRC_URI = "file://kernel-${PREFERRED_VERSION_linux-msm}/kernel_platform/msm-kern
 
 SRC_URI:append:cinder  =  "${@oe.utils.conditional('KERNEL_USE_PREBUILTS', 'True', '', 'file://kernel-${PV}/kernel_platform/msm-kernel/arch/${ARCH}/configs/vendor/cinder_debug.config',d)}"
 
-S = "${WORKDIR}/kernel-${PREFERRED_VERSION_linux-msm}/kernel_platform/msm-kernel"
+S = "${UNPACKDIR}/kernel-${PREFERRED_VERSION_linux-msm}/kernel_platform/msm-kernel"
 PR = "r0"
 
 DEPENDS += "virtual/kernel-toolchain-native virtual/dtc-native rsync-native mod-signing-keys"

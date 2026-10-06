@@ -8,7 +8,7 @@ BSD-3-Clause-Clear;md5=3771d4920bd6cdb8cbdf1e8344489ee0"
 
 SRC_URI   = "file://mallocdebug.cpp"
 
-S = "${WORKDIR}"
+S = "${UNPACKDIR}"
 
 do_compile() {
    ${CXX} -g -O0 ${WORKDIR}/mallocdebug.cpp -ldl --shared -fPIC -o libmallocdebug.so

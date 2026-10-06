@@ -13,7 +13,7 @@ RDEPENDS:${PN} += "python3"
 
 FILESEXTRAPATHS:prepend := "${THISDIR}:"
 
-S = "${WORKDIR}"
+S = "${UNPACKDIR}"
 
 SRC_URI = " \
     file://gen_partition.py \

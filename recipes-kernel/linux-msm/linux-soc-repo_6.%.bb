@@ -13,10 +13,12 @@ SRC_URI = "file://kernel-${PREFERRED_VERSION_linux-msm}/kernel_platform/soc-repo
            file://dist \
            "
 
-S = "${WORKDIR}/kernel-${PREFERRED_VERSION_linux-msm}/kernel_platform/soc-repo"
-S:vienna = "${WORKDIR}/kernel-${PREFERRED_VERSION_linux-msm}/kernel_platform/common"
-S:alor = "${WORKDIR}/kernel-${PREFERRED_VERSION_linux-msm}/kernel_platform/common"
-S:pebble = "${WORKDIR}/kernel-${PREFERRED_VERSION_linux-msm}/kernel_platform/common"
+S = "${UNPACKDIR}/kernel-${KERNEL_SRC_VERSION}/kernel_platform/soc-repo"
+
+S:vienna = "${WORKDIR}/kernel-${KERNEL_SRC_VERSION}/kernel_platform/common"
+S:alor = "${WORKDIR}/kernel-${KERNEL_SRC_VERSION}/kernel_platform/common"
+S:pebble = "${WORKDIR}/kernel-${KERNEL_SRC_VERSION}/kernel_platform/common"
+
 PR = "r0"
 DEPENDS += "virtual/kernel-toolchain-native virtual/dtc-native ${@bb.utils.contains('DDK_BUILD', 'true','', 'rsync-native', d)} mod-signing-keys"
 

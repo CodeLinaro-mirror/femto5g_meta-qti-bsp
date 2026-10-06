@@ -15,4 +15,7 @@ PR = "r1"
 SRC_URI = "${CLO_LA_GIT}/platform/system/libufdt.git;protocol=https;destsuffix=system/libufdt;branch=caf_migration/keystone/p-keystone-qcom-release;rev=f83eb5a3630ffd5842949451c4fe0c235d32defa \
            file://0001-libufdt-support-autoconf-compile.patch"
 
-S = "${WORKDIR}/system/libufdt"
+S = "${UNPACKDIR}/system/libufdt"
+
+CFLAGS:append = " -I${STAGING_INCDIR_NATIVE}"
+CPPFLAGS:append = " -I${STAGING_INCDIR_NATIVE}"

@@ -11,7 +11,7 @@ LIC_FILES_CHKSUM = "file://LICENSE.txt;md5=2998c54c288b081076c9af987bdf4838"
 SRC_URI = "git://github.com/qualcomm/userspace-resource-manager-extensions.git;protocol=https;branch=main;"
 SRCREV = "706c825eab86aa28b22021e4f2e336eef6d9876c"
 
-S = "${WORKDIR}/git"
+S = "${UNPACKDIR}/git"
 inherit cmake
 DEPENDS += " userspace-resource-manager"
 FILES:${PN}-dev += "${libdir}/urm/libUrmPlugin.so"

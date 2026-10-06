@@ -11,7 +11,7 @@ PACKAGE_ARCH = "all"
 FILESEXTRAPATHS:prepend := "${KERNEL_PREBUILT_PATH}:"
 SRC_URI   =  "file://msm-kernel/"
 
-S = "${WORKDIR}"
+S = "${UNPACKDIR}"
 
 do_configure[noexec] = "1"
 do_compile[noexec] = "1"

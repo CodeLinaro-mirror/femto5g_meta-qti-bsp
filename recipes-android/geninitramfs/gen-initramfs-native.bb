@@ -9,7 +9,7 @@ PR = "r0"
 FILESEXTRAPATHS:prepend := "${WORKSPACE}/kernel-5.10/kernel_platform/msm-kernel/usr/:"
 SRC_URI = "file://gen_initramfs.sh"
 
-S = "${WORKDIR}"
+S = "${UNPACKDIR}"
 INHIBIT_SYSROOT_STRIP = "1"
 do_compile[noexec] = "1"
 do_configure[noexec] = "1"

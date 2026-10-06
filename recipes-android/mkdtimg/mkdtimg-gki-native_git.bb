@@ -13,7 +13,7 @@ SRC_URI  = "file://bin"
 SRC_URI += "file://include"
 SRC_URI += "file://lib64"
 
-S = "${WORKDIR}"
+S = "${UNPACKDIR}"
 do_compile[noexec] = "1"
 do_configure[noexec] = "1"
 

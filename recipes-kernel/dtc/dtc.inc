@@ -15,7 +15,7 @@ file://0001-dtc_compile.patch \
 
 EXTRA_OEMAKE='NO_PYTHON=1 PREFIX="${prefix}" LIBDIR="${libdir}" DESTDIR="${D}"'
 
-S = "${WORKDIR}/git"
+S = "${UNPACKDIR}/git"
 
 do_install () {
     oe_runmake install

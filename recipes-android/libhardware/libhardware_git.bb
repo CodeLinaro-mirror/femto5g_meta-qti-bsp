@@ -11,7 +11,7 @@ FILESEXTRAPATHS:mdm9607 =+ "${WORKSPACE}/aosphal-adaptation:"
 
 SRC_URI   = "file://libhardware/"
 
-S = "${WORKDIR}/libhardware"
+S = "${UNPACKDIR}/libhardware"
 
 PR = "r7"
 

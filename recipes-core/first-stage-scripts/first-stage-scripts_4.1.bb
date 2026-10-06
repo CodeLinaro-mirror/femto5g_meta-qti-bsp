@@ -13,7 +13,7 @@ do_compile[noexec] = "1"
 do_install () {
   install -m 755 /dev/null ${D}/first_stage.sh
   install -d ${D}${systemd_unitdir}/system/
-  install -m 0644 ${WORKDIR}/run-firststage-script.service ${D}${systemd_unitdir}/system/run-firststage-script.service
+  install -m 0644 ${UNPACKDIR}/run-firststage-script.service ${D}${systemd_unitdir}/system/run-firststage-script.service
 }
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"

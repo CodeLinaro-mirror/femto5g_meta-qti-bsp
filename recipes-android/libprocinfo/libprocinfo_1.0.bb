@@ -11,7 +11,7 @@ BSD-3-Clause-Clear;md5=3771d4920bd6cdb8cbdf1e8344489ee0"
 
 DEPENDS = "libbase libcutils libutils gtest"
 
-S = "${WORKDIR}/git"
+S = "${UNPACKDIR}/git"
 # matches with android11-mainline-release release
 SRCREV= "86e630123f122225313adc8b02008210c0c62d28"
 

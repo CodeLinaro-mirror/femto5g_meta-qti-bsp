@@ -12,7 +12,7 @@ SRC_URI   =  " \
             file://kernel-${PV}/kernel_platform/msm-kernel/COPYING \
             file://kernel_uapi_headers/"
 
-S  =  "${WORKDIR}/kernel-${PV}/kernel_platform/msm-kernel"
+S  =  "${UNPACKDIR}/kernel-${PV}/kernel_platform/msm-kernel"
 
 do_configure[noexec] = "1"
 do_compile[noexec] = "1"

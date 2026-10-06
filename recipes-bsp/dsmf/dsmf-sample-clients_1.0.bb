@@ -9,7 +9,7 @@ DEPENDS += "dsmf"
 FILESEXTRAPATHS:prepend = "${WORKSPACE}/:"
 SRC_URI   = "file://dsmf/sample-clients"
 
-S = "${WORKDIR}/dsmf/sample-clients"
+S = "${UNPACKDIR}/dsmf/sample-clients"
 
 PACKAGECONFIG ??= " \
     glib \

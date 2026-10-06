@@ -15,7 +15,7 @@ SRC_URI   = "file://psi_daemon"
 # SRC_URI  += "file://psi_daemon/psi_daemon.service"
 
 # Default search path is ${WORKDIR}/psi-daemon-1.0. Change to match SRC_URI
-S = "${WORKDIR}/psi_daemon"
+S = "${UNPACKDIR}/psi_daemon"
 DEPENDS += "virtual/kernel libcutils liblog libutils libbase linux-msm-headers"
 
 # To get kernel headers for compilation

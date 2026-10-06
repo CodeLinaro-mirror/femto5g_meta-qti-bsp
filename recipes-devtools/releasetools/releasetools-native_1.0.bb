@@ -12,7 +12,7 @@ SRC_URI  += "file://releasetools.py"
 SRC_URI  += "file://full_ota.sh"
 SRC_URI  += "file://incremental_ota.sh"
 
-S = "${WORKDIR}/releasetools"
+S = "${UNPACKDIR}/releasetools"
 
 do_configure[noexec] = "1"
 do_compile[noexec] = "1"

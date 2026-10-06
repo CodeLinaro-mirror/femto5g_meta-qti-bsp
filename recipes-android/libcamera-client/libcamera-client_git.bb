@@ -11,6 +11,6 @@ DEPENDS += "binder camera-metadata liblog libutils"
 FILESEXTRAPATHS:prepend := "${WORKSPACE}/frameworks/:"
 SRC_URI   = "file://libcamera_client/"
 
-S = "${WORKDIR}/libcamera_client"
+S = "${UNPACKDIR}/libcamera_client"
 
 CPPFLAGS += "-I${STAGING_INCDIR}/camera"

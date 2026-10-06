@@ -20,9 +20,9 @@ dirs755:append = " /overlay"
 # Explicitly remove sepolicy entries from fstab when selinux is not present.
 fix_sepolicies () {
     #For /run
-    sed -i "s#,rootcontext=system_u:object_r:var_run_t:s0##g" ${WORKDIR}/fstab
+    sed -i "s#,rootcontext=system_u:object_r:var_run_t:s0##g" ${UNPACKDIR}/fstab
     # For /var/volatile
-    sed -i "s#,rootcontext=system_u:object_r:var_t:s0##g" ${WORKDIR}/fstab
+    sed -i "s#,rootcontext=system_u:object_r:var_t:s0##g" ${UNPACKDIR}/fstab
 }
 do_install[prefuncs] += " ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', '', 'fix_sepolicies', d)}"
 
@@ -47,7 +47,7 @@ do_install:append() {
     if ${@bb.utils.contains('DISTRO_FEATURES','systemd','true','false',d)}; then
         rm ${D}${sysconfdir}/fstab
     else
-        install -m 0644 ${WORKDIR}/fstab ${D}${sysconfdir}/fstab
+        install -m 0644 ${UNPACKDIR}/fstab ${D}${sysconfdir}/fstab
     fi
 
 }

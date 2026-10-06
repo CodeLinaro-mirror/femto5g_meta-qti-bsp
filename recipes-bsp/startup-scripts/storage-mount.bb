@@ -6,7 +6,7 @@ LICENSE = "BSD"
 SRC_URI +="file://${BASEMACHINE}/storage-mount.sh"
 SRC_URI +="file://storage-mount.service"
 
-S = "${WORKDIR}/${BASEMACHINE}"
+S = "${UNPACKDIR}/${BASEMACHINE}"
 
 PR = "r5"
 

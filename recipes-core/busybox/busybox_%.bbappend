@@ -57,7 +57,7 @@ do_install:append() {
     # systemd is udev compatible.
     if ${@bb.utils.contains('DISTRO_FEATURES','systemd','true','false',d)}; then
         install -d ${D}${systemd_unitdir}/system/
-        install -m 0644 ${WORKDIR}/busybox-syslog.service -D ${D}${systemd_unitdir}/system/busybox-syslog.service
+        install -m 0644 ${UNPACKDIR}/busybox-syslog.service -D ${D}${systemd_unitdir}/system/busybox-syslog.service
 
         install -d ${D}${systemd_unitdir}/system/multi-user.target.wants/
         # enable the service for multi-user.target
@@ -69,14 +69,14 @@ do_install:append() {
             sed -i 's|^ExecStart=/etc|ExecStart=/usr/sbin|' ${D}${systemd_unitdir}/system/busybox-syslog.service
             sed -i 's|^ExecStop=/etc|ExecStop=/usr/sbin|' ${D}${systemd_unitdir}/system/busybox-syslog.service
             install -d ${D}${sbindir}/initscripts
-            install -m 0755 ${WORKDIR}/syslog ${D}${sbindir}/initscripts/syslog
+            install -m 0755 ${UNPACKDIR}/syslog ${D}${sbindir}/initscripts/syslog
             sed -i 's/syslogd -- -n/syslogd -n/' ${D}${sbindir}/initscripts/syslog
             sed -i 's|/etc|/usr/sbin|' ${D}${datadir}/udhcpc/default.script
             install -d ${D}${sbindir}/udhcpc.d
             install -m 0755 ${D}${sysconfdir}/udhcpc.d/50default ${D}${sbindir}/udhcpc.d/50default
         else
             install -d ${D}${sysconfdir}/initscripts
-            install -m 0755 ${WORKDIR}/syslog ${D}${sysconfdir}/initscripts/syslog
+            install -m 0755 ${UNPACKDIR}/syslog ${D}${sysconfdir}/initscripts/syslog
             sed -i 's/syslogd -- -n/syslogd -n/' ${D}${sysconfdir}/initscripts/syslog
         fi
 
@@ -84,14 +84,14 @@ do_install:append() {
 
     else
         install -d ${D}${sysconfdir}/mdev
-        install -m 0755 ${WORKDIR}/find-touchscreen.sh ${D}${sysconfdir}/mdev/
-        install -m 0755 ${WORKDIR}/usb.sh ${D}${sysconfdir}/mdev/
-        install -m 0755 ${WORKDIR}/iio.sh ${D}${sysconfdir}/mdev/
+        install -m 0755 ${UNPACKDIR}/find-touchscreen.sh ${D}${sysconfdir}/mdev/
+        install -m 0755 ${UNPACKDIR}/usb.sh ${D}${sysconfdir}/mdev/
+        install -m 0755 ${UNPACKDIR}/iio.sh ${D}${sysconfdir}/mdev/
 
         if [ ${BASEMACHINE} == "mdm9607" ];then
-            install -m 0755 ${WORKDIR}/sensors.sh ${D}${sysconfdir}/mdev/
+            install -m 0755 ${UNPACKDIR}/sensors.sh ${D}${sysconfdir}/mdev/
         elif [ "${BASEMACHINE}" == "sdxpoorwills" ] && [ "${DISTRO}" == "auto" ]; then
-            install -m 0755 ${WORKDIR}/sensors.sh ${D}${sysconfdir}/mdev/
+            install -m 0755 ${UNPACKDIR}/sensors.sh ${D}${sysconfdir}/mdev/
         fi
 
         chmod -R go-x ${D}${sysconfdir}/mdev/

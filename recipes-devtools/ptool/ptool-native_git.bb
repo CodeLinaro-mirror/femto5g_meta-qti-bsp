@@ -17,7 +17,7 @@ SRC_URI += "file://0002-ptool.py-Python-3-support.patch"
 
 PV = "0.0+${SRCPV}"
 
-S = "${WORKDIR}/git"
+S = "${UNPACKDIR}/ptool-${PV}"
 
 do_configure[noexec]="1"
 do_compile[noexec]="1"

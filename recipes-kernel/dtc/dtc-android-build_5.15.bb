@@ -4,7 +4,7 @@ LICENSE = "GPL-2.0-only"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta/files/common-licenses/\
 ${LICENSE};md5=801f80980d171dd6425610833a22dbe6"
 
-S = "${WORKDIR}/bin"
+S = "${UNPACKDIR}/bin"
 BBCLASSEXTEND = "native"
 
 FILESEXTRAPATHS:prepend := "${WORKSPACE}/kernel-5.15/kernel_platform/prebuilts/kernel-build-tools/linux-x86/:"

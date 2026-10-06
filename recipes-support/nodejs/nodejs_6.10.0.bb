@@ -10,7 +10,7 @@ LIC_FILES_CHKSUM = "file://LICENSE;md5=41a3a0ccf7f515cac3377389dd8faac8"
 SRC_URI[md5sum] = "94d87c508a3140005a5df025555b40b6"
 SRC_URI[sha256sum] = "a9ecd36dd8133084315a7d5f64a2754f3b750b145ec0c2a13357ff2a4f8a73b3"
 
-S = "${WORKDIR}/node-${PV}"
+S = "${UNPACKDIR}/node-${PV}"
 
 DEPENDS = "openssl"
 

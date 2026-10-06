@@ -11,7 +11,7 @@ PROVIDES = "virtual/dtc-native"
 FILESEXTRAPATHS:prepend := "${KERNEL_PREBUILT_PATH}/:"
 SRC_URI    = "file://host/"
 
-S = "${WORKDIR}/host"
+S = "${UNPACKDIR}/host"
 
 INHIBIT_SYSROOT_STRIP = "1"
 do_configure[noexec] = "1"

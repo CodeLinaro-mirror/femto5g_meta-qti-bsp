@@ -9,7 +9,7 @@ ${LICENSE};md5=89aea4e17d99a7cacdbeed46a0096b10"
 FILESEXTRAPATHS:prepend := "${WORKSPACE}/system/memory/:"
 SRC_URI   = "file://libdmabufheap"
 
-S = "${WORKDIR}/libdmabufheap"
+S = "${UNPACKDIR}/libdmabufheap"
 DEPENDS += "linux-msm-headers libbase libion"
 
 EXTRA_OECONF:append = " \

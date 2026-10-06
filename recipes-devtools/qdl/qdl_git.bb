@@ -38,7 +38,7 @@ SRC_URI = "${CLO_LE_GIT}/abozhinov444.qdl.git;branch=caf_migration/abozhinov444/
 
 PV = "0.0+${SRCPV}"
 
-S = "${WORKDIR}/git"
+S = "${UNPACKDIR}/git"
 
 do_install () {
     oe_runmake install DESTDIR=${D} prefix=${prefix}
