@@ -6,16 +6,16 @@ These headers are installed in ${includedir}/linux-msm path."
 LICENSE = "GPLv2.0-with-linux-syscall-note"
 LIC_FILES_CHKSUM = "file://COPYING;md5=6bc538ed5bd9a7fc9398086aedcd7e46"
 
-COMPATIBLE_MACHINE = "vienna|alor|pebble"
+COMPATIBLE_MACHINE = "vienna|alor|pebble|kalama"
 
 FILESEXTRAPATHS:prepend := "${WORKSPACE}:${KERNEL_PREBUILT_PATH}:"
 
 SRC_URI =  " \
     file://kernel-${MSM_KERNEL_VERSION}/kernel_platform/common/COPYING \
-    file://${KERNEL_PREBUILT_DISTDIR}/${BASEMACHINE}-le_${KERNEL_VARIANT}_kernel-uapi-headers.tar.gz \
+    file://${KERNEL_PREBUILT_DISTDIR}/${BASEMACHINE}-le_${@d.getVar('KERNEL_DEFCONFIG_VARIANT').replace('_', '-')}_kernel-uapi-headers.tar.gz \
 "
 
-S  =  "${WORKDIR}/kernel-${MSM_KERNEL_VERSION}/kernel_platform/common"
+S  =  "${UNPACKDIR}/kernel-${MSM_KERNEL_VERSION}/kernel_platform/common"
 
 do_configure[noexec] = "1"
 do_compile[noexec] = "1"

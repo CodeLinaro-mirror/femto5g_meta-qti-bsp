@@ -11,7 +11,7 @@ SRC_URI   =  "file://kernel"
 
 DEPENDS += "rsync-native"
 
-S  =  "${WORKDIR}/kernel/msm-${PV}"
+S  =  "${UNPACKDIR}/kernel/msm-${PV}"
 
 do_configure[noexec] = "1"
 do_compile[noexec] = "1"

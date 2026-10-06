@@ -20,7 +20,7 @@ SRC_URI += "file://build/ \
             file://prebuilts/kernel-build-tools/${KERNEL_BUILD_TOOLS_ARCH}"
 
 S = "${@bb.utils.contains('MACHINE_USES_KERNEL_PREBUILTS', 'True', \
-            '${WORKDIR}/host', '${WORKDIR}/qcom-dtc', d)}"
+    '${UNPACKDIR}/host', '${UNPACKDIR}/qcom-dtc', d)}"
 
 EXTRA_OEMAKE = "${@bb.utils.contains('MACHINE_USES_KERNEL_PREBUILTS', 'True', '', 'PKG_CONFIG=false', d)}"
 do_compile() {

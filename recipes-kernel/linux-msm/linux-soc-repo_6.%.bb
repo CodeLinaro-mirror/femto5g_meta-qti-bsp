@@ -3,20 +3,26 @@ inherit kernel
 DESCRIPTION = "CAF Linux Kernel"
 LICENSE = "GPLv2.0-with-linux-syscall-note"
 
-COMPATIBLE_MACHINE = "trustedvm-v5|trustedvm-v4|vienna|alor|pebble"
+COMPATIBLE_MACHINE = "trustedvm-v5|trustedvm-v4|vienna|alor|pebble|kalama"
 
 FILESEXTRAPATHS:prepend := "${WORKSPACE}:"
 FILESEXTRAPATHS:prepend := "${WORKSPACE}:${KERNEL_PREBUILT_PATH}:"
 
-SRC_URI = "file://kernel-${PREFERRED_VERSION_linux-msm}/kernel_platform/soc-repo \
-           file://kernel-${PREFERRED_VERSION_linux-msm}/kernel_platform/common \
-           file://dist \
-           "
 
-S = "${WORKDIR}/kernel-${PREFERRED_VERSION_linux-msm}/kernel_platform/soc-repo"
-S:vienna = "${WORKDIR}/kernel-${PREFERRED_VERSION_linux-msm}/kernel_platform/common"
-S:alor = "${WORKDIR}/kernel-${PREFERRED_VERSION_linux-msm}/kernel_platform/common"
-S:pebble = "${WORKDIR}/kernel-${PREFERRED_VERSION_linux-msm}/kernel_platform/common"
+KERNEL_SRC_VERSION = "6.18"
+
+SRC_URI = " \
+    file://kernel-${KERNEL_SRC_VERSION}/kernel_platform/soc-repo \
+    file://kernel-${KERNEL_SRC_VERSION}/kernel_platform/common \
+    file://dist \
+"
+
+S = "${UNPACKDIR}/kernel-${KERNEL_SRC_VERSION}/kernel_platform/soc-repo"
+
+S:vienna = "${WORKDIR}/kernel-${KERNEL_SRC_VERSION}/kernel_platform/common"
+S:alor = "${WORKDIR}/kernel-${KERNEL_SRC_VERSION}/kernel_platform/common"
+S:pebble = "${WORKDIR}/kernel-${KERNEL_SRC_VERSION}/kernel_platform/common"
+
 PR = "r0"
 DEPENDS += "virtual/kernel-toolchain-native virtual/dtc-native ${@bb.utils.contains('DDK_BUILD', 'true','', 'rsync-native', d)} mod-signing-keys"
 
@@ -71,7 +77,7 @@ do_prebuilt_configure() {
 }
 
 do_prebuilt_shared_workdir[cleandirs] += " ${STAGING_KERNEL_BUILDDIR}"
-#do_prebuilt_shared_workdir[nostamp] = "1"
+do_prebuilt_shared_workdir[nostamp] = "1"
 do_prebuilt_shared_workdir() {
     cd ${B}
 

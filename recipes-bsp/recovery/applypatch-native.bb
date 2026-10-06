@@ -7,10 +7,19 @@ HOMEPAGE = "https://www.codeaurora.org/gitweb/quic/la?p=platform/bootable/recove
 
 PR = "r1"
 
-DEPENDS += "bzip2-replacement-native zlib-native"
+DEPENDS += "bzip2-native zlib-native"
 RDEPENDS:${PN} = "zlib"
 
-FILESEXTRAPATHS:prepend := "${WORKSPACE}/OTA/recovery/:"
-SRC_URI   = "file://applypatch"
+FILESEXTRAPATHS:prepend := "${WORKSPACE_SOURCES}/OTA/recovery/:"
+SRC_URI = "file://applypatch"
 
-S = "${WORKDIR}/applypatch"
+S = "${UNPACKDIR}/applypatch"
+
+do_compile:prepend() {
+    # libbz2.so is available, but libbz2.a is not.
+    # Remove forced static linking from the generated makefiles.
+    sed -i 's/-all-static//g' \
+        ${S}/Makefile \
+        ${S}/Makefile.in \
+        ${S}/Makefile.am 2>/dev/null || true
+}

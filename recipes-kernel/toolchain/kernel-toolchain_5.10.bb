@@ -8,7 +8,7 @@ FILESEXTRAPATHS:prepend := "${WORKSPACE}/kernel-5.10/kernel_platform/prebuilts-m
 SRC_URI    = "file://clang-${CLANG_VERSION}"
 CLANG_VERSION = "r416183b"
 
-S = "${WORKDIR}/clang-${CLANG_VERSION}"
+S = "${UNPACKDIR}/clang-${CLANG_VERSION}"
 INHIBIT_SYSROOT_STRIP = "1"
 do_compile[noexec] = "1"
 do_configure[noexec] = "1"

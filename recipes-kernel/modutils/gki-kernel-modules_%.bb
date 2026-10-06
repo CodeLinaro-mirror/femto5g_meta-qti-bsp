@@ -4,7 +4,7 @@ SUMMARY = "Linux Kernel prebuilt modules"
 DESCRIPTION = "Installs boot critical kernel modules into images. \
 These modules are auto-loaded by systemd at boot"
 LICENSE = "GPLv2.0-with-linux-syscall-note"
-LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti-bsp/files/common-licenses/\
+LIC_FILES_CHKSUM = "file://${QTI_METADATA_ROOT}/meta-qti-bsp/files/common-licenses/\
 ${LICENSE};md5=8afb6abdac9a14cb18a0d6c9c151e9b4"
 
 KERNEL_SRC_TYPE ?= "msm-kernel"
@@ -16,7 +16,7 @@ SRC_URI  +=  "file://${KERNEL_MODULES_LIST}"
 SRC_URI  +=  "file://linkmodulesload.service"
 SRC_URI:remove:qcs40x = "file://${KERNEL_MODULES_LIST}"
 
-S  =  "${WORKDIR}/dist"
+S  =  "${UNPACKDIR}/dist"
 
 EXISTING_MODULES = "${@bb.utils.contains('MACHINE_USES_KERNEL_PREBUILTS', 'True', \
     '*.ko', \
@@ -27,10 +27,10 @@ do_compile[depends] += "${@bb.utils.contains('MACHINE_USES_KERNEL_PREBUILTS', 'T
 do_compile () {
     existing_modules=$(ls ${EXISTING_MODULES} 2> /dev/null || true)
 
-    if [ ! -f ${WORKDIR}/${KERNEL_MODULES_LIST} ]; then
+    if [ ! -f ${UNPACKDIR}/${KERNEL_MODULES_LIST} ]; then
         bbfatal "Kernel modules list file ${KERNEL_MODULES_LIST} not found"
     fi
-    first_mod_list=$(cat ${WORKDIR}/${KERNEL_MODULES_LIST} | sed -e '/^ *#/d;/^ *$/d')
+    first_mod_list=$(cat ${UNPACKDIR}/${KERNEL_MODULES_LIST} | sed -e '/^ *#/d;/^ *$/d')
 
     # Check if any modules were found after filtering
     if [ -z "$first_mod_list" ]; then
@@ -48,7 +48,7 @@ do_compile () {
 
     for module in ${existing_modules}; do
         # Use word boundaries to ensure exact module name matching
-        echo ${first_mod_list} | grep -qw $(basename ${module} .ko) && is_1st_ko="True" || is_1st_ko="False"
+        echo ${first_mod_list} | grep -qw $(basename ${module}) && is_1st_ko="True" || is_1st_ko="False"
         if [ "${is_1st_ko}" == "True" ]; then
             echo "$(basename ${module} .ko)" >> firstmods.conf
         else
@@ -57,7 +57,15 @@ do_compile () {
     done
 }
 
-KERNEL_VERSION = "${@get_kernelversion_file("${STAGING_KERNEL_BUILDDIR}")}"
+#KERNEL_VERSION = "${@get_kernelversion_file("${STAGING_KERNEL_BUILDDIR}")}"
+#To get the kernel version from kernel release file
+def get_kernelversion_utsrelease(distdir):
+    with open(distdir + "/utsrelease.h", "r") as f:
+        for line in f:
+            if line.startswith("#define UTS_RELEASE "):
+                return line.split('"')[1]
+    return None
+KERNEL_VERSION = "${@get_kernelversion_utsrelease(d.getVar('KERNEL_PREBUILT_DISTDIR'))}"
 do_install[depends] += "${@bb.utils.contains('MACHINE_USES_KERNEL_PREBUILTS', 'True', 'virtual/kernel:do_prebuilt_shared_workdir', '', d)}"
 do_install() {
     # Install modules
@@ -78,7 +86,7 @@ do_install() {
     install -m 0644 secondmods.conf ${D}${sysconfdir}/modules-load.d/00-secondmods.conf
 
     install -d ${D}${systemd_unitdir}/system/
-    install -m 0644 ${WORKDIR}/linkmodulesload.service ${D}${systemd_unitdir}/system/linkmodulesload.service
+    install -m 0644 ${UNPACKDIR}/linkmodulesload.service ${D}${systemd_unitdir}/system/linkmodulesload.service
 }
 
 ALLOW_EMPTY:${PN} = "1"

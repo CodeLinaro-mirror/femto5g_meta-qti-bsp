@@ -9,7 +9,6 @@ PREMIRRORS = ""
 SRCREV = "b27a9aa53d2db7720e4d88d6950dcd979da97de3"
 
 SRC_URI = "git://github.com/AndroidBootloader/platform_external_avb.git;branch=master;protocol=https"
-S = "${WORKDIR}/git"
 SRC_URI[sha256sum] = "34e87265772d7409c6cc422af6da9604b333b2f06d5bf9120e5e34cc0db94723"
 
 do_configure[noexec] = "1"

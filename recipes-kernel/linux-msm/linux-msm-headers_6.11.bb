@@ -12,7 +12,7 @@ FILESEXTRAPATHS:prepend := "${WORKSPACE}:"
 
 SRC_URI   =  "file://kernel-${PREFERRED_VERSION_linux-msm}/kernel_platform/soc-repo"
 
-S  =  "${WORKDIR}/kernel-${PREFERRED_VERSION_linux-msm}/kernel_platform/soc-repo"
+S  =  "${UNPACKDIR}/kernel-${PREFERRED_VERSION_linux-msm}/kernel_platform/soc-repo"
 
 do_configure[noexec] = "1"
 do_compile[noexec] = "1"

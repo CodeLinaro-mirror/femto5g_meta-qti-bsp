@@ -12,7 +12,7 @@ CLANG_VERSION:trustedvm-v2 = "clang-r487747c"
 FILESEXTRAPATHS:prepend := "${KERNEL_PLATFORM_PATH}/prebuilts/clang/host/linux-x86/:"
 SRC_URI    = "file://clang-${CLANG_VERSION}"
 
-S = "${WORKDIR}/clang-${CLANG_VERSION}"
+S = "${UNPACKDIR}/clang-${CLANG_VERSION}"
 INHIBIT_SYSROOT_STRIP = "1"
 # clang lib don't include  debug symbol
 INHIBIT_PACKAGE_STRIP = "1"

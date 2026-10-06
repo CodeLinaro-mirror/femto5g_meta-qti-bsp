@@ -31,7 +31,7 @@
 
 inherit populate_sdk_ext
 
-COPY_DIRECTORY_TREE = "${COREBASE}/meta-qti-bsp/files/copy_directory_tree.sh"
+COPY_DIRECTORY_TREE = "${QTI_METADATA_ROOT}/meta-qti-bsp/files/copy_directory_tree.sh"
 
 python copy_buildsystem:append() {
     import subprocess

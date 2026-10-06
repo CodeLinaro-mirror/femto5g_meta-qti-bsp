@@ -4,7 +4,7 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/MIT;md5=0835ade698e0bcf8506ecda
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/systemd-machine-units:"
 
-S = "${WORKDIR}"
+S = "${UNPACKDIR}"
 
 IMAGETYPE ??= ""
 USERDATA_FSTYPE ??= "ext4"
@@ -68,7 +68,7 @@ add_overlay_mount_files () {
     if ${@bb.utils.contains('DISTRO_FEATURES', 'full-disk-encryption', 'false', 'true', d)}; then
     install -D -m 0644 ${S}/overlay-workdir.service ${D}${systemd_unitdir}/system/overlay-workdir.service
     else
-        install -D -m 0644 ${WORKDIR}/overlay-workdir-with-fde.service ${D}${systemd_unitdir}/system/overlay-workdir.service
+        install -D -m 0644 ${UNPACKDIR}/overlay-workdir-with-fde.service ${D}${systemd_unitdir}/system/overlay-workdir.service
     fi
     ln -sf ${systemd_unitdir}/system/overlay-workdir.service ${D}${systemd_unitdir}/system/local-fs.target.wants/overlay-workdir.service
 }
@@ -76,25 +76,25 @@ add_overlay_mount_files () {
 # Various mount related files assume selinux support by default.
 # Explicitly remove sepolicy entries when selinux is not present.
 fix_sepolicies () {
-    sed -i "s#,context=system_u:object_r:firmware_t:s0##g" ${WORKDIR}/firmware.mount
-    sed -i "s#,context=system_u:object_r:firmware_t:s0##g" ${WORKDIR}/firmware-mount.service
-    sed -i "s#,context=system_u:object_r:firmware_t:s0##g" ${WORKDIR}/bt_firmware.mount
-    sed -i "s#,context=system_u:object_r:firmware_t:s0##g" ${WORKDIR}/bt_firmware-mount.service
-    sed -i "s#,context=system_u:object_r:firmware_t:s0##g" ${WORKDIR}/vendor-bt_firmware.mount
-    sed -i "s#,context=system_u:object_r:firmware_t:s0##g" ${WORKDIR}/vendor-bt_firmware-mount.service
-    sed -i "s#,context=system_u:object_r:firmware_t:s0##g" ${WORKDIR}/vendor-soccp_firmware.mount
-    sed -i "s#,context=system_u:object_r:firmware_t:s0##g" ${WORKDIR}/vendor-soccp_firmware-mount.service
-    sed -i "s#,context=system_u:object_r:adsprpcd_t:s0##g" ${WORKDIR}/dsp-mount.service
-    sed -i "s#,rootcontext=system_u:object_r:data_t:s0##g" ${WORKDIR}/data.mount
-    sed -i "s#,rootcontext=system_u:object_r:persist_t:s0##g" ${WORKDIR}/persist.mount
-    sed -i "s#,rootcontext=system_u:object_r:system_data_t:s0##g" ${WORKDIR}/systemrw.mount
+    sed -i "s#,context=system_u:object_r:firmware_t:s0##g" ${UNPACKDIR}/firmware.mount
+    sed -i "s#,context=system_u:object_r:firmware_t:s0##g" ${UNPACKDIR}/firmware-mount.service
+    sed -i "s#,context=system_u:object_r:firmware_t:s0##g" ${UNPACKDIR}/bt_firmware.mount
+    sed -i "s#,context=system_u:object_r:firmware_t:s0##g" ${UNPACKDIR}/bt_firmware-mount.service
+    sed -i "s#,context=system_u:object_r:firmware_t:s0##g" ${UNPACKDIR}/vendor-bt_firmware.mount
+    sed -i "s#,context=system_u:object_r:firmware_t:s0##g" ${UNPACKDIR}/vendor-bt_firmware-mount.service
+    sed -i "s#,context=system_u:object_r:firmware_t:s0##g" ${UNPACKDIR}/vendor-soccp_firmware.mount
+    sed -i "s#,context=system_u:object_r:firmware_t:s0##g" ${UNPACKDIR}/vendor-soccp_firmware-mount.service
+    sed -i "s#,context=system_u:object_r:adsprpcd_t:s0##g" ${UNPACKDIR}/dsp-mount.service
+    sed -i "s#,rootcontext=system_u:object_r:data_t:s0##g" ${UNPACKDIR}/data.mount
+    sed -i "s#,rootcontext=system_u:object_r:persist_t:s0##g" ${UNPACKDIR}/persist.mount
+    sed -i "s#,rootcontext=system_u:object_r:system_data_t:s0##g" ${UNPACKDIR}/systemrw.mount
 
     # TODO: figure out the selinux context for the overlays
-    sed -i "s#,rootcontext=system_u:object_r:overlay_t:s0##g" ${WORKDIR}/overlay.mount
-    sed -i "s#,rootcontext=system_u:object_r:etc_t:s0##g" ${WORKDIR}/overlay-etc.mount
-    sed -i "s#,rootcontext=system_u:object_r:data_t:s0##g" ${WORKDIR}/overlay-data.mount
-    sed -i "s#,rootcontext=system_u:object_r:cache_t:s0##g" ${WORKDIR}/overlay-cache.mount
-    sed -i "s#,context=system_u:object_r:lib_t:s0##g" ${WORKDIR}/qti-mount-generator
+    sed -i "s#,rootcontext=system_u:object_r:overlay_t:s0##g" ${UNPACKDIR}/overlay.mount
+    sed -i "s#,rootcontext=system_u:object_r:etc_t:s0##g" ${UNPACKDIR}/overlay-etc.mount
+    sed -i "s#,rootcontext=system_u:object_r:data_t:s0##g" ${UNPACKDIR}/overlay-data.mount
+    sed -i "s#,rootcontext=system_u:object_r:cache_t:s0##g" ${UNPACKDIR}/overlay-cache.mount
+    sed -i "s#,context=system_u:object_r:lib_t:s0##g" ${UNPACKDIR}/qti-mount-generator
 }
 
 
@@ -121,11 +121,11 @@ fix_mount_services () {
         soccpdevice="$soccpdevice ${devdiskstr}soccp_c.device"
     fi
 
-    sed -i "s#@BTDEVICE@#$btdevice#g" ${WORKDIR}/bt_firmware-mount.service
-    sed -i "s#@BTDEVICE@#$btdevice#g" ${WORKDIR}/vendor-bt_firmware-mount.service
-    sed -i "s#@SOCCPDEVICE@#$soccpdevice#g" ${WORKDIR}/vendor-soccp_firmware-mount.service
-    sed -i "s#@DSPDEVICE@#$dspdevice#g" ${WORKDIR}/dsp-mount.service
-    sed -i "s#@MODEMDEVICE@#$modemdevice#g" ${WORKDIR}/firmware-mount.service
+    sed -i "s#@BTDEVICE@#$btdevice#g" ${UNPACKDIR}/bt_firmware-mount.service
+    sed -i "s#@BTDEVICE@#$btdevice#g" ${UNPACKDIR}/vendor-bt_firmware-mount.service
+    sed -i "s#@SOCCPDEVICE@#$soccpdevice#g" ${UNPACKDIR}/vendor-soccp_firmware-mount.service
+    sed -i "s#@DSPDEVICE@#$dspdevice#g" ${UNPACKDIR}/dsp-mount.service
+    sed -i "s#@MODEMDEVICE@#$modemdevice#g" ${UNPACKDIR}/firmware-mount.service
 }
 
 def get_mnt_services(d):

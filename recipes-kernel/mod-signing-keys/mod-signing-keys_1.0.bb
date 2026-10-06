@@ -11,7 +11,7 @@ DEPENDS += "openssl-native"
 
 SRC_URI = "file://x509.genkey"
 
-S = "${WORKDIR}"
+S = "${UNPACKDIR}"
 
 do_compile() {
     # generate pair of private/public keys for module signing

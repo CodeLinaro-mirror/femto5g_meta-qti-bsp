@@ -38,10 +38,23 @@ SRC_URI = "${CLO_LE_GIT}/abozhinov444.qdl.git;branch=caf_migration/abozhinov444/
 
 PV = "0.0+${SRCPV}"
 
-S = "${WORKDIR}/git"
 
 do_install () {
     oe_runmake install DESTDIR=${D} prefix=${prefix}
 }
 
 BBCLASSEXTEND = "native nativesdk"
+
+do_compile:prepend() {
+    UDEV_LINK="${RECIPE_SYSROOT_NATIVE}/usr/lib/libudev.so"
+    UDEV_LIB="${RECIPE_SYSROOT_NATIVE}/lib/libudev.so.1"
+
+    install -d "${RECIPE_SYSROOT_NATIVE}/usr/lib"
+
+    if [ ! -e "${UDEV_LIB}" ]; then
+        bbfatal "Missing libudev library: ${UDEV_LIB}"
+    fi
+
+    rm -f "${UDEV_LINK}"
+    ln -s ../../lib/libudev.so.1 "${UDEV_LINK}"
+}

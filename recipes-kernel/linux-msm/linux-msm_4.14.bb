@@ -29,7 +29,7 @@ SRC_URI:append:qcs40x = " \
     ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', '', 'file://disableselinux.cfg', d)} \
 "
 
-S         =  "${WORKDIR}/kernel/msm-4.14"
+S         =  "${UNPACKDIR}/kernel/msm-4.14"
 
 DEPENDS += "virtual/dtc-native"
 

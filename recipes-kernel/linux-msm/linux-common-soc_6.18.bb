@@ -14,7 +14,7 @@ SRC_URI = "file://common \
            file://qcom/opensource/devicetree \
            file://0001-kernel-common-soc-built-in.patch;patchdir=${WORKDIR}/common"
 
-S = "${WORKDIR}/common"
+S = "${UNPACKDIR}/common"
 B = "${WORKDIR}/out"
 SOC_REPO = "${WORKDIR}/soc-repo"
 

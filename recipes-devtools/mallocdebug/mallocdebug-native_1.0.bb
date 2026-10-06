@@ -10,7 +10,7 @@ SRC_URI   = "file://alloc-backtrace-parser.py"
 SRC_URI   += "file://alloc-filter-mismatch.py"
 SRC_URI   += "file://README.txt"
 
-S = "${WORKDIR}"
+S = "${UNPACKDIR}"
 
 do_compile[noexec] = "1"
 do_configure[noexec] = "1"

@@ -10,7 +10,7 @@ FILESEXTRAPATHS:prepend := "${WORKSPACE}/platform/:"
 
 SRC_URI = "file://mhi-host/"
 
-S = "${WORKDIR}/mhi-host"
+S = "${UNPACKDIR}/mhi-host"
 
 do_install[noexec] = "1"
 do_configure[noexec] = "1"

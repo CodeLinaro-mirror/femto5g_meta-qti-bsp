@@ -2,7 +2,7 @@ require recipes-kernel/linux-msm/linux-msm.inc
 
 COMPATIBLE_MACHINE = "qrb5165|sxr2130"
 
-S         =  "${WORKDIR}/kernel/msm-4.19"
+S         =  "${UNPACKDIR}/kernel/msm-4.19"
 
 # Kona specific
 SRC_URI:append:kona  = " file://disableipa3.cfg"

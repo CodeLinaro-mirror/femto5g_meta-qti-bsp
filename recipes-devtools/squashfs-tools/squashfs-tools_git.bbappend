@@ -1,6 +1,0 @@
-FILESEXTRAPATHS:prepend := "${THISDIR}/${PN}:"
-DEPENDS += "glib-2.0"
-DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'selinux', 'libselinux', '', d)}"
-SRC_URI += "file://0001-squashfs-tools-Allow-setting-selinux-xattrs-through-.patch"
-EXTRA_OEMAKE:append = "${@bb.utils.contains('DISTRO_FEATURES', 'selinux', ' WITH_SELINUX=1', '', d)}"
-CFLAGS:append = "${@bb.utils.contains('DISTRO_FEATURES', 'selinux', ' -I${STAGING_INCDIR}/libselinux', '', d)}"

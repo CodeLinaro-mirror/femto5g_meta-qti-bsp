@@ -22,12 +22,12 @@ IMAGETYPE = "ubi"
 
 fix_sepolicies_ubi () {
 
-    sed -i "s#,context=system_u:object_r:firmware_t:s0##g" ${WORKDIR}/firmware-mount.service
-    sed -i "s#,context=system_u:object_r:firmware_t:s0##g" ${WORKDIR}/bt_firmware-mount.service
-    sed -i "s#,context=system_u:object_r:adsprpcd_t:s0##g" ${WORKDIR}/dsp-mount.service
-    sed -i "s#,rootcontext=system_u:object_r:data_t:s0##g" ${WORKDIR}/data.mount
-    sed -i "s#,rootcontext=system_u:object_r:persist_t:s0##g" ${WORKDIR}/persist.mount
-    sed -i "s#,rootcontext=system_u:object_r:system_data_t:s0##g" ${WORKDIR}/systemrw.mount
+    sed -i "s#,context=system_u:object_r:firmware_t:s0##g" ${UNPACKDIR}/firmware-mount.service
+    sed -i "s#,context=system_u:object_r:firmware_t:s0##g" ${UNPACKDIR}/bt_firmware-mount.service
+    sed -i "s#,context=system_u:object_r:adsprpcd_t:s0##g" ${UNPACKDIR}/dsp-mount.service
+    sed -i "s#,rootcontext=system_u:object_r:data_t:s0##g" ${UNPACKDIR}/data.mount
+    sed -i "s#,rootcontext=system_u:object_r:persist_t:s0##g" ${UNPACKDIR}/persist.mount
+    sed -i "s#,rootcontext=system_u:object_r:system_data_t:s0##g" ${UNPACKDIR}/systemrw.mount
 }
 
 do_install[prefuncs] += " ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', '', 'fix_sepolicies_ubi', d)}"

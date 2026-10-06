@@ -9,7 +9,7 @@ ${LICENSE};md5=89aea4e17d99a7cacdbeed46a0096b10"
 FILESEXTRAPATHS:prepend := "${WORKSPACE}/system/memory/:"
 SRC_URI   = "file://libdmabufheap"
 
-S = "${WORKDIR}/libdmabufheap"
+S = "${UNPACKDIR}/libdmabufheap"
 DEPENDS += "linux-msm-headers libbase libion"
 
 EXTRA_OECONF:append = " \
@@ -17,7 +17,7 @@ EXTRA_OECONF:append = " \
     --with-sanitized-headers=${STAGING_INCDIR}/linux-msm/usr/include \
 "
 
-PACKAGES +="${PN}-test-bin"
+PACKAGES += "${PN}-test-bin"
 
 FILES:${PN}     = "${libdir}/pkgconfig/* ${libdir}/* ${sysconfdir}/*"
 FILES:${PN}-test-bin = "${base_bindir}/*"

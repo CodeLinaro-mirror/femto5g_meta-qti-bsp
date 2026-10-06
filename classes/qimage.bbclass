@@ -116,7 +116,7 @@ python () {
 # from actual recipes.
 
 do_deploy_fixup[dirs] = "${IMGDEPLOYDIR}/${IMAGE_BASENAME}"
-do_deploy_fixup[depends] +="virtual/kernel:do_deploy "
+do_deploy_fixup[depends] += "virtual/kernel:do_deploy "
 do_deploy_fixup () {
     # copy the bootloader ELF file
     for f in ${EXTRA_IMAGEDEPENDS}; do

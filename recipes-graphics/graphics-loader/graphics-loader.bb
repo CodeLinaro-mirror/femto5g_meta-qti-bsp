@@ -4,7 +4,7 @@ LICENSE = "BSD-3-Clause-Clear"
 LIC_FILES_CHKSUM += "file://${COREBASE}/meta/files/common-licenses/\
 BSD-3-Clause-Clear;md5=7a434440b651f4a472ca93716d01033a"
 
-S = "${WORKDIR}"
+S = "${UNPACKDIR}"
 SRC_URI = " file://init_qti_graphics.service \
             file://init_qti_graphics"
 

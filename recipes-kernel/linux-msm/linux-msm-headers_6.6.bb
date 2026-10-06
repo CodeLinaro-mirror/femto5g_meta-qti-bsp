@@ -15,7 +15,7 @@ SRC_URI =  " \
        file://${KERNEL_PREBUILT_DISTDIR}/kernel-uapi-headers.tar.gz \
 "
 
-S  =  "${WORKDIR}/kernel-${PV}/kernel_platform/msm-kernel"
+S  =  "${UNPACKDIR}/kernel-${PV}/kernel_platform/msm-kernel"
 
 do_configure[noexec] = "1"
 do_compile[noexec] = "1"
