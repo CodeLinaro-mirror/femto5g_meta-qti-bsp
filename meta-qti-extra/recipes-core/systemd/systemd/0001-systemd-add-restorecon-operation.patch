@@ -24,7 +24,7 @@ index ad262fa13a..2ad4da0c80 100644
  Type=oneshot
  RemainAfterExit=yes
  ExecStart={{LIBEXECDIR}}/systemd-modules-load
-+ExecStartPost=/bin/sh -c 'restorecon -vFR /dev'
++ExecStartPost=-/bin/sh -c 'restorecon -vFR /dev'
  TimeoutSec=90s
 -- 
 2.34.1
