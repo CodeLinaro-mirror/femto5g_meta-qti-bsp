@@ -1,4 +1,3 @@
-VERITY_KEYS_DIR ?= "${STAGING_KERNEL_BUILDDIR}/certs"
 # Convert human readable partition sizes into bytes
 SYSTEM_IMAGE_ROOTFS_SIZE   = "${@get_size_in_bytes(d.getVar('SYSTEM_SIZE_EXT4') or '256MB')}"
 
