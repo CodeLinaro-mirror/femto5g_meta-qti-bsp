@@ -1,5 +1,5 @@
-# Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
-# SPDX-License-Identifier: BSD-3-Clause-Clear
+#Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+#SPDX-License-Identifier: BSD-3-Clause-Clear
 
 CONFLICT_MACHINE_FEATURES += " dm-verity-bootloader dm-verity-none dm-verity-initramfs dm-verity-initramfs-v2 dm-verity-initramfs-v3"
 

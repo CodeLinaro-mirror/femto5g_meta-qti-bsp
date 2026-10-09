@@ -54,10 +54,11 @@ case "$PARTLABEL" in
         MOUNTPOINT="/overlay"
         FSTYPE="ext4"
         OPTIONS="noatime,nosuid,nodev,barrier=1,data=ordered,noauto_da_alloc,discard,noexec,rootcontext=system_u:object_r:overlay_t:s0,inlinecrypt"
+        # Keep the overlays available before WLAN module loading, but let their
+        # dedicated SELinux domains provide the credentials stashed by overlayfs.
         EXTRA_CMD="/sbin/create-overlay-workdirs && \
-          mount -t overlay overlay -o lowerdir=/data,upperdir=/overlay/data,workdir=/overlay/.data-work,rootcontext=system_u:object_r:data_t:s0 /data && \
-          mount -t overlay overlay -o lowerdir=/etc,upperdir=/overlay/etc,workdir=/overlay/.etc-work,rootcontext=system_u:object_r:etc_t:s0 /etc && \
-          mount -t overlay overlay -o lowerdir=/cache,upperdir=/overlay/cache,workdir=/overlay/.cache-work,rootcontext=system_u:object_r:cache_t:s0 /cache"
+          /usr/bin/systemctl start overlay-data-mounter.service \
+            overlay-etc-mounter.service overlay-cache-mounter.service"
         ;;
     *)
         echo "Unknown partition '$PARTLABEL'. Supported: modem, bluetooth, dsp, persist, vendor_dlkm, overlay" >&2
@@ -83,6 +84,10 @@ fi
 # Skip if mountpoint already in use.
 if mountpoint -q "$MOUNTPOINT" 2>/dev/null; then
     echo "Mountpoint $MOUNTPOINT is not empty, skipping." >&2
+    if [ "$PARTLABEL" = "overlay" ]; then
+        eval "$EXTRA_CMD"
+        exit $?
+    fi
     exit 0
 fi
 
@@ -92,7 +97,7 @@ echo "Mounting $DEVICE -> $MOUNTPOINT ($FSTYPE, $OPTIONS)"
 /bin/mount -o "$OPTIONS" -t "$FSTYPE" "$DEVICE" "$MOUNTPOINT" || exit 1
 
 if [ -n "$EXTRA_CMD" ]; then
-    eval "$EXTRA_CMD"
+    eval "$EXTRA_CMD" || exit 1
 fi
 
 echo "Done."

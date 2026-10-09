@@ -76,6 +76,8 @@ fi
 echo 0 > /proc/sys/vm/watermark_boost_factor
 echo -n "Watermark boost has been disabled" > /dev/kmsg
 
+echo 1 > /sys/kernel/vm_set_status/os_boot
+echo -n "OS STATUS is now set" > /dev/kmsg
 # verity protection
 if [ -f /etc/verity.env ]; then
     source /etc/verity.env

@@ -42,8 +42,9 @@ RDEPENDS:packagegroup-android-utils-base = "\
 ADDON_SCRIPTS ?= ""
 ADDON_SCRIPTS:neo = "helios-start"
 ADDON_SCRIPTS:qcs610-odk-64 = "cdsp-start"
-ADDON_SCRIPTS:vienna = "cdsp-start"
+ADDON_SCRIPTS:vienna = "cdsp-start start-subsys"
 ADDON_SCRIPTS:seraph = "cdsp-start"
+ADDON_SCRIPTS:alor = "dsp-remoteproc-start"
 
 # Startup scripts needed during device bootup
 RDEPENDS:packagegroup-startup-scripts-base = "\
