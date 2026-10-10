@@ -93,6 +93,7 @@ python do_makeboot () {
 do_makeboot[dirs]      = "${BOOTIMGDEPLOYDIR}/${IMAGE_BASENAME}"
 # Make sure native tools and vmlinux ready to create boot.img
 do_makeboot[depends] += "virtual/kernel:do_deploy virtual/mkbootimg-native:do_populate_sysroot"
+do_makeboot[depends] += "${@'${INITRAMFS_IMAGE}:do_image_complete' if d.getVar('INITRAMFS_IMAGE') else ''}"
 SSTATETASKS += "do_makeboot"
 SSTATE_SKIP_CREATION_task-makeboot = '1'
 do_makeboot[sstate-inputdirs] = "${BOOTIMGDEPLOYDIR}"

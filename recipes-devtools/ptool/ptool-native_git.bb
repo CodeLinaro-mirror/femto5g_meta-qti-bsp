@@ -19,8 +19,8 @@ PV = "0.0+${SRCPV}"
 
 S = "${UNPACKDIR}/ptool-${PV}"
 
-do_configure[noexec]="1"
-do_compile[noexec]="1"
+do_configure[noexec] = "1"
+do_compile[noexec] = "1"
 
 do_install() {
    install -d ${D}${bindir}

@@ -13,7 +13,7 @@ DEPENDS = "libbase libcutils libutils gtest"
 
 S = "${UNPACKDIR}/git"
 # matches with android11-mainline-release release
-SRCREV= "86e630123f122225313adc8b02008210c0c62d28"
+SRCREV = "86e630123f122225313adc8b02008210c0c62d28"
 
 SRC_URI = "${CLO_LA_GIT}/platform/system/libprocinfo;name=native;protocol=https;branch=aosp-new/android12-gsi;destsuffix=git \
 	   file://libprocinfo-port.patch;patchdir=${S} \

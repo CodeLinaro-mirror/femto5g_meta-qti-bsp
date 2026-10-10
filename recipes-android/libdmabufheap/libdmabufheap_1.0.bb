@@ -17,7 +17,7 @@ EXTRA_OECONF:append = " \
     --with-sanitized-headers=${STAGING_INCDIR}/linux-msm/usr/include \
 "
 
-PACKAGES +="${PN}-test-bin"
+PACKAGES += "${PN}-test-bin"
 
 FILES:${PN}     = "${libdir}/pkgconfig/* ${libdir}/* ${sysconfdir}/*"
 FILES:${PN}-test-bin = "${base_bindir}/*"

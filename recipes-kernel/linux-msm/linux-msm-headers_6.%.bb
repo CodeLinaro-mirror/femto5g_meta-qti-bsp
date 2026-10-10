@@ -6,7 +6,7 @@ These headers are installed in ${includedir}/linux-msm path."
 LICENSE = "GPLv2.0-with-linux-syscall-note"
 LIC_FILES_CHKSUM = "file://COPYING;md5=6bc538ed5bd9a7fc9398086aedcd7e46"
 
-COMPATIBLE_MACHINE = "vienna|alor|pebble"
+COMPATIBLE_MACHINE = "vienna|alor|pebble|kalama"
 
 # Kalama kernel artifacts are exported beside kernel_platform.
 KERNEL_PREBUILT_PATH:kalama = "${WORKSPACE}/kernel-${MSM_KERNEL_VERSION}/out/${KERNEL_DEFCONFIG}"
