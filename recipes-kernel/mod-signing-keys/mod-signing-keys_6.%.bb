@@ -8,8 +8,13 @@ ${LICENSE};md5=8afb6abdac9a14cb18a0d6c9c151e9b4"
 # Ensure PACKAGE_ARCH is set to all even when multilib is enabled.
 PACKAGE_ARCH = "all"
 
+# Kalama kernel artifacts are exported beside kernel_platform.
+KERNEL_PREBUILT_PATH:kalama = "${WORKSPACE}/kernel-${MSM_KERNEL_VERSION}/out/${KERNEL_DEFCONFIG}"
+
 FILESEXTRAPATHS:prepend := "${KERNEL_PREBUILT_PATH}:"
 SRC_URI   =  "file://${KERNEL_TYPE}/"
+# Fetch only the key and preserve its directory once, including with BSP appends.
+SRC_URI:kalama = "file://${KERNEL_TYPE}/signing_key.pem"
 S = "${UNPACKDIR}"
 
 do_configure[noexec] = "1"

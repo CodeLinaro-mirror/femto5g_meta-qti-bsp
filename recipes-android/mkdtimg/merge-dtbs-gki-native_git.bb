@@ -8,6 +8,9 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta/files/common-licenses/${LICENSE};md5
 BBCLASSEXTEND = "native"
 DEPENDS = "${@bb.utils.contains('MACHINE_USES_KERNEL_PREBUILTS', 'True', '', 'flex-native bison-native', d)}"
 
+# Kalama kernel artifacts are exported beside kernel_platform.
+KERNEL_PREBUILT_PATH:kalama = "${WORKSPACE}/kernel-${MSM_KERNEL_VERSION}/out/${KERNEL_DEFCONFIG}"
+
 FILESEXTRAPATHS:prepend := "${KERNEL_PREBUILT_PATH}:"
 FILESEXTRAPATHS:prepend := "${KERNEL_PLATFORM_PATH}:"
 FILESEXTRAPATHS:prepend := "${@bb.utils.contains('MACHINE_USES_KERNEL_PREBUILTS', 'True', '', '${KERNEL_PLATFORM_PATH}/external:', d)}"

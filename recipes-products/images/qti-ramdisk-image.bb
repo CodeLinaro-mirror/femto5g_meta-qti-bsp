@@ -35,7 +35,7 @@ IMAGE_FSTYPES = "${INITRAMFS_FSTYPES}"
 IMAGE_NAME_SUFFIX = ""
 IMAGE_FEATURES = ""
 IMAGE_LINGUAS = ""
-
+INITRAMFS_MAXSIZE = "196608"
 # Set default target to initrd.target
 SYSTEMD_DEFAULT_TARGET = "initrd.target"
 

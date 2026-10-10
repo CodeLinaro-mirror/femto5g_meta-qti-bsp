@@ -5,9 +5,12 @@ LICENSE = "GPLv2.0-with-linux-syscall-note"
 
 COMPATIBLE_MACHINE = "trustedvm-v5|trustedvm-v4|vienna|alor|pebble"
 
+# Kalama kernel artifacts are exported beside kernel_platform.
+KERNEL_PREBUILT_PATH:kalama = "${WORKSPACE}/kernel-${MSM_KERNEL_VERSION}/out/${KERNEL_DEFCONFIG}"
+
 FILESEXTRAPATHS:prepend := "${WORKSPACE}:"
 FILESEXTRAPATHS:prepend := "${WORKSPACE}:${KERNEL_PREBUILT_PATH}:"
-
+KERNEL_SRC_VERSION = "6.18"
 SRC_URI = "file://kernel-${PREFERRED_VERSION_linux-msm}/kernel_platform/soc-repo \
            file://kernel-${PREFERRED_VERSION_linux-msm}/kernel_platform/common \
            file://dist \

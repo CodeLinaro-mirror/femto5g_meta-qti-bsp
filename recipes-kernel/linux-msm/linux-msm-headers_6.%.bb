@@ -8,12 +8,19 @@ LIC_FILES_CHKSUM = "file://COPYING;md5=6bc538ed5bd9a7fc9398086aedcd7e46"
 
 COMPATIBLE_MACHINE = "vienna|alor|pebble"
 
+# Kalama kernel artifacts are exported beside kernel_platform.
+KERNEL_PREBUILT_PATH:kalama = "${WORKSPACE}/kernel-${MSM_KERNEL_VERSION}/out/${KERNEL_DEFCONFIG}"
+
 FILESEXTRAPATHS:prepend := "${WORKSPACE}:${KERNEL_PREBUILT_PATH}:"
 
 SRC_URI =  " \
     file://kernel-${MSM_KERNEL_VERSION}/kernel_platform/common/COPYING \
     file://${KERNEL_PREBUILT_DISTDIR}/${BASEMACHINE}-le_${KERNEL_VARIANT}_kernel-uapi-headers.tar.gz \
 "
+
+# Exported archive names use debug-defconfig for debug and defconfig for perf.
+SRC_URI:remove:kalama = "file://${KERNEL_PREBUILT_DISTDIR}/${BASEMACHINE}-le_${KERNEL_VARIANT}_kernel-uapi-headers.tar.gz"
+SRC_URI:append:kalama = " file://${KERNEL_PREBUILT_DISTDIR}/${BASEMACHINE}-le_${KERNEL_DEFCONFIG_VARIANT}_kernel-uapi-headers.tar.gz"
 
 S  =  "${UNPACKDIR}/kernel-${MSM_KERNEL_VERSION}/kernel_platform/common"
 

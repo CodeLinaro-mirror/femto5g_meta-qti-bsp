@@ -9,7 +9,13 @@ ${LICENSE};md5=8afb6abdac9a14cb18a0d6c9c151e9b4"
 
 KERNEL_SRC_TYPE ?= "msm-kernel"
 
+# Set Kalama kernel prebuilt output paths.
+KERNEL_PREBUILT_PATH:kalama = "${WORKSPACE}/kernel-${MSM_KERNEL_VERSION}/out/${KERNEL_DEFCONFIG}"
+KERNEL_PREBUILT_DISTDIR:kalama = "${KERNEL_PREBUILT_PATH}/dist"
+KERNEL_OUT_PATH:kalama = "${KERNEL_PREBUILT_PATH}"
+
 # KERNEL_SRC_TYPE can be 'soc-repo' or 'msm-kernel' as per the kernel platform
+FILESEXTRAPATHS:prepend:kalama := "${KERNEL_PREBUILT_PATH}:${KERNEL_PLATFORM_PATH}/${KERNEL_SRC_TYPE}/modules-lists:"
 FILESEXTRAPATHS:prepend := "${KERNEL_PREBUILT_PATH}:${KERNEL_PLATFORM_PATH}/${KERNEL_SRC_TYPE}:"
 SRC_URI = "${@bb.utils.contains('MACHINE_USES_KERNEL_PREBUILTS', 'True', ' file://dist', '', d)}"
 SRC_URI  +=  "file://${KERNEL_MODULES_LIST}"

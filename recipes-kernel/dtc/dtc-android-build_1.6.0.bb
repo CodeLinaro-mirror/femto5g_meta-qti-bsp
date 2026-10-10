@@ -8,6 +8,9 @@ BBCLASSEXTEND = "native"
 
 PROVIDES = "virtual/dtc-native"
 
+# Kalama kernel artifacts are exported beside kernel_platform.
+KERNEL_PREBUILT_PATH:kalama = "${WORKSPACE}/kernel-${MSM_KERNEL_VERSION}/out/${KERNEL_DEFCONFIG}"
+
 FILESEXTRAPATHS:prepend := "${KERNEL_PREBUILT_PATH}/:"
 SRC_URI    = "file://host/"
 
