@@ -12,20 +12,25 @@ inherit qimage
 #    packagegroup-core-ssh-openssh -> openssh
 
 IMAGE_FEATURES += "ssh-server-openssh"
+DEPENDS += "ext4-utils-native"
 
 CORE_IMAGE_EXTRA_INSTALL += "\
               glib-2.0 \
               kernel-modules \
               packagegroup-android-utils \
               packagegroup-filesystem-utils \
-              ${@bb.utils.contains('COMBINED_FEATURES', 'qti-bluetooth', "packagegroup-qti-bluetooth", "", d)} \
               packagegroup-qti-core \
-              ${@bb.utils.contains('MACHINE_FEATURES', 'qti-data-modem', "packagegroup-qti-data", "", d)} \
               packagegroup-qti-dsp \
               packagegroup-qti-ss-mgr \
-              ${@bb.utils.contains('COMBINED_FEATURES', 'qti-wifi', "packagegroup-qti-wifi", "", d)} \
               packagegroup-startup-scripts \
               packagegroup-support-utils \
               systemd-machine-units \
               ${@bb.utils.contains('DISTRO_FEATURES','selinux', 'packagegroup-selinux-minimal', '', d)} \
 "
+
+# Skip OTA/recovery EXT4 generation for this image
+do_recovery_ext4[noexec] = "1"
+
+# Skip OTA and recovery generation for noselinux image build
+do_recovery_ext4[noexec] = "1"
+do_gen_ota_full_zip_ext4[noexec] = "1"

@@ -88,8 +88,8 @@ do_compile () {
     fi
 }
 
-do_install[noexec]="1"
-do_configure[noexec]="1"
+do_install[noexec] = "1"
+do_configure[noexec] = "1"
 
 do_deploy() {
     if [ "${ENABLE_UEFI_EFI_BOOT}" = "1" ]; then

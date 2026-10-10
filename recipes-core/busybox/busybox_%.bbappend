@@ -106,3 +106,25 @@ ALTERNATIVE_PRIORITY[dmesg] = "100"
 
 FILES:${PN}-syslog += "${systemd_unitdir}/system/"
 FILES:${PN} += "${systemd_system_unitdir}"
+
+
+# kbd provides /usr/bin/kbd_mode. Disable the conflicting BusyBox applet.
+do_configure:append:kalama() {
+    if grep -q '^CONFIG_KBD_MODE=y' "${B}/.config"; then
+        sed -i 's/^CONFIG_KBD_MODE=y/# CONFIG_KBD_MODE is not set/' "${B}/.config"
+    fi
+}
+
+# kbd provides the real /usr/bin/kbd_mode file.
+# Remove the BusyBox alternative entry before package metadata is generated.
+do_install:append:kalama() {
+    for links_file in \
+        "${D}${sysconfdir}/busybox.links" \
+        "${D}${sysconfdir}/busybox.links.nosuid" \
+        "${D}${sysconfdir}/busybox.links.suid"
+    do
+        if [ -f "${links_file}" ]; then
+            sed -i '\|/usr/bin/kbd_mode|d' "${links_file}"
+        fi
+    done
+}

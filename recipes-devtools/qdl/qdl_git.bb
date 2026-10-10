@@ -38,10 +38,18 @@ SRC_URI = "${CLO_LE_GIT}/abozhinov444.qdl.git;branch=caf_migration/abozhinov444/
 
 PV = "0.0+${SRCPV}"
 
-S = "${UNPACKDIR}/git"
+#S = "${UNPACKDIR}/git"
 
 do_install () {
     oe_runmake install DESTDIR=${D} prefix=${prefix}
 }
 
 BBCLASSEXTEND = "native nativesdk"
+
+do_compile:prepend() {
+    UDEV_LINK="${RECIPE_SYSROOT_NATIVE}/usr/lib/libudev.so"
+    UDEV_LIB="${RECIPE_SYSROOT_NATIVE}/lib/libudev.so.1"
+    install -d "${RECIPE_SYSROOT_NATIVE}/usr/lib"
+    rm -f "${UDEV_LINK}"
+    ln -s ../../lib/libudev.so.1 "${UDEV_LINK}"
+}

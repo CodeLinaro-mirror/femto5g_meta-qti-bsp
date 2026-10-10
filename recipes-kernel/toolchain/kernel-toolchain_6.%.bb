@@ -24,7 +24,7 @@ do_compile[noexec] = "1"
 do_configure[noexec] = "1"
 
 BBCLASSEXTEND = " native nativesdk"
-
+INSANE_SKIP:${PN} += "libdir arch staticdev dev-so file-rdeps"
 do_install() {
     install -d ${D}/${bindir}/clang/
     install -d ${D}/${bindir}/clang/bin/

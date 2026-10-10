@@ -1,4 +1,4 @@
-inherit autotools systemd useradd
+inherit systemd useradd
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/files:"
 

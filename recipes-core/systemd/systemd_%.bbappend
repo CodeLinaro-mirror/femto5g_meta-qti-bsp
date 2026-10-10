@@ -3,6 +3,9 @@ QTI_SYSTEMD_INC = ""
 QTI_SYSTEMD_INC:qti-distro-base = "${THISDIR}/qti-systemd.inc"
 include ${QTI_SYSTEMD_INC}
 
+# QTI qpermissions creates the system user with this existing primary group.
+GROUPADD_PARAM:${PN}:prepend:qti-distro-base = "-f -g 1000 system; "
+
 SRC_URI:append = " file://platform.rules"
 SRC_URI:append = " file://59-ota-optimization.rules"
 
