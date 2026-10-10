@@ -11,9 +11,10 @@ diff --git a/group.master b/group.master
 index e54fd1d..0092a3a 100644
 --- a/group.master
 +++ b/group.master
-@@ -40,4 +40,6 @@ games:*:60:
+@@ -40,5 +40,7 @@ games:*:60:
  shutdown:*:70:
  wheel:*:80:
+ clock:*:81:
  users:*:100:
 +sdcard:*:1015:diag
 +diag:*:53:

@@ -6,6 +6,8 @@ Subject: [PATCH] ptool.py: Generate zero files in output folder when
 
 The patch allows ptool to generate zerosector files in output directory
 when such directory path is specified as argument to -t option.
+Upstream-Status: Pending [Not submitted to upstream]
+
 ---
  ptool.py | 3 ++-
  1 file changed, 2 insertions(+), 1 deletion(-)
