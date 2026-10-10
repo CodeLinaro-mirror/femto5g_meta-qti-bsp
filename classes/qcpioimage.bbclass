@@ -3,8 +3,8 @@
 CPIODIR = "${WORKDIR}/extracpio"
 CMDLINE_FILE = "verity.cmdline"
 VERITY_CMDLINE = "${WORKDIR}/verity-cmdline"
-NOVERITY_INIT = "${COREBASE}/meta-qti-bsp/recipes-products/images/include/noverity-init"
-VERITY_INIT = "${COREBASE}/meta-qti-bsp/recipes-products/images/include/verity-init"
+NOVERITY_INIT = "${QTI_METADATA_ROOT}/meta-qti-bsp/recipes-products/images/include/noverity-init"
+VERITY_INIT = "${QTI_METADATA_ROOT}/meta-qti-bsp/recipes-products/images/include/verity-init"
 
 do_ramdisk_create[depends] += "virtual/kernel:do_deploy"
 do_ramdisk_create[cleandirs] += "${CPIODIR}"

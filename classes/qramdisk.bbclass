@@ -91,10 +91,10 @@ fakeroot do_ramdisk_create() {
         else
             cp ${IMAGE_ROOTFS}/bin/busybox bin/
             cp ${IMAGE_ROOTFS}/bin/busybox.suid bin/
-            cp ${COREBASE}/meta-qti-bsp/recipes-core/busybox/files/fstab etc/
-            cp ${COREBASE}/meta-qti-bsp/recipes-core/busybox/files/inittab etc/
-            cp ${COREBASE}/meta-qti-bsp/recipes-core/busybox/files/profile etc/
-            cp ${COREBASE}/meta-qti-bsp/recipes-core/busybox/files/rcS etc/init.d
+            cp ${QTI_METADATA_ROOT}/meta-qti-bsp/recipes-core/busybox/files/fstab etc/
+            cp ${QTI_METADATA_ROOT}/meta-qti-bsp/recipes-core/busybox/files/inittab etc/
+            cp ${QTI_METADATA_ROOT}/meta-qti-bsp/recipes-core/busybox/files/profile etc/
+            cp ${QTI_METADATA_ROOT}/meta-qti-bsp/recipes-core/busybox/files/rcS etc/init.d
             # Run rcS script only if busybox is init manager in ramdisk.
             # In other cases, ramdisk will be used in early boot but no init in busybox.
             if ${@oe.utils.conditional('INIT_RAMDISK', 'True', 'true', 'false', d)}; then
@@ -118,9 +118,9 @@ fakeroot do_ramdisk_create() {
         if ${@bb.utils.contains('IMAGE_FEATURES', 'vm', 'true', 'false', d)}; then
             cp ${IMAGE_ROOTFS}/lib/ld-linux-aarch64.so.1 lib/ld-linux-aarch64.so.1
             if [[ "${TOYBOX_RAMDISK}" == "True" ]]; then
-                cp ${COREBASE}/meta-qti-bsp/recipes-products/images/include/vmrd-init-toybox vmrd-init
+                cp ${QTI_METADATA_ROOT}/meta-qti-bsp/recipes-products/images/include/vmrd-init-toybox vmrd-init
             else
-                cp ${COREBASE}/meta-qti-bsp/recipes-products/images/include/vmrd-init .
+                cp ${QTI_METADATA_ROOT}/meta-qti-bsp/recipes-products/images/include/vmrd-init .
             fi
             chmod 744 vmrd-init
             ln -s vmrd-init init
@@ -145,7 +145,7 @@ fakeroot do_ramdisk_create() {
             fi
             if ${@bb.utils.contains('MACHINE_FEATURES', 'qti-csm', 'true', 'false', d)}; then
                 cp ${IMAGE_ROOTFS}/lib/ld-linux-aarch64.so.1 lib/ld-linux-aarch64.so.1
-                cp ${COREBASE}/meta-qti-bsp/recipes-products/images/include/csmrd-init .
+                cp ${QTI_METADATA_ROOT}/meta-qti-bsp/recipes-products/images/include/csmrd-init .
                 chmod 744 csmrd-init
                 ln -s csmrd-init init
             else
