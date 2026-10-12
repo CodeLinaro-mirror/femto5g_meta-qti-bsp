@@ -101,6 +101,95 @@ do_prebuilt_shared_workdir() {
     fi
 }
 
+python do_fix_dtc_symlink() {
+    # Fix dtc symlink to use yocto's newer version (v1.7.0+)
+    # This ensures the correct dtc version is used during kernel build.
+    # Only kernels >= 6.12 need this (older kernels ship with a dtc that
+    # already works), matching the threshold qti-conf/set_bb_env.sh uses
+    # for MODULE_SIGN_HASH.
+    import os
+    import re
+    import subprocess
+
+    # PREFERRED_VERSION_linux-msm is only a directory-name suffix here (e.g.
+    # "qcom" for tip builds, not a dotted version), so the real kernel
+    # version has to come from the checked-out kernel Makefile instead of
+    # from this variable. Mirrors the VERSION/PATCHLEVEL lookup that
+    # qti-conf/set_bb_env.sh already does for the same 6.12 threshold.
+    preferred_version = d.getVar('PREFERRED_VERSION_linux-msm')
+    workspace = d.getVar('WORKSPACE')
+    if not preferred_version or not workspace:
+        bb.warn("Could not determine PREFERRED_VERSION_linux-msm or WORKSPACE; skipping dtc symlink fix")
+        return
+
+    soc_makefile = os.path.join(workspace, f"kernel-{preferred_version}/kernel_platform/soc-repo/Makefile")
+    try:
+        makefile_content = open(soc_makefile).read()
+    except OSError:
+        makefile_content = ''
+
+    major_match = re.search(r'^VERSION\s*=\s*(\d+)', makefile_content, re.MULTILINE)
+    minor_match = re.search(r'^PATCHLEVEL\s*=\s*(\d+)', makefile_content, re.MULTILINE)
+    ver_major = int(major_match.group(1)) if major_match else None
+    ver_minor = int(minor_match.group(1)) if minor_match else None
+
+    if ver_major is None or ver_minor is None:
+        bb.warn(f"Could not read kernel VERSION/PATCHLEVEL from {soc_makefile}; skipping dtc symlink fix")
+        return
+
+    if (ver_major, ver_minor) < (6, 12):
+        bb.note(f"Kernel version {ver_major}.{ver_minor} < 6.12; skipping dtc symlink fix")
+        return
+
+    dtc_link = os.path.join(workspace, f"kernel-{preferred_version}/kernel_platform/build/kernel/build-tools/path/linux-x86/dtc")
+
+    # STAGING_BINDIR_NATIVE already resolves to this recipe's own
+    # recipe-sysroot-native (populated via DEPENDS += "virtual/dtc-native"),
+    # so it works for every build variant (debug/user/perf) without having
+    # to guess the sibling build directory's name.
+    dtc_target = os.path.join(d.getVar('STAGING_BINDIR_NATIVE'), 'dtc')
+
+    bb.note(f"Fixing dtc symlink for kernel build...")
+    bb.note(f"  DTC_LINK: {dtc_link}")
+    bb.note(f"  DTC_TARGET: {dtc_target}")
+
+    # Remove existing symlink if it exists
+    if os.path.islink(dtc_link):
+        bb.note("Removing old dtc symlink")
+        os.remove(dtc_link)
+    elif os.path.exists(dtc_link):
+        bb.note(f"Warning: {dtc_link} exists but is not a symlink. Removing it.")
+        os.remove(dtc_link)
+
+    # Create parent directory if needed
+    os.makedirs(os.path.dirname(dtc_link), exist_ok=True)
+
+    # Create new symlink
+    os.symlink(dtc_target, dtc_link)
+
+    # Verify the symlink works
+    if os.path.islink(dtc_link):
+        resolved_path = os.path.realpath(dtc_link)
+        if os.path.isfile(resolved_path):
+            try:
+                result = subprocess.run([resolved_path, '--version'], capture_output=True, text=True, timeout=5)
+                dtc_version = result.stdout.strip() if result.returncode == 0 else "unknown"
+            except:
+                dtc_version = "unknown"
+            bb.note("dtc symlink fixed successfully")
+            bb.note(f"  Link: {dtc_link}")
+            bb.note(f"  Target: {dtc_target}")
+            bb.note(f"  Version: {dtc_version}")
+        else:
+            bb.warn(f"dtc symlink target does not exist yet: {resolved_path}")
+            bb.warn("This may be expected if dtc-native hasn't been built yet")
+    else:
+        bb.error("Failed to create dtc symlink")
+        raise Exception("Failed to create dtc symlink")
+}
+
+addtask do_fix_dtc_symlink before do_fetch
+
 do_prebuilt_install[dirs] = "${B}"
 do_prebuilt_install[cleandirs] += "${D}"
 fakeroot do_prebuilt_install() {

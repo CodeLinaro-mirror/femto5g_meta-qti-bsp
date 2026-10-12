@@ -9,7 +9,7 @@
 
 RPROC_CLASS="/sys/class/remoteproc"
 # Space separated; relies on word splitting in the for loop below.
-SUBSYS_LIST="adsp cdsp"
+SUBSYS_LIST="adsp cdsp soccp"
 
 # How long to wait for asynchronously created sysfs nodes: 100 x 0.1s = 10s.
 MAX_ATTEMPTS=100
