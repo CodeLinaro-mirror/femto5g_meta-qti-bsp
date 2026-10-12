@@ -91,7 +91,6 @@ VOLATILE_BINDS_sa515m = "\
 /systemrw/adb_devid  /etc/adb_devid\n\
 /systemrw/data/wpa_supplicant-eth0.conf /etc/data/wpa_supplicant-eth0.conf\n\
 /systemrw/data/hostapd-eth0.conf /etc/data/hostapd-eth0.conf\n\
-/systemrw/data/ipa /etc/data/ipa/\n\
 /systemrw/rt_tables /etc/data/iproute2/rt_tables\n\
 /systemrw/boot_hsusb_comp /etc/usb/boot_hsusb_comp\n\
 /systemrw/boot_hsic_comp /etc/usb/boot_hsic_comp\n\
