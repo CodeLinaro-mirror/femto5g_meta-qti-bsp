@@ -1,0 +1,148 @@
+From 21b29b8e28b1bed7c7ecd6df1c414ff3ca148757 Mon Sep 17 00:00:00 2001
+From: huayzhon <huayzhon@qti.qualcomm.com>
+Date: Wed, 14 Oct 2026 11:06:01 +0800
+Subject: [PATCH] lxc-daemon: fix monitor cgroup leak and unbounded log growth
+
+lxc-daemon restarts the container in a loop. Every restart leaked one
+lxc.monitor.<name>-N cgroup per hierarchy, and its log in tmpfs kept
+growing.
+
+- lxc-daemon: start the container from a short-lived child. Otherwise the
+  daemon is moved into the monitor cgroup as the transient pid and
+  rmdir() of the cgroup fails with EBUSY.
+- cgfsng: rmdir() a stale monitor cgroup before reusing its name, which
+  only succeeds when it has no tasks.
+- lxc-daemon: truncate the log at 512KB. rename() is denied by sepolicy,
+  so the log can not be rotated.
+
+Signed-off-by: huayzhon <huayzhon@qti.qualcomm.com>
+---
+ src/lxc/cgroups/cgfsng.c   | 18 ++++++++++++++
+ src/lxc/tools/lxc_daemon.c | 59 +++++++++++++++++++++++++++++++++++++++++++++-
+ 2 files changed, 76 insertions(+), 1 deletion(-)
+
+diff --git a/src/lxc/cgroups/cgfsng.c b/src/lxc/cgroups/cgfsng.c
+index 71ed4bb18..aeeb6207f 100644
+--- a/src/lxc/cgroups/cgfsng.c
++++ b/src/lxc/cgroups/cgfsng.c
+@@ -1309,6 +1309,22 @@ static char *cgroup_relpath(char *cg)
+ 	return p;
+ }
+ 
++/*
++ * Remove a monitor cgroup left behind by a previous run (e.g. the monitor was
++ * SIGKILLed before it could clean up). rmdir() on a cgroup only succeeds when
++ * it has no tasks and no child cgroups, so a cgroup that is still used by a
++ * live container is never touched; in that case we simply fail with
++ * EBUSY/ENOTEMPTY and the caller moves on to the next suffix.
++ */
++static void cgroup_reclaim_stale(struct cgroup_ops *ops, const char *cgroup)
++{
++	for (int i = 0; ops->hierarchies[i]; i++) {
++		if (!unlinkat(ops->hierarchies[i]->dfd_base, cgroup, AT_REMOVEDIR))
++			INFO("Reclaimed stale cgroup %d(%s)",
++			     ops->hierarchies[i]->dfd_base, cgroup);
++	}
++}
++
+ __cgfsng_ops static bool cgfsng_monitor_create(struct cgroup_ops *ops, struct lxc_handler *handler)
+ {
+ 	__do_free char *monitor_cgroup = NULL;
+@@ -1370,4 +1386,6 @@ __cgfsng_ops static bool cgfsng_monitor_create(struct cgroup_ops *ops, struct lx
+ 
++		cgroup_reclaim_stale(ops, monitor_cgroup);
++
+ 		for (i = 0; ops->hierarchies[i]; i++) {
+ 			if (cgroup_tree_create(ops, handler->conf,
+ 					       ops->hierarchies[i],
+diff --git a/src/lxc/tools/lxc_daemon.c b/src/lxc/tools/lxc_daemon.c
+index 3c1113b52..36c6ad644 100644
+--- a/src/lxc/tools/lxc_daemon.c
++++ b/src/lxc/tools/lxc_daemon.c
+@@ -1,8 +1,14 @@
+ //Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+ //SPDX-License-Identifier: LGPL-2.1+
+ 
++#include <errno.h>
+ #include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
+ #include <unistd.h>
++#include <sys/stat.h>
++#include <sys/types.h>
++#include <sys/wait.h>
+ #include <lxc/lxccontainer.h>
+ #include "arguments.h"
+ #include "log.h"
+@@ -26,6 +32,56 @@ lxc-daemon for NAME container \n\
+ 	.log_file     = "none",
+ };
+ 
++/*
++ * liblxc moves the process that calls c->start() ("transient" pid) into the
++ * monitor cgroup and expects it to exit soon after, as lxc-start does. If the
++ * long-lived daemon calls it directly, the daemon itself stays inside
++ * lxc.monitor.<name>, so the monitor cgroup can never be removed (EBUSY) when
++ * the container stops and one stale cgroup per restart is leaked.
++ * Start the container from a short-lived child instead.
++ */
++static bool start_container(struct lxc_container *c)
++{
++	pid_t pid;
++	int status;
++
++	pid = fork();
++	if (pid < 0)
++		return false;
++
++	if (pid == 0)
++		_exit(c->start(c, 0, NULL) ? EXIT_SUCCESS : EXIT_FAILURE);
++
++	while (waitpid(pid, &status, 0) < 0) {
++		if (errno != EINTR)
++			return false;
++	}
++
++	return WIFEXITED(status) && WEXITSTATUS(status) == EXIT_SUCCESS;
++}
++
++/*
++ * The daemon restarts the container forever and keeps one log fd open, shared
++ * with every monitor it spawns, so the log file lives in tmpfs and would grow
++ * without bound. Before each restart, truncate a log that reached the limit
++ * and let it be rewritten from the start. The log is opened with O_APPEND, so
++ * every writer continues at the new end of file. rename() is not used because
++ * sepolicy denies it for vendor_init on these files.
++ */
++#define DAEMON_LOG_MAX_SIZE (512 * 1024)
++
++static void truncate_log_if_needed(void)
++{
++	struct stat st;
++
++	if (lxc_log_fd < 0 || fstat(lxc_log_fd, &st) < 0 ||
++	    st.st_size < DAEMON_LOG_MAX_SIZE)
++		return;
++
++	if (ftruncate(lxc_log_fd, 0) < 0)
++		ERROR("Failed to truncate the daemon log: %s", strerror(errno));
++}
++
+ int main(int argc, char *argv[])
+ {
+     struct lxc_container *c;
+@@ -70,9 +126,10 @@ int main(int argc, char *argv[])
+ 
+     while (1) {
+         if (!c->is_running(c)) {
++            truncate_log_if_needed();
+             TRACE("Container is stopped. Attempting to start...\n");
+ 
+-            if (!c->start(c, 0, NULL)) {
++            if (!start_container(c)) {
+                 TRACE(stderr, "Failed to start container. Retrying in 1 seconds...\n");
+                 sleep(1);
+                 continue;
+-- 
+2.34.1
+

@@ -11,6 +11,9 @@ lxc.environment = PATH=$PATH:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/
 lxc.init.cmd = /lib/systemd/systemd systemd.log_level=debug systemd.log_target=console systemd.unified_cgroup_hierarchy=0
 
 lxc.console.logfile = /vendor_early_services/run/lxc_console.log
+# The log lives in tmpfs: once it reaches 512KB it is truncated and rewritten
+# from the start, no backup is kept (rename is denied by sepolicy)
+lxc.console.size = 512KB
 #lxc.selinux.context = u:r:kernel:s0
 #lxc.start.auto = 1
 
