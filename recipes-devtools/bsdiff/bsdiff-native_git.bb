@@ -26,3 +26,4 @@ do_deploy() {
     install -m 755 ${D}${bindir}/bsdiff ${DEPLOYDIR}/ota-scripts
 }
 addtask deploy after do_install
+EXTRA_OEMAKE += "WORKSPACE=${WORKSPACE}"

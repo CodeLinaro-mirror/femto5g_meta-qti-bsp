@@ -38,3 +38,4 @@ PACKAGECONFIG[ion] = "--with-ion, --without-ion, libion"
 PACKAGECONFIG[ufsbsg] = ""
 
 PARALLEL_MAKE = ""
+EXTRA_OEMAKE += "WORKSPACE=${WORKSPACE}"

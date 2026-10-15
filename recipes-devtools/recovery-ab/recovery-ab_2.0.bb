@@ -86,3 +86,4 @@ do_install:append() {
             install -m 0644 ${UNPACKDIR}/keys -D ${D}/res/keys
         fi
 }
+EXTRA_OEMAKE += "WORKSPACE=${WORKSPACE}"
