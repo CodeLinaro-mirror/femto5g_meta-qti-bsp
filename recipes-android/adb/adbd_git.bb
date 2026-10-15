@@ -13,7 +13,11 @@ SRC_URI = "file://adb \
 S = "${WORKDIR}/adb"
 
 DEPENDS += "ext4-utils glib-2.0 fsmgr libselinux libbase libcutils liblog"
+DEPENDS += "${@bb.utils.contains('MACHINE_FEATURES', 'qti-faultmgr', 'faultmgr', '', d)}"
 
+RDEPENDS_${PN} += "${@bb.utils.contains('MACHINE_FEATURES', 'qti-faultmgr', 'faultdbg', '', d)}"
+
+CPPFLAGS += "${@bb.utils.contains('MACHINE_FEATURES', 'qti-faultmgr', '-DQTI_FAULTMGR_ENABLED=1', '', d)}"
 EXTRA_OECONF = " \
                   --with-glib \
                   --with-core-includes=${WORKSPACE}/system/core/include \
