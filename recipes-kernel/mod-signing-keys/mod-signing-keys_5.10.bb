@@ -2,7 +2,7 @@ inherit allarch nopackages
 
 SUMMARY = "Installs Linux kernel signing keys"
 LICENSE = "GPLv2.0-with-linux-syscall-note"
-LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti-bsp/files/common-licenses/\
+LIC_FILES_CHKSUM = "file://${QTI_METADATA_ROOT}/meta-qti-bsp/files/common-licenses/\
 ${LICENSE};md5=8afb6abdac9a14cb18a0d6c9c151e9b4"
 
 # Ensure PACKAGE_ARCH is set to all even when multilib is enabled.

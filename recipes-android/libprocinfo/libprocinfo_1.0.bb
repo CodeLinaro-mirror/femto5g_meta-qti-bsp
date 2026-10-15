@@ -6,7 +6,7 @@ LICENSE  = "Apache-2.0 & BSD-3-Clause-Clear"
 LIC_FILES_CHKSUM = "file://${COREBASE}/meta/files/common-licenses/\
 Apache-2.0;md5=89aea4e17d99a7cacdbeed46a0096b10"
 
-LIC_FILES_CHKSUM += "file://${COREBASE}/meta-qti-bsp/files/common-licenses/\
+LIC_FILES_CHKSUM += "file://${QTI_METADATA_ROOT}/meta-qti-bsp/files/common-licenses/\
 BSD-3-Clause-Clear;md5=3771d4920bd6cdb8cbdf1e8344489ee0"
 
 DEPENDS = "libbase libcutils libutils gtest"

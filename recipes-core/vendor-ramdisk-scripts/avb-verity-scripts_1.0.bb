@@ -2,7 +2,7 @@ SUMMARY = "AVB Verity Setup Service"
 DESCRIPTION = "Installs and enables a systemd service for AVB verity setup"
 
 LICENSE = "BSD-3-Clause-Clear"
-LIC_FILES_CHKSUM = "file://${COREBASE}/meta-qti-bsp/files/common-licenses/\
+LIC_FILES_CHKSUM = "file://${QTI_METADATA_ROOT}/meta-qti-bsp/files/common-licenses/\
 ${LICENSE};md5=3771d4920bd6cdb8cbdf1e8344489ee0"
 
 PACKAGE_ARCH = "${MACHINE_ARCH}"
