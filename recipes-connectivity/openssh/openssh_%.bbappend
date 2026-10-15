@@ -1,4 +1,4 @@
-EXTRA_OECONF:append=" ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', '--with-selinux', '', d)}"
+EXTRA_OECONF:append = " ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', '--with-selinux', '', d)}"
 BASEPRODUCT = "${@d.getVar('PRODUCT', False)}"
 
 FILESEXTRAPATHS:prepend := "${THISDIR}/openssh:"
