@@ -18,7 +18,7 @@ do_install:append() {
                rm  ${D}${sysconfdir}/init.d/alignment.sh
          fi
          install -d ${D}/etc/systemd/system/multi-user.target.wants/
-         install -m 0644 ${WORKDIR}/logging-restrictions.service -D ${D}/etc/systemd/logging-restrictions.service
+         install -m 0644 ${UNPACKDIR}/logging-restrictions.service -D ${D}/etc/systemd/logging-restrictions.service
          # enable logging-restrict service for multi-user.target
          ln -sf /etc/systemd/logging-restrictions.service \
               ${D}/etc/systemd/system/multi-user.target.wants/logging-restrictions.service
