@@ -3,6 +3,8 @@ From: Remil Ram <remilr@codeaurora.org>
 Date: Thu, 23 Jul 2020 17:11:35 -0700
 Subject: [PATCH] remove-udev-references-from-meson-build
 
+Upstream-Status: Inappropriate [Qualcomm downstream feature reduction]
+
 ---
  meson.build | 752 ++----------------------------------------------------------
  1 file changed, 24 insertions(+), 728 deletions(-)
@@ -965,4 +967,3 @@ index 1bdb9c7..b95a7c0 100644
  
 -- 
 2.7.4
-

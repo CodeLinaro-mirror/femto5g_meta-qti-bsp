@@ -3,6 +3,8 @@ From: Remil Ram <remilr@codeaurora.org>
 Date: Fri, 24 Jul 2020 11:25:45 -0700
 Subject: [PATCH] remove-journal-from-systemctl
 
+Upstream-Status: Inappropriate [Qualcomm downstream feature reduction]
+
 ---
  src/systemctl/systemctl.c | 17 -----------------
  1 file changed, 17 deletions(-)
@@ -44,4 +46,3 @@ index 3e4fc46..aef5600 100644
                                          return log_oom();
 -- 
 2.7.4
-

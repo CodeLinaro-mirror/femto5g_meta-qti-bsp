@@ -3,6 +3,8 @@ From: Remil Ram <remilr@codeaurora.org>
 Date: Fri, 24 Jul 2020 11:52:14 -0700
 Subject: [PATCH] src-libsystemd-meson-build
 
+Upstream-Status: Inappropriate [Qualcomm downstream build compatibility]
+
 ---
  src/libsystemd/meson.build | 12 ++++++------
  1 file changed, 6 insertions(+), 6 deletions(-)
@@ -47,4 +49,3 @@ index aa1ed9b..d9c02d4 100644
          input : 'libsystemd.pc.in',
 -- 
 2.7.4
-

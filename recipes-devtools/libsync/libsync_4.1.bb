@@ -8,6 +8,7 @@ ${LICENSE};md5=89aea4e17d99a7cacdbeed46a0096b10"
 
 SRC_URI = "${CLO_LA_GIT}/platform/system/core/;protocol=https;nobranch=1;rev=8fbe56b11ee7c1f8c87e9b71d89caa306c6cdebb;destsuffix=libsync;subpath=libsync;name=libsync"
 SRC_URI += "file://0001-Add-autotool-makefiles-to-compile-libsync.patch"
+SRC_URI += "file://0002-libsync-use-constant-atomic-initializer.patch"
 
 S = "${UNPACKDIR}/libsync"
 

@@ -3,6 +3,8 @@ From: Remil Ram <remilr@codeaurora.org>
 Date: Fri, 24 Jul 2020 11:43:56 -0700
 Subject: [PATCH] src-shared-meson-build
 
+Upstream-Status: Inappropriate [Qualcomm downstream build compatibility]
+
 ---
  src/shared/meson.build | 16 +---------------
  1 file changed, 1 insertion(+), 15 deletions(-)
@@ -72,4 +74,3 @@ index 063d157..44445d9 100644
          install : true,
 -- 
 2.7.4
-

@@ -3,6 +3,8 @@ From: Viswanath Kraleti <vkraleti@codeaurora.org>
 Date: Wed, 2 Sep 2020 15:18:22 +0530
 Subject: [PATCH] update libsystemd.pc.in
 
+Upstream-Status: Inappropriate [Qualcomm downstream packaging]
+
 ---
  src/libsystemd/libsystemd.pc.in | 6 +++---
  src/libsystemd/meson.build      | 2 +-
@@ -39,4 +41,3 @@ index d9c02d4..1302097 100644
          install_dir : pkgconfiglibdir == 'no' ? '' : pkgconfiglibdir)
 -- 
 2.7.4
-

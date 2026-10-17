@@ -3,6 +3,8 @@ From: Keerthi Gowda Balehalli Satyanarayana <quic_kbalehal@quicinc.com>
 Date: Fri, 10 Nov 2023 15:37:23 -0800
 Subject: [PATCH] libsystemd: Changes to build on yocto kirkstone
 
+Upstream-Status: Inappropriate [downstream Yocto build compatibility]
+
 ---
  meson.build              | 2 +-
  src/basic/linux/if_arp.h | 1 +
@@ -48,4 +50,3 @@ index f70d1b8bf8..aa9aa5fe35 100644
          linux/if_ether.h
 -- 
 2.17.1
-

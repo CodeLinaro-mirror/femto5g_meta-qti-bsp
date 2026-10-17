@@ -3,6 +3,8 @@ From: Remil Ram <remilr@codeaurora.org>
 Date: Fri, 24 Jul 2020 14:22:54 -0700
 Subject: [PATCH] remove-udev-and-libudev
 
+Upstream-Status: Inappropriate [Qualcomm downstream feature reduction]
+
 ---
  src/libudev/libudev-device-internal.h    |   10 -
  src/libudev/libudev-device.c             |  873 -----------
@@ -20981,4 +20983,3 @@ index 5de26b8..0000000
 -}
 -- 
 2.7.4
-

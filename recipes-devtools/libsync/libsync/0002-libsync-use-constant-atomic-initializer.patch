@@ -1,0 +1,32 @@
+This patch file is from Qualcomm Technologies, Inc. and is provided under the 
+following license:
+Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+SPDX-License-Identifier: BSD-3-Clause-Clear
+
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Jhansi kotipalli <jkotipal@qti.qualcomm.com>
+Date: Thu, 8 Oct 2026 00:00:00 +0530
+Subject: [PATCH] libsync: use a constant atomic initializer
+
+GCC 15 no longer exposes ATOMIC_VAR_INIT in the C mode used by this recipe.
+An atomic integer can be statically initialized from the same constant value.
+
+Upstream-Status: Inappropriate [platform-specific toolchain compatibility]
+Signed-off-by: jkotipal <jkotipal@qti.qualcomm.com>
+---
+ sync.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/sync.c b/sync.c
+--- a/sync.c
++++ b/sync.c
+@@ -95,5 +95,5 @@ enum uapi_version {
+     UAPI_LEGACY
+ };
+-static atomic_int g_uapi_version = ATOMIC_VAR_INIT(UAPI_UNKNOWN);
++static atomic_int g_uapi_version = UAPI_UNKNOWN;
+ 
+ // ---------------------------------------------------------------------------
+ 
+-- 
+2.43.0

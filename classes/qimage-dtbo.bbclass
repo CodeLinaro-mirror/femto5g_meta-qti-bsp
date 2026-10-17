@@ -34,13 +34,17 @@
 MKDTUTIL = '${@oe.utils.conditional("PREFERRED_PROVIDER_virtual/mkdtimg-native", "mkdtimg-gki-native", "mkdtboimg/bin/mkdtboimg.py", "mkdtimg", d)}'
 DTBODEPLOYDIR = "${WORKDIR}/deploy-${PN}-dtboimage-complete"
 DTBOIMAGE_TARGET ?= "dtbo.img"
+# Older kernel recipes deploy DTBOs under DTOverlays.  The 6.18
+# soc-repo/tech-pack flow keeps merged base DTBs in DTOverlays and publishes
+# the original tech-pack overlays under tech_dtbs.
+DTBO_INPUT_DIR ?= "${DEPLOY_DIR_IMAGE}/DTOverlays"
 
 # Create dtbo.img if DTBO support is enabled
 python do_makedtbo () {
     import subprocess
 
     mkdtimg_bin_path = d.getVar('STAGING_BINDIR_NATIVE', True) + "/" + d.getVar('MKDTUTIL')
-    dtbodeploydir = d.getVar('DEPLOY_DIR_IMAGE', True) + "/" + "DTOverlays"
+    dtbodeploydir = d.getVar('DTBO_INPUT_DIR', True)
     pagesize = d.getVar("PAGE_SIZE")
     output = d.getVar('DTBOIMAGE_TARGET', True)
     # cmd to make dtbo.img
