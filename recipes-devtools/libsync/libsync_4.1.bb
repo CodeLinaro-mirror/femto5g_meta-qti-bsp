@@ -22,3 +22,11 @@ EXTRA_OECONF = "--with-glib"
 PACKAGES =+ "${PN}-test-bin"
 
 FILES:${PN}-test-bin = "${base_bindir}/*"
+
+# Wrynose/GCC15/C23 compatibility:
+# ATOMIC_VAR_INIT is not available with C23 (__STDC_VERSION__=202311L)
+do_configure:prepend() {
+    sed -i \
+        's/ATOMIC_VAR_INIT(UAPI_UNKNOWN)/UAPI_UNKNOWN/g' \
+        ${S}/sync.c
+}
