@@ -15,8 +15,7 @@ KERNEL_PREBUILT_DISTDIR:kalama = "${KERNEL_PREBUILT_PATH}/dist"
 KERNEL_OUT_PATH:kalama = "${KERNEL_PREBUILT_PATH}"
 
 # KERNEL_SRC_TYPE can be 'soc-repo' or 'msm-kernel' as per the kernel platform
-FILESEXTRAPATHS:prepend:kalama := "${KERNEL_PREBUILT_PATH}:${KERNEL_PLATFORM_PATH}/${KERNEL_SRC_TYPE}/modules-lists:"
-FILESEXTRAPATHS:prepend := "${KERNEL_PREBUILT_PATH}:${KERNEL_PLATFORM_PATH}/${KERNEL_SRC_TYPE}:"
+FILESEXTRAPATHS:prepend := "${KERNEL_PREBUILT_PATH}:${KERNEL_PLATFORM_PATH}/${KERNEL_SRC_TYPE}/modules-lists:${KERNEL_PLATFORM_PATH}/${KERNEL_SRC_TYPE}:"
 SRC_URI = "${@bb.utils.contains('MACHINE_USES_KERNEL_PREBUILTS', 'True', ' file://dist', '', d)}"
 SRC_URI  +=  "file://${KERNEL_MODULES_LIST}"
 SRC_URI  +=  "file://linkmodulesload.service"

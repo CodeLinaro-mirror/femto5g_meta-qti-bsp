@@ -17,8 +17,4 @@ RDEPENDS:packagegroup-qti-containers= "\
     aufs-util \
     ca-certificates \
     chrony \
-    cgroup-lite \
-    docker \
-    docker-registry \
-    docker-compose \
 "
