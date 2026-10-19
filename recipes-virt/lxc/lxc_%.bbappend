@@ -10,6 +10,7 @@ SRC_URI:append = " \
         file://0001-lxc-monitor-Add-watchdog-option.patch \
         file://0002-cgroup-hybrid-mode-refine.patch \
         file://0003-add-lxc-daemon-tool.patch \
+        file://0004-fix-monitor-cgroup-leak.patch \
 "
 
 FILES:${PN} += "lxc/bin"
