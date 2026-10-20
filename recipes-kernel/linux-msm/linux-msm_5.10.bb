@@ -9,7 +9,7 @@ FILESEXTRAPATHS:prepend := "${WORKSPACE}:"
 
 SRC_URI   =  "file://kernel-5.10/kernel_platform \
              "
-S = "${UNPACKDIR}/kernel-5.10/kernel_platform/msm-kernel"
+S = "${WORKDIR}/kernel-5.10/kernel_platform/msm-kernel"
 PR = "r0"
 
 DEPENDS += "virtual/kernel-toolchain-native virtual/dtc-native rsync-native mod-signing-keys"

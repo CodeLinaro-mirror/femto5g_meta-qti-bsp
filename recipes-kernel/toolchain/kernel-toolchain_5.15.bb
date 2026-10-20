@@ -9,7 +9,7 @@ SRC_URI    = "file://clang-${CLANG_VERSION}"
 CLANG_VERSION = "r450784e"
 
 
-S = "${UNPACKDIR}/clang-${CLANG_VERSION}"
+S = "${WORKDIR}/clang-${CLANG_VERSION}"
 INHIBIT_SYSROOT_STRIP = "1"
 do_compile[noexec] = "1"
 do_configure[noexec] = "1"

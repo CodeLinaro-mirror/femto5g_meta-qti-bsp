@@ -10,7 +10,7 @@ PACKAGE_ARCH = "all"
 
 FILESEXTRAPATHS:prepend := "${KERNEL_PREBUILT_PATH}:"
 SRC_URI   =  "file://${KERNEL_TYPE}/"
-S = "${UNPACKDIR}"
+S = "${WORKDIR}"
 
 do_configure[noexec] = "1"
 do_compile[noexec] = "1"

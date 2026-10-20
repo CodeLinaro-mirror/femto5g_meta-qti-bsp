@@ -9,7 +9,7 @@ DEPENDS += "jsoncpp"
 FILESEXTRAPATHS:prepend = "${WORKSPACE}/:"
 SRC_URI   = "file://dsmf/server"
 
-S = "${UNPACKDIR}/dsmf/server"
+S = "${WORKDIR}/dsmf/server"
 
 PACKAGECONFIG ??= " \
     glib \

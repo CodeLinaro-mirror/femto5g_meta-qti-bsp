@@ -6,10 +6,10 @@ LIC_FILES_CHKSUM = "file://${COMMON_LICENSE_DIR}/GPL-2.0;md5=801f80980d171dd6425
 
 PR = "r0"
 
-FILESEXTRAPATHS:prepend := "${WORKSPACE}/kernel-6.18/kernel_platform/common/usr/:"
+FILESEXTRAPATHS:prepend := "${WORKSPACE}/kernel-5.10/kernel_platform/msm-kernel/usr/:"
 SRC_URI = "file://gen_initramfs.sh"
 
-S = "${UNPACKDIR}"
+S = "${WORKDIR}"
 INHIBIT_SYSROOT_STRIP = "1"
 do_compile[noexec] = "1"
 do_configure[noexec] = "1"

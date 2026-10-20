@@ -7,7 +7,7 @@ LIC_FILES_CHKSUM = "file://${COREBASE}/meta/files/common-licenses/${LICENSE};md5
 
 SRC_URI = "file://overlay-mounter.c"
 
-S = "${UNPACKDIR}"
+S = "${WORKDIR}"
 
 COMPATIBLE_MACHINE = "alor|vienna|pebble|seraph"
 

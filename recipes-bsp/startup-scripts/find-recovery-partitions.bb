@@ -6,7 +6,7 @@ LICENSE = "BSD-3-Clause"
 
 SRC_URI +="file://${BASEMACHINE}/find_recovery_partitions.sh"
 SRC_URI +="file://find-recovery-partitions.service"
-S = "${UNPACKDIR}/${BASEMACHINE}"
+S = "${WORKDIR}/${BASEMACHINE}"
 
 PR = "r3"
 

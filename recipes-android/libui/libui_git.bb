@@ -13,6 +13,6 @@ DEPENDS += " liblog libcutils libhardware libselinux glib-2.0 libsync"
 FILESEXTRAPATHS:prepend := "${WORKSPACE}/frameworks:"
 SRC_URI   = "file://libui"
 
-S = "${UNPACKDIR}/libui"
+S = "${WORKDIR}/libui"
 
 EXTRA_OECONF += "--with-glib"
