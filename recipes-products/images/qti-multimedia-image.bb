@@ -84,7 +84,6 @@ CORE_IMAGE_EXTRA_INSTALL:append:kera = " packagegroup-qti-nfc"
 
 CORE_IMAGE_EXTRA_INSTALL:remove:sun = "kernel-modules"
 CORE_IMAGE_EXTRA_INSTALL:remove:sun = "packagegroup-qti-data"
-CORE_IMAGE_EXTRA_INSTALL:remove:sun = "packagegroup-qti-ss-mgr"
 CORE_IMAGE_EXTRA_INSTALL:remove:sun = "graphite-client"
 CORE_IMAGE_EXTRA_INSTALL:append:sun = " packagegroup-mesa"
 CORE_IMAGE_EXTRA_INSTALL:append:sun = " packagegroup-qcom-sensors"
