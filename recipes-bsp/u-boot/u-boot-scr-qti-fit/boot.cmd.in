@@ -1,0 +1,11 @@
+#Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+#SPDX-License-Identifier: BSD-3-Clause-Clear
+# bootpart set via bootmeth_script
+if test -z "${distro_bootpart}"; then
+    setenv distro_bootpart 1
+fi
+# avoid low memory conflicts with firmware 
+setenv fdt_high 0x1ffffffff
+setenv bootargs "@KERNEL_CMDLINE@"
+load ${devtype} ${devnum}:${distro_bootpart} ${kernel_addr_r} /@FITIMAGE_TARGET@
+bootm ${kernel_addr_r}
