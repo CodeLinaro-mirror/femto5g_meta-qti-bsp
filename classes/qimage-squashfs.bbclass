@@ -1,4 +1,3 @@
-VERITY_KEYS_DIR ?= "${STAGING_KERNEL_BUILDDIR}/certs"
 # if A/B support is supported, generate OTA pkg by default.
 GENERATE_AB_OTA_PACKAGE ?= "${@bb.utils.contains('COMBINED_FEATURES', 'qti-ab-boot', '1', '', d)}"
 
