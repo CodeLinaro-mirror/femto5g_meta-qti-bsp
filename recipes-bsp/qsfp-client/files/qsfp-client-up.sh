@@ -25,6 +25,19 @@ iface_exists() {
 	ip link show "$IFACE" >/dev/null 2>&1
 }
 
+# Refuse to run if $ADDR would collide with the subnet already used by any
+# other interface (i.e. the network-boot / management path). Configuring a
+# duplicate connected prefix on a carrier-less interface black-holes rootfs
+# I/O and panics init.
+guard_boot_subnet() {
+        BOOTNET=$(ip -o addr show 2>/dev/null \
+            | awk -v i="$IFACE" '$2!=i && /inet /{print $4}' | cut -d/ -f1 | cut -d. -f1-3)
+        MYNET=$(echo "$ADDR" | cut -d/ -f1 | cut -d. -f1-3)
+        for n in $BOOTNET; do
+                [ "$n" = "$MYNET" ] && die "refusing: ${ADDR} collides with boot subnet ${n}.0/24"
+        done
+}
+
 release_from_bridge() {
 	master=$(ip -o link show "$IFACE" 2>/dev/null \
 	           | sed -n 's/.* master \([^ ]*\) .*/\1/p')
@@ -163,8 +176,9 @@ verify() {
 do_up() {
 	iface_exists || die "interface ${IFACE} not found"
 
-	relax_filters
-	release_from_bridge
+        guard_boot_subnet
+        relax_filters
+        release_from_bridge
 
 	log "bringing ${IFACE} down to apply link settings"
 	ip link set "$IFACE" down

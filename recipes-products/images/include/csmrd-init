@@ -414,6 +414,16 @@ wait_for_interface() {
     return 1
 }
 
+# set_fec_for_speed - Set FEC encoding matching the link speed
+# @1: interface
+# @2: speed in Mb/s (25000 -> RS-FEC, 10000 -> no FEC)
+set_fec_for_speed() {
+    case "$2" in
+        25000) ethtool --set-fec "$1" encoding rs ;;
+        10000) ethtool --set-fec "$1" encoding off ;;
+    esac
+}
+
 config_string=""
 retrive_host_ip() {
     INTERFACE="$1"
@@ -584,7 +594,7 @@ do_nbdtab()
     echo "nbd5 $1 NON-HLOS.bin persist,timeout=20" >> /etc/nbdtab
     echo "nbd6 $1 default persist,timeout=20" >> /etc/nbdtab
     echo "nbd7 $1 manifest.bin persist,timeout=20" >> /etc/nbdtab
-    
+
     nbdclient nbd0 $portno # connect remote system.img
     nbdclient nbd1 $portno # connect remote systemrw.img
     nbdclient nbd2 $portno # connect remote persist.img
@@ -735,8 +745,6 @@ case $fstab_suffix in
         /sbin/insmod /lib/modules/lassen_mtip.ko
         /sbin/insmod /lib/modules/lassen_secure_eip.ko
         /sbin/insmod /lib/modules/ecpri_core.ko
-        ethtool -s $LOCAL_INTERFACE msglvl 1
-        ethtool -s $LOCAL_INTERFACE speed 25000 autoneg off
 
         # Dynamic IP
         INTERFACE_TIMEOUT=60
@@ -751,27 +759,65 @@ case $fstab_suffix in
             ifconfig -a $LOCAL_INTERFACE >/dev/null 2>&1
         done
 
+        # Configure the link based on the cable/port type reported by ethtool
+        # classify the module from its EEPROM; ethtool -m fails if no module is present
+        # module EEPROM may only be readable with the netdev up
+        ifconfig $LOCAL_INTERFACE up
+        sleep 2
+        MODULE_INFO="$(ethtool -m $LOCAL_INTERFACE 2>&1)"
+        MODULE_RC=$?
+        # bring the interface down before changing speed/FEC; it is brought up below
+        ifconfig $LOCAL_INTERFACE down
+        if [ "$MODULE_RC" -ne 0 ]; then
+            echo "ethtool -m failed rc=$MODULE_RC: $MODULE_INFO"
+            echo "error line cable is not connected to $LOCAL_INTERFACE"
+            start_rdshell
+        elif echo "$MODULE_INFO" | grep -q "Transmitter technology.*Copper"; then
+            echo "Port type Direct Attach Copper detected on $LOCAL_INTERFACE"
+            PORT_TYPE="DAC"
+            ethtool -s $LOCAL_INTERFACE msglvl 1
+            ethtool -s $LOCAL_INTERFACE speed 25000 autoneg off
+            set_fec_for_speed $LOCAL_INTERFACE 25000
+        else
+            echo "Port type FIBRE detected on $LOCAL_INTERFACE"
+            PORT_TYPE="FIBRE"
+            ethtool -s $LOCAL_INTERFACE msglvl 2
+            ethtool -s $LOCAL_INTERFACE speed 25000 autoneg off
+            set_fec_for_speed $LOCAL_INTERFACE 25000
+        fi
+
         echo "Trying IP link up for speed 25000"
         ifconfig $LOCAL_INTERFACE up
 
-        INTERFACE_LINKUP_TIMEOUT=15
-        INTERFACE_LINKUP_SPEED_ARR=("100000" "50000" "40000" "10000")
+        INTERFACE_LINKUP_TIMEOUT=20
+        if [ "$PORT_TYPE" = "FIBRE" ]; then
+            # 10000 is not supported over optical, only retry 25000
+            INTERFACE_LINKUP_SPEED_ARR=("25000" "25000" "25000" "25000")
+        else
+            INTERFACE_LINKUP_SPEED_ARR=("10000" "25000" "10000" "25000")
+        fi
         INTERFACE_LINKUP_SPEED_INDEX=0
         IP_LINK_STATUS="$(ip address | grep $LOCAL_INTERFACE: | cut -d' ' -f9)"
         while [[ $IP_LINK_STATUS != "UP" ]]; do
             echo "wait for $INTERFACE_LINKUP_TIMEOUT sec, IP link to be up, current status : $IP_LINK_STATUS"
             sleep 1
             if [ $INTERFACE_LINKUP_TIMEOUT -le 0 ]; then
-                if [ $INTERFACE_LINKUP_SPEED_INDEX -ge 4 ]; then
+                if [ $INTERFACE_LINKUP_SPEED_INDEX -ge ${#INTERFACE_LINKUP_SPEED_ARR[@]} ]; then
                     start_rdshell
                 else
                     INTERFACE_SPEED="${INTERFACE_LINKUP_SPEED_ARR[$INTERFACE_LINKUP_SPEED_INDEX]}"
                     ifconfig $LOCAL_INTERFACE down
-                    ethtool -s $LOCAL_INTERFACE speed $INTERFACE_SPEED autoneg off
+                    if [ "$PORT_TYPE" = "DAC" ]; then
+                        # leave autoneg untouched for DAC
+                        ethtool -s $LOCAL_INTERFACE speed $INTERFACE_SPEED autoneg off
+                    else
+                        ethtool -s $LOCAL_INTERFACE speed $INTERFACE_SPEED autoneg off
+                    fi
+                    set_fec_for_speed $LOCAL_INTERFACE $INTERFACE_SPEED
                     echo "Trying IP link up for speed $INTERFACE_SPEED"
                     ifconfig $LOCAL_INTERFACE up
                     (( INTERFACE_LINKUP_SPEED_INDEX += 1))
-                    INTERFACE_LINKUP_TIMEOUT=15
+                    INTERFACE_LINKUP_TIMEOUT=20
                 fi
 
             fi
