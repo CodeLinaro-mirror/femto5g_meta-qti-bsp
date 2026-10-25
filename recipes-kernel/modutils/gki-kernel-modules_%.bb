@@ -29,6 +29,20 @@ EXISTING_MODULES = "${@bb.utils.contains('MACHINE_USES_KERNEL_PREBUILTS', 'True'
 
 do_compile[depends] += "${@bb.utils.contains('MACHINE_USES_KERNEL_PREBUILTS', 'True', '', \
     'linux-common-soc:do_install' if d.getVar('MACHINE') == 'pebble' else 'soc-modules:do_install', d)}"
+
+do_compile:prepend:kalama() {
+    if [ "${MACHINE_USES_KERNEL_PREBUILTS}" = "True" ]; then
+        # These Wi-Fi dependencies are only in the matching prebuilt archive.
+        for module in rfkill libarc4; do
+            if [ ! -f "${S}/$module.ko" ]; then
+                tar -xzOf "${S}/unstripped_modules.tar.gz" "unstripped/$module.ko" \
+                    > "${S}/$module.ko.tmp" || bbfatal "Cannot extract $module.ko"
+                mv "${S}/$module.ko.tmp" "${S}/$module.ko"
+            fi
+        done
+    fi
+}
+
 do_compile () {
     existing_modules=$(ls ${EXISTING_MODULES} 2> /dev/null || true)
 
@@ -48,8 +62,8 @@ do_compile () {
     fi
 
     # generate conf file for 1st/2nd stage module
-    touch firstmods.conf
-    touch secondmods.conf
+    : > firstmods.conf
+    : > secondmods.conf
 
     for module in ${existing_modules}; do
         # Use word boundaries to ensure exact module name matching

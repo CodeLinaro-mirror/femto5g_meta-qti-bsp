@@ -6,6 +6,11 @@ inherit qimage populate_sdk_qti
 
 IMAGE_FEATURES += "ssh-server-openssh"
 
+# Kalama 6.18 bring-up: keep WARN backtraces in the kernel log without flooding
+# the 115200-baud console while the watchdog waits for CPU keep-alive responses.
+# This is a diagnostic mitigation pending the legacy DT binding migration.
+KERNEL_CMD_PARAMS:append:kalama = " loglevel=4 printk.console_no_auto_verbose=1 log_buf_len=4M"
+
 ROS_FEATURES_PKG += "\
     ${@bb.utils.contains('BBFILE_COLLECTIONS', 'ros2-humble-layer', 'packagegroup-ros2-humble', '', d)} \
     ${@bb.utils.contains('BBFILE_COLLECTIONS', 'ros2-foxy-layer', 'packagegroup-ros2-foxy packagegroup-qti-ros2-node', '', d)} \

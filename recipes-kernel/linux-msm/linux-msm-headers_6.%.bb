@@ -53,7 +53,15 @@ do_install () {
         bbwarn "Expected directory $headerdir/${includedir} not found, headers may not be installed correctly"
     fi
 }
+do_populate_kernel_header_artifacts() {
+    mkdir -p ${B}/headers
 
+    if [ ! -d "${UNPACKDIR}/usr" ]; then
+        bbfatal "Expected unpacked UAPI headers at ${UNPACKDIR}/usr, but the directory is missing"
+    fi
+
+    cp -a ${UNPACKDIR}/usr "${B}/headers/"
+}
 # kernel headers are generally machine specific
 PACKAGE_ARCH = "${MACHINE_ARCH}"
 
