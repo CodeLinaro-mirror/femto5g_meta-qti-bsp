@@ -6,7 +6,10 @@ CUSTOMIZE_COREUTILS_COMMANDS = "${@oe.utils.conditional('TOYBOX_RAMDISK', 'True'
 
 python () {
     if d.getVar("CUSTOMIZE_COREUTILS_COMMANDS") == "True":
-        d.setVar("bindir_progs", "chcon")
+        if bb.utils.contains('DISTRO_FEATURES', 'selinux', True, False, d):
+            d.setVar("bindir_progs", "chcon")
+        else:
+            d.setVar("bindir_progs", "")
         d.setVar("base_bindir_progs", "cp")
 }
 
