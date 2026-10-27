@@ -4,7 +4,7 @@
 [Unit]
 Description=dsp remoteproc start service
 Requires=firmware-mount.service
-After=sysinit.target systemd-modules-load.service firmware-mount.service
+After=firmware-mount.service
 DefaultDependencies=no
 
 [Service]

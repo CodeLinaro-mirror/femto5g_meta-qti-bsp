@@ -224,8 +224,8 @@ EOF
     echo -n "${root_hash}" > ${WORKDIR}/roothash.txt
 
     openssl smime -sign -nocerts -noattr -binary -in ${WORKDIR}/roothash.txt \
-        -inkey ${STAGING_KERNEL_BUILDDIR}/certs/verity_key.pem -signer \
-        ${STAGING_KERNEL_BUILDDIR}/certs/verity_cert.pem -outform der -out ${WORKDIR}/root.sig
+        -inkey ${VERITY_KEYS_DIR}/verity_key.pem -signer \
+        ${VERITY_KEYS_DIR}/verity_cert.pem -outform der -out ${WORKDIR}/root.sig
 
     # Get the sizes of root.env and root.sig
     metadata_size=$(stat -c%s "${WORKDIR}/root.env")
