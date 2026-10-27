@@ -314,6 +314,7 @@ python () {
 
     if found:
         # Use prebuilt, discard build operations
+        d.setVar("SRC_URI", "")
         for task in d.getVar('PREBUILT_DISCARDED_TASKS').split():
             d.setVarFlag(task, 'noexec', '1')
         bb.build.addtask('do_install_prebuilt', 'do_populate_sysroot', 'do_install', d)
