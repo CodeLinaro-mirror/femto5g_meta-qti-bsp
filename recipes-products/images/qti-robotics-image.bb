@@ -36,7 +36,7 @@ CORE_IMAGE_EXTRA_INSTALL += "\
         packagegroup-qti-fastcv \
         packagegroup-mesa \
         packagegroup-qti-gfx \
-        packagegroup-qti-gst \
+        packagegroup-qti-gst-basic \
         ${@bb.utils.contains('MACHINE_FEATURES', 'qti-location', 'packagegroup-qti-location', '', d)} \
         packagegroup-qti-ml \
         packagegroup-qti-mmframeworks \
