@@ -14,7 +14,7 @@ PACKAGE_INSTALL = "\
     ext4-utils \
     ${@d.getVar('kern_mods')} \
     fsmgr \
-    first-stage-scripts-init \
+    ${@bb.utils.contains('BASEMACHINE', 'echo', '', 'first-stage-scripts-init', d)} \
     gki-kernel-modules-linkmodulesload \
     glib-2.0 \
     glibc \
