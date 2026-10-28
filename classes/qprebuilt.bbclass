@@ -128,6 +128,7 @@ do_install_prebuilt[dirs] = "${D}"
 do_install_prebuilt[doc] = "Populate Destination directory with prebuilt package content"
 
 fakeroot python do_install_prebuilt() {
+    import os
     import shutil
 
     licensedir = d.getVar('LICENSE_DIRECTORY')
@@ -161,12 +162,24 @@ fakeroot python do_install_prebuilt() {
                     bb.fatal("Errors in extracting prebuilt: %s (%s)" % ( tarball, output))
 
     # Install license
-    cmd = "cp -r %s/__LIC__ %s/%s" % (dest, licensedir, pn)
+    licensedir = os.path.join(
+        d.getVar('LICENSE_DIRECTORY'),
+        arch,
+        pn
+    )
+
+    os.makedirs(licensedir, exist_ok=True)
+
+    license_src = os.path.join(dest, "__LIC__")
+    if not os.path.isdir(license_src):
+        bb.fatal("Prebuilt license directory is missing: %s" % license_src)
+
+    cmd = "cp -r --no-preserve=ownership %s/. %s/" % (license_src, licensedir)
     (retval, output) = oe.utils.getstatusoutput(cmd)
     if retval:
-        bb.warn("Unable to retrieve license: %s" % output)
+        bb.fatal("Unable to retrieve license: %s" % output)
 
-    shutil.rmtree("%s/__LIC__" % dest)
+    shutil.rmtree(license_src)
 }
 
 def gen_prebuiltvar(d):
