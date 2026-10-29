@@ -8,7 +8,8 @@ ${LICENSE};md5=89aea4e17d99a7cacdbeed46a0096b10"
 
 PR = "r1"
 
-DEPENDS += " liblog libcutils libhardware libselinux glib-2.0 libsync"
+DEPENDS += " liblog libcutils libhardware glib-2.0 libsync"
+DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'selinux', 'libselinux', '', d)}"
 
 FILESEXTRAPATHS:prepend := "${WORKSPACE}/frameworks:"
 SRC_URI   = "file://libui"

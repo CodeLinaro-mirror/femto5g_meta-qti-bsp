@@ -22,7 +22,6 @@ CORE_IMAGE_EXTRA_INSTALL += "\
                 coreutils \
                 powerapp \
                 powerapp-powerconfig \
-                crash-collect-hlos \
                 powerapp-reboot \
                 powerapp-shutdown \
                 systemd-machine-units \
@@ -42,6 +41,8 @@ CORE_IMAGE_EXTRA_INSTALL += "\
                 ${@bb.utils.contains('BBFILE_COLLECTIONS', 'qti-internal', 'packagegroup-qti-internal', '', d)} \
                 ${@bb.utils.contains('BBFILE_COLLECTIONS', 'cta', 'packagegroup-qti-cta', '', d)} \
 "
+# Disable crash-collect-hlos on echo-min.
+CORE_IMAGE_EXTRA_INSTALL += "${@bb.utils.contains('MACHINE', 'echo-min', '', 'crash-collect-hlos', d)}"
 
 IMAGE_INSTALL:append = " libatomic"
 
@@ -65,6 +66,12 @@ CORE_IMAGE_EXTRA_INSTALL += "bash procrank"
 CORE_IMAGE_EXTRA_INSTALL += "packagegroup-qcom-audio"
 
 CORE_IMAGE_EXTRA_INSTALL += "packagegroup-qcom-sensors"
+
+
+# Install full XZ Utils to provide complete lzma support for compression.
+# Providing full lzma/xz decompression support beyond what BusyBox offers
+# will prefer xz binaries (lzma, unlzma, lzcat, xz, xzcat, unxz) over BusyBox.
+CORE_IMAGE_EXTRA_INSTALL += "xz"
 
 # audio/location/ssdk/mac80211/data/fastrpc support is not yet enabled for echo-min.
 CORE_IMAGE_EXTRA_INSTALL:remove = "${@bb.utils.contains('MACHINE', 'echo-min', '\
