@@ -23,6 +23,9 @@ KERNEL_DTC_FLAGS += "-@"
 SRC_URI += " \
           ${@bb.utils.contains('DISTRO_FEATURES', 'apparmor', 'file://apparmor.cfg', '', d)} \
           "
+SRC_URI += " \
+          ${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', 'file://verity.cfg', '', d)} \
+          "
 
 do_configure:prepend() {
     if [ ! -f "${S}/arch/${ARCH}/configs/${KERNEL_CONFIG}" ]; then
