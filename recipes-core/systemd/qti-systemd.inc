@@ -14,6 +14,14 @@ SRC_URI += "file://set-mhi-nodes.rules"
 SRC_URI += "file://99-gpiochardev.rules"
 SRC_URI += "file://kmem.rules"
 SRC_URI += "file://mmc-rpmb.rules"
+SRC_URI += "${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', ' \
+    file://10-dm.rules \
+    file://11-dm-lvm.rules \
+    file://12-dm-permissions.rules \
+    file://13-dm-disk.rules \
+    file://69-dm-lvm-metad.rules \
+    file://95-dm-notify.rules \
+    ', '', d)}"
 
 # Custom setup for PACKAGECONFIG to get a slimmer systemd.
 # Removed following:
@@ -122,6 +130,16 @@ do_install:append () {
    install -m 0644 ${WORKDIR}/99-gpiochardev.rules -D ${D}${sysconfdir}/udev/rules.d/99-gpiochardev.rules
    install -m 0644 ${WORKDIR}/kmem.rules -D ${D}${sysconfdir}/udev/rules.d/kmem.rules
    install -m 0644 ${WORKDIR}/mmc-rpmb.rules -D ${D}${sysconfdir}/udev/rules.d/mmc-rpmb.rules
+
+   # In RDK-B lvm2 dm-rules are removed, for dm-verity enablement we need below dm-rules.
+   if ${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', 'true', 'false', d)}; then
+       install -m 0644 ${WORKDIR}/10-dm.rules -D ${D}${sysconfdir}/udev/rules.d/10-dm.rules
+       install -m 0644 ${WORKDIR}/11-dm-lvm.rules -D ${D}${sysconfdir}/udev/rules.d/11-dm-lvm.rules
+       install -m 0644 ${WORKDIR}/12-dm-permissions.rules -D ${D}${sysconfdir}/udev/rules.d/12-dm-permissions.rules
+       install -m 0644 ${WORKDIR}/13-dm-disk.rules -D ${D}${sysconfdir}/udev/rules.d/13-dm-disk.rules
+       install -m 0644 ${WORKDIR}/69-dm-lvm-metad.rules -D ${D}${sysconfdir}/udev/rules.d/69-dm-lvm-metad.rules
+       install -m 0644 ${WORKDIR}/95-dm-notify.rules -D ${D}${sysconfdir}/udev/rules.d/95-dm-notify.rules
+   fi
 
    # Mask dev-ttyS0.device
    ln -sf /dev/null ${D}/etc/systemd/system/dev-ttyS0.device

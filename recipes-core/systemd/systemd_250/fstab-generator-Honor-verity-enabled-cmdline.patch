@@ -1,41 +1,46 @@
-From b5e58bf901f0619a41dc9309573b393edf939b11 Mon Sep 17 00:00:00 2001
-From: Abhilasha Manna <amanna@qti.qualcomm.com>
-Date: Mon, 22 Jan 2024 18:34:50 +0530
-Subject: [PATCH] fstab-generator: Honor 'verity=enabled' cmdline.
+From 4d31def204eb196390b991683f5c40d1a97318b4 Mon Sep 17 00:00:00 2001
+From: Vinod Kumar Reddy <vreddyk@qti.qualcomm.com>
+Date: Thu, 29 Oct 2026 10:10:22 +0530
+Subject: [PATCH] fstab: add support for dm-verity and disk encryption
 
-When 'verity=enabled' & 'avb-verity=enabled'is present in kernel cmdline assume verity
-is enabled even if root, roothash values are not present and use
-"root" DM device as root.
+altering root device when dm-verity and rootfs encryption
+accordingly when either of the features are enabled.
 
-Signed-off-by: Abhilasha Manna<amanna@qti.qualcomm.com>
+Signed-off-by: Vinod Kumar Reddy <vreddyk@qti.qualcomm.com>
 ---
- src/fstab-generator/fstab-generator.c | 27 +++++++++++++++++++++++++++
- 1 file changed, 27 insertions(+)
+ src/fstab-generator/fstab-generator.c | 65 +++++++++++++++++++++++++++
+ 1 file changed, 65 insertions(+)
 
 diff --git a/src/fstab-generator/fstab-generator.c b/src/fstab-generator/fstab-generator.c
-index 9b32383a76..c2166c38b0 100644
+index 9b32383a76..d8b139a0bc 100644
 --- a/src/fstab-generator/fstab-generator.c
 +++ b/src/fstab-generator/fstab-generator.c
-@@ -52,6 +52,7 @@ static char *arg_usr_what = NULL;
+@@ -52,6 +52,10 @@ static char *arg_usr_what = NULL;
  static char *arg_usr_fstype = NULL;
  static char *arg_usr_options = NULL;
  static char *arg_usr_hash = NULL;
 +static char *arg_verity = NULL;
++static char *arg_rootfs_encrypt = NULL;
++static char *arg_normal_boot = NULL;
++static char *arg_slot_suffix = NULL;
  static VolatileMode arg_volatile_mode = _VOLATILE_MODE_INVALID;
  
  STATIC_DESTRUCTOR_REGISTER(arg_root_what, freep);
-@@ -62,6 +63,7 @@ STATIC_DESTRUCTOR_REGISTER(arg_usr_what, freep);
+@@ -62,6 +66,10 @@ STATIC_DESTRUCTOR_REGISTER(arg_usr_what, freep);
  STATIC_DESTRUCTOR_REGISTER(arg_usr_fstype, freep);
  STATIC_DESTRUCTOR_REGISTER(arg_usr_options, freep);
  STATIC_DESTRUCTOR_REGISTER(arg_usr_hash, freep);
 +STATIC_DESTRUCTOR_REGISTER(arg_verity, freep);
++STATIC_DESTRUCTOR_REGISTER(arg_rootfs_encrypt, freep);
++STATIC_DESTRUCTOR_REGISTER(arg_normal_boot, freep);
++STATIC_DESTRUCTOR_REGISTER(arg_slot_suffix, freep);
  
  static int write_options(FILE *f, const char *options) {
          _cleanup_free_ char *o = NULL;
-@@ -1024,6 +1026,21 @@ static int parse_proc_cmdline_item(const char *key, const char *value, void *dat
-                         return 0;
+@@ -1025,6 +1033,38 @@ static int parse_proc_cmdline_item(const char *key, const char *value, void *dat
  
                  return free_and_strdup_warn(&arg_root_hash, value);
+ 
 +        } else if (streq(key, "verity")) {
 +
 +                if (proc_cmdline_value_missing(key, value))
@@ -44,29 +49,61 @@ index 9b32383a76..c2166c38b0 100644
 +                if (free_and_strdup(&arg_verity, value) < 0)
 +                        return log_oom();
 +
-+        } else if (streq(key, "avb-verity")) {
++        } else if (streq(key, "rootfs_encrypt")) {
 +
 +                if (proc_cmdline_value_missing(key, value))
 +                        return 0;
 +
-+                if (free_and_strdup(&arg_verity, value) < 0)
++                if (free_and_strdup(&arg_rootfs_encrypt, value) < 0)
 +                        return log_oom();
- 
++
++        } else if (streq(key, "androidboot.force_normal_boot")) {
++
++                if (proc_cmdline_value_missing(key, value))
++                        return 0;
++
++                if (free_and_strdup(&arg_normal_boot, value) < 0)
++                        return log_oom();
++
++        } else if (streq(key, "systemd.setenv")) {
++
++                if (proc_cmdline_value_missing(key, value))
++                        return 0;
++
++                if (free_and_strdup(&arg_slot_suffix, value) < 0)
++                        return log_oom();
++
          } else if (streq(key, "mount.usr")) {
  
-@@ -1104,6 +1121,16 @@ static int determine_device(char **what, const char *hash, const char *name) {
+                 if (proc_cmdline_value_missing(key, value))
+@@ -1104,6 +1144,31 @@ static int determine_device(char **what, const char *hash, const char *name) {
  }
  
  static int determine_root(void) {
-+        /* If we have verity=enabled then Verity is used, and we use the "root" DM device as root. */
-+        if (!isempty(arg_verity) && streq(arg_verity, "enabled")) {
-+                log_info("Found a verity=enabled entry on the kernel command line.");
-+                if (free_and_strdup(&arg_root_what, "/dev/mapper/root") < 0)
-+                        return log_oom();
++        bool verity_on = !isempty(arg_verity) && streq(arg_verity, "enabled");
++        bool encrypt_on = !isempty(arg_rootfs_encrypt) && streq(arg_rootfs_encrypt, "enabled");
++        bool normal_boot = !isempty(arg_normal_boot) && streq(arg_normal_boot, "1");
++        bool slot_suffix = !isempty(arg_slot_suffix);
 +
-+                log_info("Using verity root device %s.", arg_root_what);
-+                return 1;
++        /* Encryption + Verity: the verity device is layered on top of the decrypted device. */
++        if (normal_boot || slot_suffix) {
++                if (verity_on) {
++                        log_info("Found verity=enabled on the kernel command line.");
++                        if (free_and_strdup(&arg_root_what, "/dev/mapper/root") < 0)
++                                return log_oom();
++
++                        log_info("Using verity root device %s.", arg_root_what);
++                        return 1;
++                } else if (encrypt_on) {
++                        log_info("Found rootfs_encrypt=enabled on the kernel command line.");
++                        if (free_and_strdup(&arg_root_what, "/dev/mapper/cryptroot") < 0)
++                                return log_oom();
++
++                        log_info("Using encrypted mapper device %s.", arg_root_what);
++                        return 1;
++                }
 +        }
++        /* If we have a root hash but no root device then Verity is used, and we use the "root" DM device as root. */
 +
          return determine_device(&arg_root_what, arg_root_hash, "root");
  }
