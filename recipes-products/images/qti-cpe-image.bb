@@ -2,7 +2,7 @@
 # Provides packages required to build an cpe image with
 # boot to console with connectivity support.
 
-inherit qimage ${@bb.utils.contains_any('MACHINE_FEATURES', 'dm-verity-initramfs-v2 dm-verity-initramfs', 'qramdisk', '', d)}
+inherit qimage qti-fitimage ${@bb.utils.contains_any('MACHINE_FEATURES', 'dm-verity-initramfs-v2 dm-verity-initramfs', 'qramdisk', '', d)}
 
 #IMAGE_FEATURES += "nand2x"
 IMAGE_FEATURES += "read-only-rootfs"
