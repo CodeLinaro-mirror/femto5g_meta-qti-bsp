@@ -1,0 +1,12 @@
+# Copyright (c) Qualcomm Technologies, Inc. and/or its subsidiaries.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+# remoteproc: fires on every ADD uevent, covers SSR restarts too.
+# MODE/OWNER/GROUP only apply to /dev nodes; use RUN+= for sysfs attributes.
+SUBSYSTEM=="remoteproc", ACTION=="add", RUN+="/bin/chown system:system /sys/class/remoteproc/%k/coredump"
+
+# qcom_scm module parameter (fires when module is registered)
+SUBSYSTEM=="module", ACTION=="add", KERNEL=="qcom_scm", RUN+="/bin/chown system:system /sys/module/qcom_scm/parameters/download_mode"
+
+# qcom_ramdump module parameter
+SUBSYSTEM=="module", ACTION=="add", KERNEL=="qcom_ramdump", RUN+="/bin/chown system:system /sys/module/qcom_ramdump/parameters/enable_dump_collection"

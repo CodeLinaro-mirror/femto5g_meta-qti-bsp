@@ -11,6 +11,7 @@ SRC_URI += "file://0001-cryptfs_hw-Replace-LOGE-with-SLOGE.patch"
 
 S = "${WORKDIR}/cryptfs_hw"
 
-DEPENDS += "libcutils libhardware system-core libselinux libscrypt"
+DEPENDS += "libcutils libhardware system-core libscrypt"
+DEPENDS += "${@bb.utils.contains('DISTRO_FEATURES', 'selinux', 'libselinux', '', d)}"
 
 EXTRA_OECONF += "--with-emmc-use-ICE"

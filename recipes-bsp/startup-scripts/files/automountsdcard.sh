@@ -16,7 +16,7 @@ mount_partition()
         fi
 
         # Checking if sepolicy is enabled and if enabled, then mount sd-card with user "root" and group "sdcard" with proper umask permissions so that non-root applications can access sdcard by adding to "sdcard" group.
-        if [[ ! -f /etc/selinux/config ]] || $(getenforce | grep -q "Disabled"); then
+        if [ ! -f /etc/selinux/config ] || { [ -x /usr/sbin/getenforce ] && getenforce | grep -q "Disabled"; }; then
             mount -t auto "/dev/$1" "${destdir}" -o uid=0,gid=1015,umask=002,nodev,noexec,nosuid
         else
             if ! mount -t auto "/dev/$1" "${destdir}" -o uid=0,gid=1015,umask=002,context=system_u:object_r:sdcard_t:s0,nodev,noexec,nosuid; then

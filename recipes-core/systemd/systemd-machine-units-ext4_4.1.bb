@@ -44,6 +44,7 @@ SRC_URI:echo = " file://persist.mount \
                  file://systemrw.conf \
                  file://dsp-mount.service \
                  file://firmware-mount.service \
+                 ${@bb.utils.contains('MACHINE_FEATURES', 'qti-ab-boot', 'file://modem-mount.sh', '', d)} \
                  file://var-persist.mount"
 
 IMAGETYPE = "ext4"
@@ -62,6 +63,14 @@ do_install:append () {
 
     if ${@bb.utils.contains('COMBINED_FEATURES', 'qti-ab-boot', 'true', 'false', d)}; then
         install -m 0644 ${S}/set-slotsuffix.service ${D}${systemd_unitdir}/system
+    fi
+
+}
+
+do_install:append:echo () {
+
+    if ${@bb.utils.contains('MACHINE_FEATURES', 'qti-ab-boot', 'true', 'false', d)}; then
+        install -m 0755 ${WORKDIR}/modem-mount.sh -D ${D}${sysconfdir}/initscripts/modem-mount.sh
     fi
 
 }
