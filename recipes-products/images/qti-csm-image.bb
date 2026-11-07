@@ -56,6 +56,7 @@ CORE_IMAGE_EXTRA_INSTALL += "\
               bist \
               spidev-test \
               qsfp-client \
+              user-restart-cause \
 "
 
 do_merge_dtbs() {
