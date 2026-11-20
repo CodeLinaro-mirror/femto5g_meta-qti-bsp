@@ -6,6 +6,7 @@ ${LICENSE};md5=3771d4920bd6cdb8cbdf1e8344489ee0"
 
 SRC_URI  +=  "file://init-verity.sh"
 SRC_URI  +=  "file://init-verity_v3.sh"
+SRC_URI  +=  "file://init-verity_v4.sh"
 SRC_URI  +=  "file://veritysetup.service.in"
 SRC_URI  +=  "file://resize-partition.service"
 
@@ -30,6 +31,18 @@ do_compile() {
         systemdevice="${devdiskstr}system.device"
         if [[ "${MACHINE_FEATURES}" =~ .*qti-ab-boot* ]]; then
             systemdevice="${devdiskstr}system_a.device ${devdiskstr}system_b.device"
+        fi
+        if [[ "${MACHINE_FEATURES}" =~ .*qti-abc-boot* ]]; then
+            systemdevice="$systemdevice ${devdiskstr}system_c.device"
+        fi
+    # For (DISTRO_FEATURES->dm-verity and MACHINE_FEATURES->dm-verity-initramfs-v4),
+    # system_a may be a symlink alias to system (system_a -> system -> mmcblk0pXX).
+    # udev does not create a device unit for double-indirect symlinks, so depend on
+    # system.device (canonical) and system_b.device only.
+    elif ${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', bb.utils.contains('MACHINE_FEATURES', 'dm-verity-initramfs-v4', 'true', 'false', d), 'false', d)}; then
+        systemdevice="${devdiskstr}system.device"
+        if [[ "${MACHINE_FEATURES}" =~ .*qti-ab-boot* ]]; then
+            systemdevice="${devdiskstr}system.device ${devdiskstr}system_b.device"
         fi
         if [[ "${MACHINE_FEATURES}" =~ .*qti-abc-boot* ]]; then
             systemdevice="$systemdevice ${devdiskstr}system_c.device"
@@ -65,6 +78,8 @@ do_install () {
     # do not consider veritysetup-vendor-dlkm service
     if ${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', bb.utils.contains('MACHINE_FEATURES', 'dm-verity-initramfs-v3', 'true', 'false', d), 'false', d)}; then
         install -m 755 ${WORKDIR}/init-verity_v3.sh ${D}/verity/init-verity.sh
+    elif ${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', bb.utils.contains('MACHINE_FEATURES', 'dm-verity-initramfs-v4', 'true', 'false', d), 'false', d)}; then
+        install -m 755 ${WORKDIR}/init-verity_v4.sh ${D}/verity/init-verity.sh
     else
         install -m 755 ${WORKDIR}/init-verity.sh ${D}/verity/init-verity.sh
         install -m 0644 ${WORKDIR}/veritysetup-vendor-dlkm.service \

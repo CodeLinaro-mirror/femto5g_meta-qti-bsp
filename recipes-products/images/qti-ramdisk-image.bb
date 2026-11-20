@@ -14,7 +14,7 @@ PACKAGE_INSTALL = "\
     ext4-utils \
     ${@d.getVar('kern_mods')} \
     fsmgr \
-    first-stage-scripts-init \
+    ${@bb.utils.contains('BASEMACHINE', 'echo', '', 'first-stage-scripts-init', d)} \
     gki-kernel-modules-linkmodulesload \
     glib-2.0 \
     glibc \
@@ -27,7 +27,7 @@ PACKAGE_INSTALL = "\
     packagegroup-core-boot \
     udev \
     ${@bb.utils.contains('DISTRO_FEATURES', 'selinux', 'libselinux libpcre', '', d)} \
-    ${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', bb.utils.contains('MACHINE_FEATURES', 'dm-verity-initramfs-v3', 'cryptsetup verity-scripts lvm2-udevrules', '', d), '', d)} \
+    ${@bb.utils.contains('DISTRO_FEATURES', 'dm-verity', bb.utils.contains_any('MACHINE_FEATURES', 'dm-verity-initramfs-v3 dm-verity-initramfs-v4', 'cryptsetup verity-scripts lvm2-udevrules', '', d), '', d)} \
 "
 
 IMAGE_FSTYPES = "${INITRAMFS_FSTYPES}"
